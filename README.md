@@ -13,7 +13,7 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - If it fails, reinstall npcap with compatability mode in the installer, and reinstall snort. 
 
 ### 3. Fix the broken Snort config file and create missing files. 
-  - This will go over alot of the same as this youtube, but I will shorten it to steps. https://www.youtube.com/watch?v=naLbhKW62nY
+  - This will go over alot of the same as this youtube, but I will shorten it to steps shown below to save you time. https://www.youtube.com/watch?v=naLbhKW62nY
 #### 3.1 Download the rules folder and snort.conf from this github.
   - Replace the rules folder at C:\Snort\rules with the downloaded folder. If the rules-folder doesn't exist, paste it in anyway.
   - Replace the snort.conf at C:\Snort\etc\snort.conf with the downloaded file. 
