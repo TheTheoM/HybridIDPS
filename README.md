@@ -32,8 +32,8 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
   * Run the program, it may crash, but in the output you will see a list of interfaces under 'Interfaces:', find your correct one. Incorrect ones may be named VM-ware adapters or Loopback.
   * Say your interface is called 'Asus(R) Ethernet Controller (3) I612-FA23', you will extract a suitable substring such as 'Ethernet Controller' and write it into the code like this:
       - Change:
-         - interface_Number = list_interfaces(find_Interface_subString = None)
+         * interface_Number = list_interfaces(find_Interface_subString = None)
       - To:
-       - interface_Number = list_interfaces(find_Interface_subString = 'Ethernet Controller')
+         * interface_Number = list_interfaces(find_Interface_subString = 'Ethernet Controller')
 * This step is necessary as your interface number *will* change over time, so this way the computer will select the correct one. 
   
