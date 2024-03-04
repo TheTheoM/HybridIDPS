@@ -21,5 +21,18 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 #### 3.2 Check if the alert.ids file exists
 - Check if the alert.ids file exists in C:\Snort\log\alert.ids. If it doesn't exist, or the log-folder itself doesn't exist. Create both, with the alert.ids file *must* be empty with no whitespace with no whitespace.
 
-
-
+## With snort installed and fixed, download and run the snortRunner.py
+- This file will:
+    * Check if critical files and directories exist for Snort. 'checkDirectories()'
+    * Display network interfaces. You must select your interface. This is explained below. 'list_interfaces()'
+    * Display the Snort Rules in the local.rules file. You will edit the file to add/remove/modify files to Snort. 'displayRules()'
+    * Run snort itself with the correct command which output its alerts to alerts.id. 'runSnort()' This will be ran as admin. So you will need to input your password into the cmd window that pops up. Your password is not stored or touched by the code at all, it is entered directly into windows cmd.
+    * Will monitor the changes to alerts.id 'check_file_changes()', and print the alerts sorted by source ip. 
+- To make this program work, you must select the correct interface, to do so:
+  * Run the program, it may crash, but in the output you will see a list of interfaces under 'Interfaces:', find your correct one. Incorrect ones may be named VM-ware adapters or Loopback.
+  * Say your interface is called 'Asus(R) Ethernet Controller (3) I612-FA23', you will extract a suitable substring such as 'Ethernet Controller' and write it into the code like this:
+     - interface_Number = list_interfaces(find_Interface_subString = None)
+     - Change to:
+     - interface_Number = list_interfaces(find_Interface_subString = 'Ethernet Controller')
+* This step is necessary as your interface number *will* change over time, so this way the computer will select the correct one. 
+  
