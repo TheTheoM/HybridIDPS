@@ -1,0 +1,55 @@
+[
+  [
+    "JohnSmith123",
+    {
+      "password": "JohnSmith123",
+      "email": "JohnSmith123@gmail.com",
+      "posts": [
+        {
+          "id": "br3f2jgjy",
+          "username": "JohnSmith123",
+          "postTitle": "New Phone",
+          "content": "New phone, and new reality along with it.",
+          "keyWords": [
+            "Phone"
+          ],
+          "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1280px-Image_created_with_a_mobile_phone.png",
+          "timestamp": "2024-03-19T05:52:19.664Z",
+          "likes": 1,
+          "comments": [
+            {
+              "username": "JohnSmith123",
+              "comment": "I'm commenting for extra traction"
+            },
+            {
+              "username": "Jane",
+              "comment": "Nice phone \"John\""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  [
+    "Jane",
+    {
+      "password": "jane",
+      "email": "jane@gmail.com",
+      "posts": [
+        {
+          "id": "kg05k85rc",
+          "username": "Jane",
+          "postTitle": "Hi",
+          "content": "hi",
+          "keyWords": [
+            "hi"
+          ],
+          "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1280px-Image_created_with_a_mobile_phone.png",
+          "timestamp": "2024-03-19T05:53:11.648Z",
+          "likes": -1,
+          "comments": []
+        }
+      ]
+    }
+  ]
+]
