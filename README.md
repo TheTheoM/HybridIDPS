@@ -1,6 +1,13 @@
 # HybridIDPS
 In progress HybridIDPS. Do NOT run on production systems. This is a proof of concept.
 
+# InnerLayer
+
+Fill in here Tim
+
+
+# OuterLayer
+
 ## Installation of Snort
 
 ### 1. Install Npcap https://npcap.com/#download  
