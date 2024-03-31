@@ -1,5 +1,11 @@
 import time
-import mysql.connector
+import importlib
+
+try:
+    import mysql.connector
+except ImportError:
+    print("\033[91mmysql.connector is not installed. 'pip install mysql-connector-python' \033[0m")
+
 
 class MySQLConnection:
     def __init__(self, host='localhost', user='innerLayer', password='css2', database='hybrid_idps'):
@@ -74,8 +80,8 @@ class InnerLayer():
         for ip, all_events in results.items():
             for event in all_events:
                 logName = f"{threatName}-{event['timestamp']}"
-                # self.add_logs(ip, logName, all_events[:1])
-                self.add_logs(ip, logName, threatName)
+                # self.add_threat(ip, logName, all_events[:1])
+                self.add_threat(ip, logName, threatName)
                 count = 0
 
     def analyze_log_in(self):
@@ -90,8 +96,8 @@ class InnerLayer():
                 count += 1
                 if count > 10:
                     logName = f"{threatName}-{event['timestamp']}"
-                    # self.add_logs(ip, logName, all_events[:1])
-                    self.add_logs(ip, logName, threatName)
+                    # self.add_threat(ip, logName, all_events[:1])
+                    self.add_threat(ip, logName, threatName)
                     count = 0
 
     def display_Events_and_calc_threat_level(self):
@@ -128,8 +134,7 @@ class InnerLayer():
         for ip in ip_addresses:
             self.devices[ip] = {'threatLevel': 0, 'logs': {}}
                 
-
-    def add_logs(self, ip_address, logName,  log):
+    def add_threat(self, ip_address, logName,  log):
         if ip_address in self.devices:
             device = self.devices[ip_address]
             device['logs'][logName] = log
