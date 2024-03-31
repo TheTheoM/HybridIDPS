@@ -4,7 +4,7 @@ import importlib
 try:
     import mysql.connector
 except ImportError:
-    print("\033[91mmysql.connector is not installed. 'pip install mysql-connector-python' \033[0m")
+    print("\033[91mmysql.connector is not installed. Run 'pip install mysql-connector-python' \033[0m")
 
 
 class MySQLConnection:
