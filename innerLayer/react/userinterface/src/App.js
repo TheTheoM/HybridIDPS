@@ -16,8 +16,7 @@ function App() {
   const [searchedPostList, setSearchedPostList] = useState({}); 
   const [postList, setPostList] = useState([])
   const webSocket = useRef(null);
-  const ws_url = 'ws://192.168.1.123:8100'; 
-
+  const ws_url = `ws://${process.env.REACT_APP_WEBSOCKET_SERVER_IP}`; 
   useEffect(() => {
     webSocket.current = new WebSocket(ws_url);
 
