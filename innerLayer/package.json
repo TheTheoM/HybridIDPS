@@ -1,0 +1,26 @@
+{
+  "name": "instakilo",
+  "version": "1.0.0",
+  "description": "Server for the React Web App",
+  "main": "instaKilo.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheTheoM/HybridIDPS.git#main"
+  },
+  "author": "Theodore Marlow",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TheTheoM/HybridIDPS/issues"
+  },
+  "homepage": "https://github.com/TheTheoM/HybridIDPS/tree/main#readme",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "fs": "^0.0.1-security",
+    "geoip-lite": "^1.4.10",
+    "mysql2": "^3.9.3",
+    "ws": "^8.16.0"
+  }
+}
