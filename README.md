@@ -43,9 +43,11 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
    * Development Computer
    * MySQL Root password (don’t lose it): whatever you want (admin)
    * Add user (this is obtain through the innerLayer.py): 
-      - Username - innerLayer and Password - css2
+      - Username - innerLayer
+      - Password - css2
    * Connect to server: 
-      - Username - root and Password - what you set it (admin)
+      - Username - root
+      - Password - what you set it (admin)
 ## 6. Import the SQL scripts to make a database
 - Open MySQL Workbench and connect to the local instance using root as username and admin as password, then click "Remember Login".
 - Navigate to the "File" tab and select "Open SQL Script".
