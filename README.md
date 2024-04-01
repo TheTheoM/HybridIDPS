@@ -32,7 +32,7 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - Run the javascript file ```node instaKilo.js```.
 - Confirm that the message "WebSocket server is running on port 8100" appears. Ignore the message about being unable to connect to the MySQL database for now.
 - Once instaKilo.js is running, create a new terminal window and navigate to the "userinterface" folder.
-- ```cd userinterface``` folder, run the command npm start.
+- ```cd userinterface```, run the command ```npm start```.
 - If everything is set up correctly, wait for a moment and the web application window should automatically open in your default browser.
 - In VSCode, open "innerLayer.py" and run it. If it errors out, install MySQL Connector Python by running ```pip install mysql-connector-python``` in terminal.
 
