@@ -58,7 +58,7 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - ```cd userinterface``` and run ```npm start```.
 - Run the "innerLayer.py".
 - Execute the "getInnerLayer" script in MySQL by clicking the lightning bolt icon.
-- Optionally, use the "wipes_and_Creates_Database_and_Tables" script when you want to clear the database.
+- Use the "wipes_and_Creates_Database_and_Tables" script to create the Database and table, it will also clear them.
 - With these steps completed, you're now set up to test the project, including the web application and threat levels functionality.
 
 # OuterLayer
