@@ -8,21 +8,29 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - This allows you to run the javascript files.
 
 ## 2. Download/ Clone Github Repo
-- Navigate to the green button “Code”,here just download the zip file.
-- Move this file to your designated folder where you will work on it and exact the zip.
-- Ideally to make the next steps easier, have vscode install and open the “HybridIDPS-main” folder in vscode.
+- Navigate to the green button labeled "Code" on the GitHub repository.
+- Download the ZIP file containing the repository.
+- Move the downloaded ZIP file to your designated folder and extract its contents.
+- Open the "HybridIDPS-main" folder in VSCode for easier navigation and access to project files.
 
 ## 3. Install needed Packages for instaKilo.js and React
-- Before installing any packages navigate to the “userinterface” folder and create a new file “.env”.
-- In this .env file copy and paste, just edit it to contain your IPV4 address:
+- Navigate to the "userinterface" folder within the project directory and create a new file named ".env".
+- Inside the ".env" file, copy and paste the following line, replacing "your_ip" with your actual IPV4 address:
     * REACT_APP_WEBSOCKET_SERVER_IP=your_ip:8100
-- After, right click on the folder “innerLayer” in vscode and open the integrated terminal, then navigate to the terminal section and open powershell (this is basically a linux terminal).
-- Then navigate to the “innerLayer” file and do “npm install .”, after further navigate to the “userinterface” folder and do “npm install .”.
+- After creating the ".env" file, right-click on the "innerLayer" folder in VSCode and open the integrated terminal.
+- Navigate to the terminal section and open PowerShell (basically a linux terminal).
+- Navigate to the "innerLayer" folder using the terminal.
+- Run the command npm install . to install the necessary packages for the inner layer.
+- Further navigate to the "userinterface" folder using the terminal.
+- Run the command npm install . to install the necessary packages for the user interface.
 
 ## 4. Run instaKilo.js and React Interface
-- Once all packages are installed, go back to the file “innerLayer” in the terminal and use the command “node instaKilo.js”, it should say “WebSocket server is running on port 8100” but also will say can not connect to MySQL database (don’t worry about that right now will fix later).
-- Once instalKilo.js is running, create a new terminal window and navigate to the “userinterface” folder, here do “npm start”.
-- If everything works fine, you will just have to wait a little bit and the window for the web application will pop up.
+- After all packages are installed, return to the terminal and navigate back to the "innerLayer" folder.
+- Run the command node instaKilo.js.
+- Confirm that the message "WebSocket server is running on port 8100" appears. Ignore the message about being unable to connect to the MySQL database for now.
+- Once instaKilo.js is running, create a new terminal window and navigate to the "userinterface" folder.
+- In the "userinterface" folder, run the command npm start.
+- If everything is set up correctly, wait for a moment and the web application window should automatically open in your default browser.
 
 ## 5. Install MySQL: https://dev.mysql.com/downloads/installer/ 
 - Download the “Windows (x86, 32-bit), MSI Installer” with the larger file size.
@@ -41,7 +49,7 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 
 ## 7. Run the project
 - Terminate all running programs to ensure a clean restart.
-- Navigate to "HybridIDPS-main\innerLayer" in the terminal of vscode and run "node instaKilo.js".
+- Navigate to "HybridIDPS-main\innerLayer" in the terminal of VSCode and run "node instaKilo.js".
 - Open another terminal, navigate to "HybridIDPS-main\innerLayer\react\userinterface", and run "npm start" to open the React web app in the browser.
 - In VSCode, open "innerLayer.py" and run it. If it errors out, install MySQL Connector Python by running "pip install mysql-connector-python".
 - Execute the "getInnerLayer" script in MySQL by clicking the lightning bolt icon.
