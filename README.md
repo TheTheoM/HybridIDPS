@@ -20,17 +20,20 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - After creating the ".env" file, right-click on the "innerLayer" folder in VSCode and open the integrated terminal.
 - Navigate to the terminal section and open PowerShell (basically a linux terminal).
 - ```cd innerLayer``` folder using the terminal.
-- ```npm install .```, this install the necessary packages for the inner layer.
+- ```npm install .``` this install the necessary packages for the inner layer.
+     * This make come up with warnings just ingore those.
 - ```cd userinterface``` folder using the terminal.
-- ```npm install .```, this install the necessary packages for the user interface.
+- ```npm install .``` this install the necessary packages for the user interface.
+   * This make come up with warnings just ingore those.
 
 ## 4. Run instaKilo.js and React Interface
-- After all packages are installed, return to the terminal and navigate back to the "innerLayer" folder.
-- Run the command node instaKilo.js.
+- After all packages are installed, return to the terminal and ```cd innerLayer``` folder.
+- ```node instaKilo.js```.
 - Confirm that the message "WebSocket server is running on port 8100" appears. Ignore the message about being unable to connect to the MySQL database for now.
 - Once instaKilo.js is running, create a new terminal window and navigate to the "userinterface" folder.
-- In the "userinterface" folder, run the command npm start.
+- ```cd userinterface``` folder, run the command npm start.
 - If everything is set up correctly, wait for a moment and the web application window should automatically open in your default browser.
+- In VSCode, open "innerLayer.py" and run it. If it errors out, install MySQL Connector Python by running "pip install mysql-connector-python".
 
 ## 5. Install MySQL: https://dev.mysql.com/downloads/installer/ 
 - Download the “Windows (x86, 32-bit), MSI Installer” with the larger file size.
@@ -51,7 +54,6 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - Terminate all running programs to ensure a clean restart.
 - Navigate to "HybridIDPS-main\innerLayer" in the terminal of VSCode and run "node instaKilo.js".
 - Open another terminal, navigate to "HybridIDPS-main\innerLayer\react\userinterface", and run "npm start" to open the React web app in the browser.
-- In VSCode, open "innerLayer.py" and run it. If it errors out, install MySQL Connector Python by running "pip install mysql-connector-python".
 - Execute the "getInnerLayer" script in MySQL by clicking the lightning bolt icon.
 - Optionally, use the wipe script to clear other databases if needed.
 - With these steps completed, you're now set up to test the project, including the web application and threat levels functionality.
