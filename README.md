@@ -19,10 +19,10 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
     * ```REACT_APP_WEBSOCKET_SERVER_IP=your_ip:8100```
 - After creating the ".env" file, right-click on the "innerLayer" folder in VSCode and open the integrated terminal.
 - Navigate to the terminal section and open PowerShell (basically a linux terminal).
-- Navigate to the "innerLayer" folder using the terminal.
-- Run the command npm install . to install the necessary packages for the inner layer.
-- Further navigate to the "userinterface" folder using the terminal.
-- Run the command npm install . to install the necessary packages for the user interface.
+- ```cd innerLayer``` folder using the terminal.
+- ```npm install .```, this install the necessary packages for the inner layer.
+- ```cd userinterface``` folder using the terminal.
+- ```npm install .```, this install the necessary packages for the user interface.
 
 ## 4. Run instaKilo.js and React Interface
 - After all packages are installed, return to the terminal and navigate back to the "innerLayer" folder.
