@@ -93,6 +93,7 @@ def CalculateThreatLevel():
     return 0
 
 def CalculateGeoLocation(src_ip):
+    # TODO Need to make this do something. Need to add some fake geo-locate to innerLayer.
     return "London Australia"
 
 def runSnort(snort_Dirs, interface_Number):
@@ -231,7 +232,6 @@ def handle_Snort_Alerts(displayAlerts, fileData, read_Up_To):
 
 if __name__ == '__main__':
     # Enabling SQL Connection #
-    
     
     # This file was save snort alerts to a database #
     
