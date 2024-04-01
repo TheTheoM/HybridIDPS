@@ -19,6 +19,22 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - After, right click on the folder “innerLayer” in vscode and open the integrated terminal, then navigate to the terminal section and open powershell (this is basically a linux terminal).
 - Then navigate to the “innerLayer” file and do “npm install .”, after further navigate to the “userinterface” folder and do “npm install .”.
 
+## 4. Run instaKilo.js and React Interface
+- Once all packages are installed, go back to the file “innerLayer” in the terminal and use the command “node instaKilo.js”, it should say “WebSocket server is running on port 8100” but also will say can not connect to MySQL database (don’t worry about that right now will fix later).
+- Once instalKilo.js is running, create a new terminal window and navigate to the “userinterface” folder, here do “npm start”.
+- If everything works fine, you will just have to wait a little bit and the window for the web application will pop up.
+
+## 5. Install MySQL: https://dev.mysql.com/downloads/installer/ 
+- Download the “Windows (x86, 32-bit), MSI Installer” with the larger file size.
+- Then run the installer (The key ones are noted below, just next other ones and execute them):
+   * Setup type: Full
+   * Development Computer
+   * MySQL Root password (don’t lose it): whatever you want (admin)
+   * Add user (this is obtain through the innerLayer.py): 
+      - Username - innerLayer and Password - css2
+   * Connect to server: 
+      - Username - root and Password - what you set it (admin)
+
 
 # OuterLayer
 
