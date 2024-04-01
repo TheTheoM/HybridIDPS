@@ -34,7 +34,19 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
       - Username - innerLayer and Password - css2
    * Connect to server: 
       - Username - root and Password - what you set it (admin)
+## 6. Import the SQL scripts to make a database
+- Open MySQL Workbench and connect to the local instance using root as username and admin as password, then click "Remember Login".
+- Navigate to the "File" tab and select "Open SQL Script".
+- Locate the "HybridIDPS-main\outerLayer\sqlScripts" folder and open the desired scripts individually.
 
+## 7. Run the project
+- Terminate all running programs to ensure a clean restart.
+- Navigate to "HybridIDPS-main\innerLayer" in the terminal of vscode and run "node instaKilo.js".
+- Open another terminal, navigate to "HybridIDPS-main\innerLayer\react\userinterface", and run "npm start" to open the React web app in the browser.
+- In VSCode, open "innerLayer.py" and run it. If it errors out, install MySQL Connector Python by running "pip install mysql-connector-python".
+- Execute the "getInnerLayer" script in MySQL by clicking the lightning bolt icon.
+- Optionally, use the wipe script to clear other databases if needed.
+- With these steps completed, you're now set up to test the project, including the web application and threat levels functionality.
 
 # OuterLayer
 
