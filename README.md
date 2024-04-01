@@ -20,10 +20,10 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
     * ```REACT_APP_WEBSOCKET_SERVER_IP=your_ip:8100```
 - After creating the ".env" file, right-click on the "innerLayer" folder in VSCode and open the integrated terminal.
 - Navigate to the terminal section and open PowerShell (basically a linux terminal).
-- ```cd innerLayer``` folder using the terminal.
+- ```cd innerLayer```
 - ```npm install .``` this install the necessary packages for the inner layer.
      * This may come up with warnings just ingore those.
-- ```cd userinterface``` folder using the terminal.
+- ```cd userinterface```
 - ```npm install .``` this install the necessary packages for the user interface.
    * This may come up with warnings just ingore those.
 
