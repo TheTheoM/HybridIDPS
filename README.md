@@ -14,6 +14,7 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - Open the "HybridIDPS-main" folder in VSCode for easier navigation and access to project files.
 
 ## 3. Install needed Packages for instaKilo.js and React
+- Check to see if node is properly install ```node```
 - Navigate to the "userinterface" folder within the project directory and create a new file named ".env".
 - Inside the ".env" file, copy and paste the following line, replacing "your_ip" with your actual IPV4 address:
     * ```REACT_APP_WEBSOCKET_SERVER_IP=your_ip:8100```
@@ -52,10 +53,11 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 
 ## 7. Run the project
 - Terminate all running programs to ensure a clean restart.
-- Navigate to "HybridIDPS-main\innerLayer" in the terminal of VSCode and run "node instaKilo.js".
-- Open another terminal, navigate to "HybridIDPS-main\innerLayer\react\userinterface", and run "npm start" to open the React web app in the browser.
+- ```cd innerLayer``` and run ```node instaKilo.js```.
+- ```cd userinterface``` and run ```npm start```.
+- Run the "innerLayer.py".
 - Execute the "getInnerLayer" script in MySQL by clicking the lightning bolt icon.
-- Optionally, use the wipe script to clear other databases if needed.
+- Optionally, use the "wipes_and_Creates_Database_and_Tables" script to clear the database.
 - With these steps completed, you're now set up to test the project, including the web application and threat levels functionality.
 
 # OuterLayer
