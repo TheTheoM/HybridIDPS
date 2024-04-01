@@ -6,6 +6,10 @@ import hashlib
 import time
 from threading import Thread
 import traceback
+import websocket
+import json
+
+from sqlConnector import MySQLConnection 
 
 snort_bin_path = r'C:\Snort\bin'
 
@@ -21,7 +25,7 @@ def list_interfaces(find_Interface_subString = None):
             interfaces = [line.strip() for line in result.stdout.split('\n') if line.strip()]
 
             foundInterface = None
-
+            print("Interfaces:")
             for interface in interfaces:
                 if (find_Interface_subString):
                     if find_Interface_subString in interface:
@@ -30,10 +34,10 @@ def list_interfaces(find_Interface_subString = None):
                 print(interface)
                 
             if foundInterface:
-                print(f"Found Interface. {foundInterface[0]} with substring {find_Interface_subString}")
+                print("\033[92m" + f"Found Interface. {foundInterface[0]} with substring {find_Interface_subString}" + "\033[0m")
                 return int(foundInterface[0])
             else:
-                print(f"No Interface was found with Substring {find_Interface_subString}")            
+                print("\033[91m" + f"No Interface was found with Substring {find_Interface_subString}" + "\033[0m")
                 
                 
             return -1
@@ -85,6 +89,12 @@ def displayRules(local_rules_file_path):
     except FileNotFoundError:
         print(f"\033[91m[ERROR] {local_rules_file_path} does not exist.\033[0m")
 
+def CalculateThreatLevel():
+    return 0
+
+def CalculateGeoLocation(src_ip):
+    return "London Australia"
+
 def runSnort(snort_Dirs, interface_Number):
     snort_bin_path = snort_Dirs['Bin Directory']
     snort_config_path = snort_Dirs['Snort Configuration File']
@@ -92,14 +102,17 @@ def runSnort(snort_Dirs, interface_Number):
     full_snort_path = os.path.join(snort_bin_path, 'snort.exe')  # Assuming the executable is named snort.exe
     runas_command = fr'runas /user:Administrator "{snort_command}"'
     try:
-        print("\033[93m" + f'Executing Snort Command {runas_command}' + "\033[0m")       
-        print("You may be asked to enter your admin-password, in a new cmd window. Do it. ")
+        print("\033[93m" + f'Executing Snort Command: {runas_command}' + "\033[0m")       
+        print("  - You may be asked to enter your admin-password, in a new cmd window. Do it. ")
         os.chdir(snort_bin_path)
         subprocess.Popen(runas_command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=subprocess.DETACHED_PROCESS)
     except Exception as e:
         print(f'Unexpected error: {e}')
 
-def check_file_changes(file_path, file_Check_Interval):
+def check_file_changes(file_path, file_Check_Interval, displayAlerts, mySqlConnection):
+
+    print("file starts")
+    
     extracted_data = {}
 
     try:
@@ -117,11 +130,24 @@ def check_file_changes(file_path, file_Check_Interval):
                 new_hash = hashlib.sha256(file.read()).hexdigest()
 
             if new_hash != current_hash:
-                print(f"File contents changed in {file_path}. New contents:")
+                if displayAlerts:
+                    print(f"File contents changed in {file_path}. New contents:")
                 with open(file_path, 'r') as file:
                     fileData = file.read()
-                    handle_Snort_Alerts(extracted_data, fileData, read_Up_To)
-                current_hash = new_hash
+                    newSnortAlerts, read_Up_To = handle_Snort_Alerts(displayAlerts, fileData, read_Up_To) #Reads only the updating part of the file. 
+
+                    #Sending Data to server
+                    if displayAlerts:
+                        for alert in newSnortAlerts:
+                            (src_ip, dest_ip, dateTime, alertId, alertName) = alert
+                            print(f"Source IP: {src_ip}, Destination IP: {dest_ip}, Date/Time: {dateTime}, Alert ID: {alertId}, Alert Name: {alertName}")
+
+                            
+                    mySqlConnection.add_data_to_outer_layer_bulk(newSnortAlerts)
+                    # mySqlConnection.add_data_to_outer_layer(ip_address, geolocation, event_type, threat_level, source_port, destination_port, protocol, payload)
+
+                                
+                    current_hash = new_hash
         except FileNotFoundError:
             print(f"File not found: {file_path}")
             return
@@ -156,11 +182,10 @@ def dateTime_to_ISO(dateTimeString):
     iso_date = parsed_datetime.isoformat()
     return iso_date
 
-def handle_Snort_Alerts(extracted_data, fileData, read_Up_To):
-    # Will probably need to figure out when last read, in the file to avoid massive peformance issues and just reiterated over the same shit.
+def handle_Snort_Alerts(displayAlerts, fileData, read_Up_To):
+    newSnortAlerts = []
 
     entries = fileData.split('\n\n')
-
 
     entries = entries[read_Up_To:]
 
@@ -175,28 +200,25 @@ def handle_Snort_Alerts(extracted_data, fileData, read_Up_To):
                 alertId, alertName = get_Alert_ID_and_Name(alertLine)
                 
                 if (not alertId or  not alertName):
-                    print("cuntty")
                     continue
                 
                 dateTime, src_ip, dest_ip = get_ip_and_time_line(ip_and_time_Line)
 
                 isoDateTime = dateTime_to_ISO(dateTime)
 
-                if src_ip.count(".") == 3 and src_ip.find(':') != -1:
-                    index = src_ip.index(":")
-                    src_ip = src_ip[:index]
+                index = src_ip.rfind(":") #192.168.1.135: get  last:
+                src_ip = src_ip[:index]
 
-                if src_ip not in extracted_data:
-                    print(f"New Device Event. IP: {src_ip}")
-                    extracted_data[src_ip] = {}
-                    
-                if alertName not in extracted_data[src_ip]:
-                    extracted_data[src_ip][alertName] = {'count': 0, 'timeArr': []}
+                # dataLine = {'src_ip': src_ip, 'dest_ip': dest_ip, 'dateTime': dateTime, 'alertId': alertId, 'alertName' : alertName}
+                # ip_address, geolocation, event_type, threat_level, dateTime
 
-                extracted_data[src_ip][alertName]['count'] += 1
+                geolocation = CalculateGeoLocation(src_ip)
+                threat_level = CalculateThreatLevel() #Always 0 Need to Complete.
+                dataLine = (src_ip, geolocation, alertName, threat_level, isoDateTime)
 
-                # if len(extracted_data[src_ip][alertName]['timeArr']) < 10:
-                #     extracted_data[src_ip][alertName]['timeArr'].append(isoDateTime)
+                
+                newSnortAlerts.append(dataLine)
+                
                 
             except Exception as E :
                 print(f"Error at handle_Snort_Alerts {E} with string {alertLine} and entry \n {entry}")
@@ -205,12 +227,17 @@ def handle_Snort_Alerts(extracted_data, fileData, read_Up_To):
 
     read_Up_To += len(entries)
 
-    for ip, data in extracted_data.items():
-        print(f"{ip}: Data {data}")
+    return newSnortAlerts, read_Up_To
 
 if __name__ == '__main__':
+    # Enabling SQL Connection #
     
-    ### This file will run Snort, and print to console the threats logged by Snort. 
+    
+    # This file was save snort alerts to a database #
+    
+    mySqlConnection = MySQLConnection()
+    mySqlConnection.connect()
+    displayAlerts = True
     
     snort_Dirs = {
         'Snort Directory':  r'C:\Snort',
@@ -222,14 +249,15 @@ if __name__ == '__main__':
         'Alert File':       r'C:\Snort\log\alert.ids',
         'Snort Configuration File': r'c:\Snort\etc\snort.conf',
     }
-
+    
     checkDirectories(snort_Dirs)
-    
-    alertFile = r'C:\Snort\log\alert.ids'
-    
-    file_Check_Interval = 2 #Checks the file for updates every x seconds. Yes theres better ways but 🥱
+    file_Check_Interval = 2 
     interface_Number = list_interfaces(find_Interface_subString = "Ethernet Controller") # You may need to change this. When running the code, it will print ur interfaces. Add a substring from it to this.
     displayRules(snort_Dirs['Local Rules File'])
     runSnort(snort_Dirs, interface_Number=interface_Number)
-    thread = Thread(target = check_file_changes, args=(snort_Dirs['Alert File'], file_Check_Interval)) # Unnecessary currently.
-    thread.start()
+
+    
+    Thread(target = check_file_changes, args=(snort_Dirs['Alert File'], file_Check_Interval, displayAlerts, mySqlConnection)).start()   #Checks the alert.ids and sends updates to server.
+    
+    
+    
