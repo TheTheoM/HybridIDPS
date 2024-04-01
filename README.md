@@ -13,9 +13,9 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - Ideally to make the next steps easier, have vscode install and open the “HybridIDPS-main” folder in vscode.
 
 ## 3. Install needed Packages for instaKilo.js and React
--Before installing any packages navigate to the “userinterface” folder and create a new file “.env”.
--In this .env file copy and paste, just edit it to contain your IPV4 address:
-  * REACT_APP_WEBSOCKET_SERVER_IP=your_ip:8100
+- Before installing any packages navigate to the “userinterface” folder and create a new file “.env”.
+- In this .env file copy and paste, just edit it to contain your IPV4 address:
+    * REACT_APP_WEBSOCKET_SERVER_IP=your_ip:8100
 - After, right click on the folder “innerLayer” in vscode and open the integrated terminal, then navigate to the terminal section and open powershell (this is basically a linux terminal).
 - Then navigate to the “innerLayer” file and do “npm install .”, after further navigate to the “userinterface” folder and do “npm install .”.
 
