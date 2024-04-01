@@ -14,26 +14,25 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - Open the "HybridIDPS-main" folder in VSCode for easier navigation and access to project files.
 
 ## 3. Install needed Packages for instaKilo.js and React
-- Check to see if node is properly install, ```node```.
+- Check to see if node is properly installed, ```node```.
 - Navigate to the "userinterface" folder within the project directory and create a new file named ".env".
 - Inside the ".env" file, copy and paste the following line, replacing "your_ip" with your actual IPV4 address:
     * ```REACT_APP_WEBSOCKET_SERVER_IP=your_ip:8100```
 - After creating the ".env" file, right-click on the "innerLayer" folder in VSCode and open the integrated terminal.
 - Navigate to the terminal section and open PowerShell (basically a linux terminal).
 - ```cd innerLayer```
-- ```npm install .``` this install the necessary packages for the inner layer.
-     * This may come up with warnings just ingore those.
+- ```npm install .``` this installs the necessary packages for the inner layer.
+     * This may come up with warnings just ignore those.
 - ```cd userinterface```
-- ```npm install .``` this install the necessary packages for the user interface.
-   * This may come up with warnings just ingore those.
+- ```npm install .``` this installs the necessary packages for the user interface.
+   * This may come up with warnings just ignore those.
 
 ## 4. Run instaKilo.js and React Interface
 - ```cd innerLayer```, run the javascript file ```node instaKilo.js```.
 - Confirm that the message "WebSocket server is running on port 8100" appears. Ignore the message about being unable to connect to the MySQL database for now.
-- Once instaKilo.js is running, create a new terminal window and navigate to the "userinterface" folder.
 - ```cd userinterface```, run the command ```npm start```.
 - If all set, the web app window will open in your default browser shortly.
-- In VSCode, open "innerLayer.py" and run it. If it errors out, install MySQL Connector Python by running ```pip install mysql-connector-python``` in terminal.
+- In VSCode, open "innerLayer.py" and run it. If it errors out, install MySQL Connector Python by ```pip install mysql-connector-python``` in terminal.
 
 ## 5. Install MySQL: https://dev.mysql.com/downloads/installer/ 
 - Download the “Windows (x86, 32-bit), MSI Installer” with the larger file size.
