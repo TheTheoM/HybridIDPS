@@ -28,7 +28,7 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
    * This may come up with warnings just ingore those.
 
 ## 4. Run instaKilo.js and React Interface
-- After all packages are installed, return to the terminal and ```cd innerLayer``` folder.
+- ```cd innerLayer```
 - Run the javascript file ```node instaKilo.js```.
 - Confirm that the message "WebSocket server is running on port 8100" appears. Ignore the message about being unable to connect to the MySQL database for now.
 - Once instaKilo.js is running, create a new terminal window and navigate to the "userinterface" folder.
