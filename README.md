@@ -14,7 +14,7 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - Open the "HybridIDPS-main" folder in VSCode for easier navigation and access to project files.
 
 ## 3. Install needed Packages for instaKilo.js and React
-- Check to see if node is properly install ```node```
+- Check to see if node is properly install, ```node```.
 - Navigate to the "userinterface" folder within the project directory and create a new file named ".env".
 - Inside the ".env" file, copy and paste the following line, replacing "your_ip" with your actual IPV4 address:
     * ```REACT_APP_WEBSOCKET_SERVER_IP=your_ip:8100```
@@ -22,10 +22,10 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - Navigate to the terminal section and open PowerShell (basically a linux terminal).
 - ```cd innerLayer``` folder using the terminal.
 - ```npm install .``` this install the necessary packages for the inner layer.
-     * This make come up with warnings just ingore those.
+     * This may come up with warnings just ingore those.
 - ```cd userinterface``` folder using the terminal.
 - ```npm install .``` this install the necessary packages for the user interface.
-   * This make come up with warnings just ingore those.
+   * This may come up with warnings just ingore those.
 
 ## 4. Run instaKilo.js and React Interface
 - After all packages are installed, return to the terminal and ```cd innerLayer``` folder.
@@ -34,7 +34,7 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - Once instaKilo.js is running, create a new terminal window and navigate to the "userinterface" folder.
 - ```cd userinterface``` folder, run the command npm start.
 - If everything is set up correctly, wait for a moment and the web application window should automatically open in your default browser.
-- In VSCode, open "innerLayer.py" and run it. If it errors out, install MySQL Connector Python by running "pip install mysql-connector-python".
+- In VSCode, open "innerLayer.py" and run it. If it errors out, install MySQL Connector Python by running ```pip install mysql-connector-python``` in terminal.
 
 ## 5. Install MySQL: https://dev.mysql.com/downloads/installer/ 
 - Download the “Windows (x86, 32-bit), MSI Installer” with the larger file size.
