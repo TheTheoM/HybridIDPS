@@ -41,7 +41,7 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
    * Development Computer
    * MySQL Root password (don’t lose it): whatever you want (admin)
    * Add user (this is obtain through the innerLayer.py): 
-      - Username - innerLayer
+      - Username - Hybrid_IDPS
       - Password - css2
    * Connect to server: 
       - Username - root
