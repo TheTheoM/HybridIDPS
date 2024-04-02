@@ -65,8 +65,8 @@ const Post = ({ username, imageUrl, likes, comments, content, likePost, postID, 
         <p style={{'textAlign': 'left'}}> <strong>{username}:</strong> {content}</p>
         <div className="post-actions">
             <div className='votingContainer'>
-                <Up style={isUpVoted ? { color: 'green' } : { color: 'white' }} onClick={handleUpvote} />
-                <Down style={isDownVoted ? { color: 'red' } : { color: 'white' }} onClick={handleDownvote} />
+                <Up style={isUpVoted ? { backgroundColor: '#00800044', color: 'green' } : { color: 'white' }} onClick={handleUpvote} />
+                <Down style={isDownVoted ? {backgroundColor: '#80000044' , color: 'red' } : { color: 'white' }} onClick={handleDownvote} />
             </div>
             <div className="post-likes"><p>{likes} likes</p></div>
         </div>
