@@ -3,8 +3,62 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 
 # InnerLayer
 
-Fill in here Tim
+## 1. Install Node.js: https://nodejs.org/en
+- Download Node.js (LTS), and follow the instructions to install. 
+- This allows you to run the javascript files.
 
+## 2. Download/ Clone Github Repo
+- Navigate to the green button labeled "Code" on the GitHub repository.
+- Download the ZIP file containing the repository.
+- Move the downloaded ZIP file to your designated folder and extract its contents.
+- Open the "HybridIDPS-main" folder in VSCode for easier navigation and access to project files.
+
+## 3. Install needed Packages for instaKilo.js and React
+- Check to see if node is properly installed, ```node```.
+- Navigate to the "userinterface" folder within the project directory and create a new file named ".env".
+- Inside the ".env" file, copy and paste the following line, replacing "your_ip" with your actual IPV4 address:
+    * ```REACT_APP_WEBSOCKET_SERVER_IP=your_ip:8100```
+- After creating the ".env" file, right-click on the "innerLayer" folder in VSCode and open the integrated terminal.
+- Navigate to the terminal section and open PowerShell (basically a linux terminal).
+- ```cd innerLayer```
+- ```npm install .``` this installs the necessary packages for the inner layer.
+     * This may come up with warnings just ignore those.
+- ```cd userinterface```
+- ```npm install .``` this installs the necessary packages for the user interface.
+   * This may come up with warnings just ignore those.
+
+## 4. Run instaKilo.js and React Interface
+- ```cd innerLayer```, run the javascript file ```node instaKilo.js```.
+- Confirm that the message "WebSocket server is running on port 8100" appears. Ignore the message about being unable to connect to the MySQL database for now.
+- ```cd userinterface```, run the command ```npm start```.
+- If all set, the web app window will open in your default browser shortly.
+- In VSCode, open "innerLayer.py" and run it. If it errors out, install MySQL Connector Python by ```pip install mysql-connector-python``` in terminal.
+
+## 5. Install MySQL: https://dev.mysql.com/downloads/installer/ 
+- Download the “Windows (x86, 32-bit), MSI Installer” with the larger file size.
+- Then run the installer (The key ones are noted below, just next other ones and execute them):
+   * Setup type: Full
+   * Development Computer
+   * MySQL Root password (don’t lose it): whatever you want (admin)
+   * Add user (this is obtain through the innerLayer.py): 
+      - Username - innerLayer
+      - Password - css2
+   * Connect to server: 
+      - Username - root
+      - Password - what you set it (admin)
+## 6. Import the SQL scripts to make a database
+- Open MySQL Workbench and connect to the local instance using root as username and admin as password, then click "Remember Login".
+- Navigate to the "File" tab and select "Open SQL Script".
+- Locate the "HybridIDPS-main\outerLayer\sqlScripts" folder and open the desired scripts individually.
+
+## 7. Run the project
+- Terminate all running programs to ensure a clean restart.
+- ```cd innerLayer``` and run ```node instaKilo.js```.
+- ```cd userinterface``` and run ```npm start```.
+- Run the "innerLayer.py".
+- Use the "wipes_and_Creates_Database_and_Tables" script to create the Database and table, it will also clear them.
+- Execute the "getInnerLayer" script in MySQL by clicking the lightning bolt icon.
+- With these steps completed, you're now set up to test the project, including the web application and threat levels functionality.
 
 # OuterLayer
 
