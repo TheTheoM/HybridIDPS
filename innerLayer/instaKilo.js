@@ -2,7 +2,7 @@ const WebSocket = require('ws');
 const fs        = require('fs');
 const mysql     = require('mysql2');
 const geoip     = require('geoip-lite');
-const axios = require('axios');
+const axios     = require('axios');
 
 class MySQLConnection {
   constructor(host = 'localhost', user = 'Hybrid_IDPS', password = 'css2', database = 'hybrid_idps') {
@@ -11,7 +11,6 @@ class MySQLConnection {
     this.password = password;
     this.database = database;
     this.connection = null;
-
   }
 
   connect() {
@@ -52,9 +51,9 @@ class MySQLConnection {
     });
   }
 
-  addDataToInnerLayer(username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload) {
-    const sqlQuery = "INSERT INTO innerLayer (username, target_username,  ip_address, geolocation, timestamp, event_type, threat_level, payload) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    const data = [username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload];
+  addDataToInnerLayer(username, target_username, ip_address, geolocation, timestamp, event_type, payload) {
+    const sqlQuery = "INSERT INTO innerLayer (username, target_username,  ip_address, geolocation, timestamp, event_type, payload) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    const data = [username, target_username, ip_address, geolocation, timestamp, event_type, payload];
     
     this.connection.query(sqlQuery, data, (error, results, fields) => {
       if (error) {
@@ -67,8 +66,8 @@ class MySQLConnection {
   
   addDataToInnerLayerBulk(dataArray) {
     
-    const sqlQuery = "INSERT INTO innerLayer (username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload) VALUES (?, ?,  ?, ?, ?, ?, ?, ?)";
-    const values = dataArray.map(data => [data.username, data.target_username,  data.ip_address, data.geolocation, data.timestamp, data.event_type, data.threat_level, data.payload]);
+    const sqlQuery = "INSERT INTO innerLayer (username, target_username, ip_address, geolocation, timestamp, event_type, payload) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    const values = dataArray.map(data => [data.username, data.target_username,  data.ip_address, data.geolocation, data.timestamp, data.event_type, data.payload]);
     
     this.connection.query(sqlQuery, [values], (error, results, fields) => {
       if (error) {
@@ -83,7 +82,6 @@ class MySQLConnection {
 class InnerLayerEvents {
   constructor() {
     this.threatThreshold = 0
-    this.eventLogs = new Map();
     this.mySqlConnection = new MySQLConnection();
     this.mySqlConnection.connect();
   }
@@ -92,7 +90,7 @@ class InnerLayerEvents {
     this.threatThreshold = threatThreshold 
   }
 
-  addEvent(username, target_username, ip_address, geolocation, event_type, threat_level,  timestamp = null, payload = null) {
+  addEvent(username, target_username, ip_address, geolocation, event_type,  timestamp = null, payload = null) {
     if (timestamp == null) {
       let currentISOTime = new Date().toISOString()
       timestamp = currentISOTime.replace('T', ' ').replace(/\.\d+Z$/, '');
@@ -103,107 +101,16 @@ class InnerLayerEvents {
       'ip_address': ip_address,           // IP address associated with the event
       'geolocation': geolocation,         // Geolocation information of the event
       'event_type': event_type,           // Type of event triggered
-      'threat_level': threat_level,       // Threat level associated with the event
       'payload': payload,                 // Optional payload data associated with the event
       'timestamp': timestamp              // Timestamp of the event
     };
 
+    console.log(`Event Added: IP Address: ${log.ip_address} Event Type: ${log.event_type} `);
+    console.log(`   Log: ${JSON.stringify(log)} \n`);
+    this.mySqlConnection.addDataToInnerLayer(username, target_username, ip_address, geolocation, timestamp, event_type, payload)
 
-    let events_by_ip = this.eventLogs.get(ip_address);
-
-
-    if (events_by_ip) {
-      this.eventLogs.set(ip_address, {    
-        "threatInfo": {
-          "threatLevel": events_by_ip.threatInfo.threatLevel, 
-          "threatEvents": new Map(events_by_ip.threatInfo.threatEvents),
-        },
-        "logs": [...events_by_ip.logs , log],
-      })
-
-    } else {
-      this.eventLogs.set(ip_address, {
-          "threatInfo": {
-            "threatLevel": 0, 
-            "threatEvents": new Map(),
-          },
-          "logs": [log],
-        });
-    }
-
-    console.log(`Event Added: ${JSON.stringify(log)}`);
-    // let dataArray = [username, ip_address, geolocation, timestamp, event_type, threat_level, payload]
-    this.mySqlConnection.addDataToInnerLayer(username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload)
-
-    this.runOnEventsUpdate();
-    
   }
 
-  runOnEventsUpdate() {
-    let bruteForceThreats = this.FindBruteForce("invalidCredentials")
-      for (const [ipAddress, logEntry] of this.eventLogs.entries()) {
-        let threatLevel = 0;
-
-        if (!logEntry || !logEntry.threatInfo) {
-            continue;
-        }
-
-        const { _, threatEvents } = logEntry.threatInfo;
-
-        if (threatEvents.size <= 0 || threatLevel < 0) {
-          continue
-        }
-        for (const [event, threatIncrement] of threatEvents) {
-          
-          threatLevel += threatIncrement
-          
-          if (threatLevel >= 1 ) {
-            threatLevel = 1
-          }
-          
-        }
-
-        let ansiColor = "\x1b[33m"
-
-        if (threatLevel >= 0.5) {
-            ansiColor =  "\x1b[31m"; // Red color
-        }
-
-        console.log(ansiColor + `Threat events for IP address ${ipAddress} @ threat level ${threatLevel}:` + '\x1b[0m');
-
-        for (const [event, threatIncrement] of threatEvents) {
-          console.log(ansiColor + `    ${event}    ${threatIncrement}` + '\x1b[0m');
-        }
-  
-      }
-  }
-
-  FindBruteForce(event_type) {
-    let countThreshold = 2
-    let threatIncrement = 0.3
-
-    const events = {};
-    for (const [ip, eventInfo] of this.eventLogs.entries()) {
-      let logs = eventInfo.logs;
-      const bruteForceEvents = logs.filter(log => log.event_type === event_type);
-      events[ip] = bruteForceEvents;
-    }
-  
-    let count = 0;
-    Object.entries(events).forEach(([ip, events]) => {
-      for (const event of events) {
-        count++;
-        if (count > countThreshold) { 
-          // let keyName = `[${ip}]:    ${event_type}    ${event.timestamp}`;
-          let keyName = `${event_type}    ${event.timestamp} `;
-          this.eventLogs.get(ip).threatInfo.threatEvents.set(keyName, threatIncrement)
-          count = 0;
-        }
-      }
-    })
-
-  
-  }
   
 }
 
@@ -230,15 +137,13 @@ class WebSocketServer {
     }
   
   handleConnection(socket, req) {
-    // addEvent(username, ip_address, geolocation, event_type, threat_level, payload = null, timestamp = null) {
+    // addEvent(username, ip_address, geolocation, event_type, payload = null, timestamp = null) //TODO Add logging for connecting to server
 
       let device_ip_address = req.connection.remoteAddress;
 
       let geolocation       = "Sydney AU"   //We will implement a custom routing table, so we don't have to actuall vpn to differnet locations to simulate this
                                             // For example 192.168.1.0 - 192.168.1.10 will be sydney then .10 to .20 will be London for example.  This will not change the 
                                             // validity of the system, as this is not a test of geolocation accuracy but behavioral. 
-      let threat_level      = 0;
-
       let device_Username = null;
 
       socket.send(JSON.stringify({ message: 'Are you registered?', action: 'checkRegistration' }));
@@ -250,11 +155,11 @@ class WebSocketServer {
             if (this.isUserRegistered(data.username)) {
               // User is already registered
               socket.send(JSON.stringify({ message: 'User is already registered', action: 'registrationSuccess' }));
-              this.innerLayer.addEvent(data.username, null,  device_ip_address, geolocation, 'alreadyRegistered', threat_level, null, null)
+              this.innerLayer.addEvent(data.username, null,  device_ip_address, geolocation, 'alreadyRegistered', null, null)
           } else {            // Register the user
 
             this.registerUser(data.username, data.password, data.email);
-            this.innerLayer.addEvent(data.username, null,  device_ip_address, geolocation, 'registrationSuccess', threat_level, null, null)
+            this.innerLayer.addEvent(data.username, null,  device_ip_address, geolocation, 'registrationSuccess', null, null)
             socket.send(JSON.stringify({ message: 'Registration successful!', action: 'registrationSuccess' }));
           }
           break;
@@ -262,13 +167,13 @@ class WebSocketServer {
         case 'login':
           if (this.isUserValid(data.username, data.password)) {
             socket.send(JSON.stringify({ message: 'Permission granted to access viewFeed and viewUser', action: 'viewFeedAndUser' }));
-            this.innerLayer.addEvent(data.username, null,  device_ip_address, geolocation, 'successfulLogin', threat_level, null, null)
-            this.innerLayer.addEvent(data.username, null,  device_ip_address, geolocation, 'viewFeedAndUser', threat_level, null, null)
+            this.innerLayer.addEvent(data.username, null,  device_ip_address, geolocation, 'successfulLogin', null, null)
+            this.innerLayer.addEvent(data.username, null,  device_ip_address, geolocation, 'viewFeedAndUser', null, null)
             device_Username = data.username;
 
           } else {
             socket.send(JSON.stringify({ message: 'Invalid credentials', action: 'invalidCredentials' }));
-            this.innerLayer.addEvent(data.username, null,  device_ip_address, geolocation, 'invalidCredentials', threat_level, null, null)
+            this.innerLayer.addEvent(data.username, null,  device_ip_address, geolocation, 'invalidCredentials', null, null)
           }
           break;
       
@@ -277,11 +182,11 @@ class WebSocketServer {
           var target_username = data.username;
           if (userData) {
             socket.send(JSON.stringify({ user: userData, action: 'userDataByUsername'}));
-            this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'userDataByUsername', threat_level, null, null)
+            this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'userDataByUsername', null, null)
 
           } else {
             socket.send(JSON.stringify({ message: "Username doesn't exist.", action: 'invalidUsername'}));
-            this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'invalidUsername', threat_level, null, null)
+            this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'invalidUsername', null, null)
 
           }
           break;
@@ -289,7 +194,7 @@ class WebSocketServer {
         case 'searchUsers':
             socket.send(JSON.stringify({ users:  this.getSearchedUsers(data.search), action: 'userList'}));
             var target_username = data.search;
-            this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'userList', threat_level, null, null)
+            this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'userList', null, null)
             break;
 
         case 'searchPosts':
@@ -297,7 +202,7 @@ class WebSocketServer {
             let payload = data.search;
             // If is sql injection or sum action search post threatLevel 10
             
-            this.innerLayer.addEvent(device_Username, null,  device_ip_address, geolocation, 'searchPosts', threat_level, null, payload)
+            this.innerLayer.addEvent(device_Username, null,  device_ip_address, geolocation, 'searchPosts', null, payload)
 
             break;
         case 'addPost':
@@ -306,19 +211,17 @@ class WebSocketServer {
         case "likePost":
           var {isSuccessful, target_username} = this.likePost(data.postID, data.increment)
           if (isSuccessful) {
-            threat_level = 0
             socket.send(JSON.stringify({ posts:  this.getPostList(20), action: 'likePost'}));
-            this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'likePost', threat_level, null, 
+            this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'likePost', null, 
                 JSON.stringify({'isSuccessful': true, 'postID': data.postID, 'likeIncrement': data.increment}))
           } else {
-            threat_level = 5 // Change
             this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'likePost',
-                                     threat_level, null, JSON.stringify({'isSuccessful': false, 'postID': data.postID, 'likeIncrement': data.increment}))
+                                     null, JSON.stringify({'isSuccessful': false, 'postID': data.postID, 'likeIncrement': data.increment}))
           }
 
         case 'getPostList':
           socket.send(JSON.stringify({ posts:  this.getPostList(20), action: 'postList'}));
-          this.innerLayer.addEvent(device_Username, null,  device_ip_address, geolocation, 'getPostList', threat_level, null, null)
+          this.innerLayer.addEvent(device_Username, null,  device_ip_address, geolocation, 'getPostList', null, null)
 
           break;
         case 'addComment':
@@ -328,11 +231,11 @@ class WebSocketServer {
             socket.send(JSON.stringify({ posts:  this.getPostList(20000), action: 'postList'}));
             this.innerLayer.addEvent(device_Username, null,  device_ip_address, geolocation, 'getPostList', 0, null, null)
 
-            this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'addComment', threat_level, null, 
+            this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'addComment', null, 
                                     JSON.stringify({'isSuccessful': true, 'postID': data.postID, 'comment': data.comment}))
           } else {
             console.log("Failed to add Comment.")
-            this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'addComment', threat_level, null, 
+            this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'addComment', null, 
                                     JSON.stringify({'isSuccessful': false, 'postID': data.postID, 'comment': data.comment}))
           }
           break;
@@ -340,24 +243,24 @@ class WebSocketServer {
         case 'reportUserByUsername':
           // this.reportUser(data.username)
           var target_username = data.username;
-          this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'reportUserByUsername', threat_level, null, null)
+          this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'reportUserByUsername', null, null)
 
           break;
         case 'friendUserByUsername':
           // this.friendUser(data.username)
           var target_username = data.username;
 
-          this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'friendUserByUsername', threat_level, null, null)
+          this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'friendUserByUsername', null, null)
 
           break;
         case 'messageUserByUsername':
           var target_username = data.username;
-          this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'messageUserByUsername', threat_level, null, null)
+          this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'messageUserByUsername', null, null)
           break;
         default:
           // This would be where failed api-manipulation attacks may occur. Will need to think about this more, on how to chuck all at info in the sql and analysis it 
           /// it on the otherend.
-          this.innerLayer.addEvent(device_Username, null,  device_ip_address, geolocation, 'invalidAction', threat_level, null, null)
+          this.innerLayer.addEvent(device_Username, null,  device_ip_address, geolocation, 'invalidAction', null, null)
           socket.send(JSON.stringify({ message: 'Invalid action', action: 'invalidAction' }));
           break;
       }

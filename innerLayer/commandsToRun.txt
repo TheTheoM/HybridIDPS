@@ -1,6 +1,0 @@
-Terminal 1: Web-app Server
-    node innerLayer/instaKilo.js
-
-Terminal 2: React Website
-    cd innerLayer/react/userinterface 
-    npm start

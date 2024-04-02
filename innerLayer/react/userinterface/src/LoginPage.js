@@ -39,7 +39,7 @@ function LoginPage({webSocket, isConnected, isRegistered, username, setUsername,
   return (
     <>
       {!isConnected ? (
-        <h3>Failed To Connect to Server. Ensure 'server.js' is running.</h3>
+        <h3>Failed To Connect to Server. Ensure 'server.js' is running. If it is running, ensure you have created the .env file</h3>
       ) : isRegistered ? (
         <>
           <input type="text" placeholder="Username" value={username} onChange={handleUsernameChange} />

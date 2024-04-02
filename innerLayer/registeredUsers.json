@@ -15,7 +15,7 @@
           ],
           "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1280px-Image_created_with_a_mobile_phone.png",
           "timestamp": "2024-03-19T05:52:19.664Z",
-          "likes": 1,
+          "likes": 3,
           "comments": [
             {
               "username": "JohnSmith123",
@@ -24,8 +24,25 @@
             {
               "username": "Jane",
               "comment": "Nice phone \"John\""
+            },
+            {
+              "username": "JohnSmith123",
+              "comment": "adasd"
             }
           ]
+        },
+        {
+          "id": "l4rn8eaw7",
+          "username": "JohnSmith123",
+          "postTitle": "123",
+          "content": "123",
+          "keyWords": [
+            "123"
+          ],
+          "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1280px-Image_created_with_a_mobile_phone.png",
+          "timestamp": "2024-04-02T07:49:05.799Z",
+          "likes": 0,
+          "comments": []
         }
       ]
     }
@@ -46,7 +63,7 @@
           ],
           "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1280px-Image_created_with_a_mobile_phone.png",
           "timestamp": "2024-03-19T05:53:11.648Z",
-          "likes": -1,
+          "likes": 0,
           "comments": []
         }
       ]

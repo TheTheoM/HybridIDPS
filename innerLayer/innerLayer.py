@@ -38,10 +38,30 @@ class MySQLConnection:
     def disconnect(self):
         self.connection.close()
         # print('MySQL database connection closed.')
-
         
-   
+    def add_data_to_outer_layer(self, ip_address, geolocation, event_type, threat_level, dateTime, source_port, destination_port, protocol, payload):
+        # need to implement dateTime. Its probs different standards from node.js to python to sql. make all utc iso whatever
+        sql_query = "INSERT INTO outerLayer (ip_address, geolocation, event_type, threat_level, source_port, destination_port, protocol, payload) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+        cursor = self.connection.cursor()
+        data = (ip_address, geolocation, event_type, threat_level, source_port, destination_port, protocol, payload)
+        cursor.execute(sql_query, data)
+        self.connection.commit()
+        cursor.close()
+        print('Data added to outerLayer successfully.')
+        return True
 
+    def add_data_to_outer_layer_bulk(self, data):
+        try:
+            sql_query = "INSERT INTO outerLayer (ip_address, geolocation, event_type, threat_level, timestamp) VALUES (%s, %s, %s, %s, %s)"
+            cursor = self.connection.cursor()
+            cursor.executemany(sql_query, data)
+            self.connection.commit()
+            cursor.close()
+            print('Bulk data added to outerLayer successfully.')
+            return True
+        except Exception as e:
+            print(f"Error adding bulk data to outerLayer: {e}")
+            return False
 
 class InnerLayer():
     def __init__(self) -> None:
