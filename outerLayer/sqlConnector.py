@@ -1,7 +1,7 @@
 import mysql.connector
 
 class MySQLConnection:
-    def __init__(self, host='localhost', user='innerLayer', password='css2', database='hybrid_idps'):
+    def __init__(self, host='localhost', user='Hybrid_IDPS', password='css2', database='hybrid_idps'):
         self.host = host
         self.user = user
         self.password = password

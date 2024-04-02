@@ -41,7 +41,7 @@ class MySQLConnection:
         self.connection.close()
         print('MySQL database connection closed.') if self.verbose else None
 
-class OuterLayer():
+class HybridLayer():
     def __init__(self) -> None:
         self.database = MySQLConnection()
         self.devices = {}
@@ -66,7 +66,6 @@ class OuterLayer():
                 
                 ###### Analyzer Functions ######
                 
-                
                 self.display_Events_and_calc_threat_level()
                     
                 start_time = time.time()
@@ -78,7 +77,7 @@ class OuterLayer():
         
         scanningCountThreshold = 20 #Over 20 its portScanning (tuneable)
         
-        results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
+        results = self.database.execute_query(f"SELECT * from hybrid_idps.HybridLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
         results = self.extract_ips(results)
         for ip, all_events in results.items():
             count = 0
@@ -95,7 +94,7 @@ class OuterLayer():
         event_type = 'invalidCredentials'
         threatName = "bruteForce"
         
-        results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
+        results = self.database.execute_query(f"SELECT * from hybrid_idps.HybridLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
         results = self.extract_ips(results)
         for ip, all_events in results.items():
             count = 0
@@ -136,7 +135,7 @@ class OuterLayer():
         return ip_dict
 
     def add_devices(self):
-        results = self.database.execute_query(f"SELECT DISTINCT ip_address from hybrid_idps.outerLayer")
+        results = self.database.execute_query(f"SELECT DISTINCT ip_address from hybrid_idps.HybridLayer")
         ip_addresses = [ip['ip_address'] for ip in results]
         for ip in ip_addresses:
             self.devices[ip] = {'threatLevel': 0, 'logs': {}}
@@ -155,7 +154,7 @@ class OuterLayer():
             print(f"Device with IP address {ip_address} does not exist.")
 
 if __name__ == "__main__":
-    x = OuterLayer()
+    x = HybridLayer()
 
         
             
