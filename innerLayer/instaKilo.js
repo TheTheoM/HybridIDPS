@@ -137,32 +137,30 @@ class WebSocketServer {
     }
   
   handleConnection(socket, req) {
-    // addEvent(username, ip_address, geolocation, event_type, payload = null, timestamp = null) //TODO Add logging for connecting to server
+    let device_ip_address = req.connection.remoteAddress;
+    
+    let geolocation       = "Sydney AU"   //We will implement a custom routing table, so we don't have to actuall vpn to differnet locations to simulate this
+                                          // For example 192.168.1.0 - 192.168.1.10 will be sydney then .10 to .20 will be London for example.  This will not change the 
+                                          // validity of the system, as this is not a test of geolocation accuracy but behavioral. 
+    let device_Username = null;
+    addEvent(null, ip_address, geolocation, "connectedToServer", payload = null, timestamp = null) // Connected to Server
 
-      let device_ip_address = req.connection.remoteAddress;
+    socket.send(JSON.stringify({ message: 'Are you registered?', action: 'checkRegistration' }));
+    socket.on('message', (message) => {
+      const data = JSON.parse(message);
+      switch(data.action) {
+        case 'register':
+          if (this.isUserRegistered(data.username)) {
+            // User is already registered
+            socket.send(JSON.stringify({ message: 'User is already registered', action: 'registrationSuccess' }));
+            this.innerLayer.addEvent(data.username, null,  device_ip_address, geolocation, 'alreadyRegistered', null, null)
+        } else {            // Register the user
 
-      let geolocation       = "Sydney AU"   //We will implement a custom routing table, so we don't have to actuall vpn to differnet locations to simulate this
-                                            // For example 192.168.1.0 - 192.168.1.10 will be sydney then .10 to .20 will be London for example.  This will not change the 
-                                            // validity of the system, as this is not a test of geolocation accuracy but behavioral. 
-      let device_Username = null;
-
-      socket.send(JSON.stringify({ message: 'Are you registered?', action: 'checkRegistration' }));
-      socket.on('message', (message) => {
-        const data = JSON.parse(message);
-        
-        switch(data.action) {
-          case 'register':
-            if (this.isUserRegistered(data.username)) {
-              // User is already registered
-              socket.send(JSON.stringify({ message: 'User is already registered', action: 'registrationSuccess' }));
-              this.innerLayer.addEvent(data.username, null,  device_ip_address, geolocation, 'alreadyRegistered', null, null)
-          } else {            // Register the user
-
-            this.registerUser(data.username, data.password, data.email);
-            this.innerLayer.addEvent(data.username, null,  device_ip_address, geolocation, 'registrationSuccess', null, null)
-            socket.send(JSON.stringify({ message: 'Registration successful!', action: 'registrationSuccess' }));
-          }
-          break;
+          this.registerUser(data.username, data.password, data.email);
+          this.innerLayer.addEvent(data.username, null,  device_ip_address, geolocation, 'registrationSuccess', null, null)
+          socket.send(JSON.stringify({ message: 'Registration successful!', action: 'registrationSuccess' }));
+        }
+        break;
         
         case 'login':
           if (this.isUserValid(data.username, data.password)) {
@@ -216,7 +214,7 @@ class WebSocketServer {
                 JSON.stringify({'isSuccessful': true, 'postID': data.postID, 'likeIncrement': data.increment}))
           } else {
             this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'likePost',
-                                     null, JSON.stringify({'isSuccessful': false, 'postID': data.postID, 'likeIncrement': data.increment}))
+                                    null, JSON.stringify({'isSuccessful': false, 'postID': data.postID, 'likeIncrement': data.increment}))
           }
 
         case 'getPostList':
