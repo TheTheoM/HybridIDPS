@@ -139,7 +139,7 @@ class WebSocketServer {
   handleConnection(socket, req) {
     let device_ip_address = req.connection.remoteAddress;
     
-    let geolocation       = "Sydney AU"   //We will implement a custom routing table, so we don't have to actuall vpn to differnet locations to simulate this
+    let geolocation       = "Sydney AU"   //We will implement a custom routing table, so we don't have to actual vpn to different locations to simulate this
                                           // For example 192.168.1.0 - 192.168.1.10 will be sydney then .10 to .20 will be London for example.  This will not change the 
                                           // validity of the system, as this is not a test of geolocation accuracy but behavioral. 
     let device_Username = null;
