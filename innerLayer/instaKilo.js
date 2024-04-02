@@ -5,7 +5,7 @@ const geoip     = require('geoip-lite');
 const axios = require('axios');
 
 class MySQLConnection {
-  constructor(host = 'localhost', user = 'innerLayer', password = 'css2', database = 'hybrid_idps') {
+  constructor(host = 'localhost', user = 'Hybrid_IDPS', password = 'css2', database = 'hybrid_idps') {
     this.host = host;
     this.user = user;
     this.password = password;
