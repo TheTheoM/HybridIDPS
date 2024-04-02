@@ -6,6 +6,7 @@
   background-color: #232627;
   color: white;
 
+
 }
 
 .TopBar {
@@ -46,6 +47,7 @@
 
 .TopBar .searchContainer input { 
   width: 100%;
+  height: 18px;
   border: none;
   border-radius: 15px;
   padding-left: 8px;
@@ -68,6 +70,8 @@
   justify-content: center;
   background-color: #232627;
   padding-bottom: 60px;
+  background: linear-gradient(to bottom, #1e1e39, #044a5e); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  
 }
 
 .contentContainer .Content { 
@@ -81,10 +85,13 @@
 
 /* Post */
 .post {
-  border: 1px solid #f8f8f854;
+  /* border: 1px solid rgba(255, 255, 255, 0.238); */
+  backdrop-filter: blur( 5px );
+  background: rgba(255, 255, 255, 0.072);
+  border: 1.9px solid rgba(255, 255, 255, 0.252);
   border-radius: 10px;
   margin:  20px;
-  padding: 10px;
+  box-shadow:  0px 0px 10px rgba(255, 255, 255, 0.183);
 }
 
 .post-header {
@@ -92,6 +99,14 @@
   align-items: center;
   margin-bottom: 10px;
   cursor: pointer;
+
+}
+
+.post-footer {
+  background-color: rgba(0, 0, 0, 0.511);
+  padding: 10px;
+  overflow: hidden;
+  border-radius: 0 0 10px 10px;
 }
 
 .post-avatar {
@@ -99,6 +114,7 @@
   height: 40px;
   border-radius: 50%;
   margin-right: 10px;
+  padding: 10px;
 }
 
 .post-username {
@@ -106,9 +122,12 @@
 }
 
 .post-image img {
-  width: 100%;
+  width: calc( 100% - 15px );
   max-height: 500px; /* Adjust the maximum height as needed */
-  border-radius: 5px;
+  margin-bottom: 6px;
+  /* padding-left: 10px; */
+  /* padding-right: 10px; */
+  border-radius: 8px;
 }
 
 .post-actions {
@@ -182,28 +201,34 @@
   display: flex;
   border-radius: 10px;
   overflow: hidden;
+  background: linear-gradient(to right, #2b2b50, #055167); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
 }
 
 .add-comments input {
   width: 80%;
   margin: 0;
   border: none;
-  background-color: #3b3b3b;
+  /* background-color: #ffffff4a; */
+  background-color: transparent;
+  /* backdrop-filter: blur( 10px ); */
+
   color: white;
+  padding: 7px;
 
 }
 .add-comments button {
   width: 20%;
   margin: 0;
   border: none;
-  background-color: #615d5d;
+  background-color: #0000006a;
   color: white;
   cursor: pointer;
 
 }
 
 .add-comments button:hover {
-  background-color: #888282;
+  background-color: #ffffff69;
 
 }
 
@@ -214,8 +239,13 @@
   color: white;
   border-radius: 10px;
   background: linear-gradient(145deg, #202223, #25292a);
-  box-shadow:   5px 5px 10px #101112,
-               -5px -5px 10px #363b3c;
+  /* box-shadow:   5px 5px 10px #101112,
+               -5px -5px 10px #363b3c; */
+
+  border-radius: 10px;
+  background: linear-gradient(145deg, #1a1d34, #1f223e);
+  box-shadow:  0px 0px 5px rgba(255, 255, 255, 0.256);
+
   transition: 0.2s all cubic-bezier(0.25, 0.8, 0.25, 1);
   cursor: pointer;
 }
@@ -229,7 +259,9 @@
   position: absolute;
   right: 5px;
   height: 1.5em;
-  color: red;
+}
+
+.expandUserIcon {
   cursor: pointer;
 
 }
@@ -257,6 +289,9 @@
   align-items: center;
   justify-content: center;
   background-color: #232627;
+  /* background: linear-gradient(to bottom, #353563, #065d76); W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  background: #1d203a; /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
   }
 
 .searchWindow {
@@ -303,12 +338,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #1d203a; /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
 }
 
 .addPostWindow {
   width: 30%;
-  height: 300px;
-  max-width: 500px;
+  height:    450px;
+  width:     450px;
+  max-width: 700px;
   border: 1px solid rgb(107, 103, 103);
   display: flex;
   align-items: center;
@@ -316,7 +354,31 @@
   flex-direction: column;
   padding: 10px;
   border-radius: 15px;
+  background-color: #f9f9f91b;
 
+}
+
+.addPostWindow > div {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  border-radius: 5px;
+  font-weight: bolder;
+}
+
+.addPostWindow > button {
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.43);
+  height: 30px;
+  border-radius: 10px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: 0.8s all cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.addPostWindow > button:hover {
+  box-shadow: 0px 0px 10px gray;
 }
 
 .searchedUsers {
@@ -326,6 +388,10 @@
   border: 1px solid rgb(107, 103, 103);
   padding-left:  20px;
   padding-right: 20px;
+  box-shadow: inset 1px solid white;
+  backdrop-filter: blur( 50px );
+  background: rgba(255, 255, 255, 0.053);
+
 
 }
 
@@ -346,6 +412,9 @@
   border: 1px solid rgb(107, 103, 103);
   padding-left: 20px;
   padding-right: 20px;
+  box-shadow: inset 1px solid white;
+  backdrop-filter: blur( 50px );
+  background: rgba(255, 255, 255, 0.053);
 }
 
 .searchedUsers h3 {
@@ -468,4 +537,3 @@
 
 
 
-/* Scroll Bar */

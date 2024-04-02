@@ -41,7 +41,7 @@ const SearchWindow = ({webSocket, searchValue, searchedUserList, searchedPostLis
                     {(searchedPostList).length > 0 ? (
                         (searchedPostList).map(post => (
                             <Post username = {post.username} imageUrl = {post.imageUrl} likes = {post.likes} comments = {post.comments}
-                                  content = {post.content} showUserByName = {() => {}} />
+                                  content = {post.content}  />
                             // <p key={post.postTitle}>{post.postTitle}</p>
                         ))
                     ) : (

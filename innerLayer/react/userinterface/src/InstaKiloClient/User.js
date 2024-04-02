@@ -41,7 +41,7 @@ const User = ({ username, imageUrl, likes, comments, hideUser, webSocket }) => {
     <div className={`User ${expanded ? 'expanded' : ''}`}>
       {expanded ? (
         <>
-          <Cross onClick={toggleExpansion} className="closeUserIcon" />
+            <Add onClick={toggleExpansion} className="expandUserIcon closeUserIcon" />
           <div className="profile-pic">
             <img src={`https://www.gravatar.com/avatar/${username}?d=identicon`} alt="Profile" />
           </div>

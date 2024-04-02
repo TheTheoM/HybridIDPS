@@ -71,7 +71,7 @@ function InstaKiloClient({username, password, webSocket, requestedUserData, sear
   
   let contentToRender;
 
-  if (showAddPostWindow) {
+  if (showAddPostWindow && !showSearchWindow) {
     contentToRender = <AddPostWindow addPost={addPost}/>;
   } else if (showSearchWindow) {
     contentToRender = <SearchWindow webSocket={webSocket} searchValue={searchValue} searchedUserList={searchedUserList} searchedPostList={searchedPostList} />;

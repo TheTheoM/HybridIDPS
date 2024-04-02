@@ -68,7 +68,6 @@ function AddPostWindow({ addPost }) {
             value={keyWords}
             onChange={(e) => setKeyWords(e.target.value)}
           />
-          <small>Separate keywords with commas</small>
         </div>
         <button onClick={handleAddPost}>Add Post</button>
       </div>

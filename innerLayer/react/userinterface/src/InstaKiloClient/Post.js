@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Down from "./Down"
 import Up from "./Up"
-const Post = ({ username, imageUrl, likes, comments, content, showUserByName, likePost, postID, addCommentToPost}) => {
+const Post = ({ username, imageUrl, likes, comments, content, likePost, postID, addCommentToPost}) => {
     const [isUpVoted, setIsUpVoted] = useState(0);
     const [isDownVoted, setIsDownVoted] = useState(0);
     const [newComment, setNewComment] = useState('');
@@ -43,6 +43,11 @@ const Post = ({ username, imageUrl, likes, comments, content, showUserByName, li
         }
     }
 
+    function showUserByName(username) {
+
+    }
+
+
     return (
     <div className="post">
         <div className="post-header" onClick={() => {showUserByName(username)}}>
@@ -56,8 +61,8 @@ const Post = ({ username, imageUrl, likes, comments, content, showUserByName, li
         <div className="post-image">
         <img src={imageUrl} alt="Post" />
         </div>
-        <p style={{'textAlign': 'left'}}> <strong>{username}:</strong> {content}</p>
         <div className="post-footer">
+        <p style={{'textAlign': 'left'}}> <strong>{username}:</strong> {content}</p>
         <div className="post-actions">
             <div className='votingContainer'>
                 <Up style={isUpVoted ? { color: 'green' } : { color: 'white' }} onClick={handleUpvote} />
