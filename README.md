@@ -53,11 +53,11 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 
 ## 7. Run the project
 - Terminate all running programs to ensure a clean restart.
+- Execute the "getInnerLayer" and "wipes_and_Creates_Database_and_Tables" script in MySQL by clicking the lightning bolt icon.
 - ```cd innerLayer``` and run ```node instaKilo.js```.
 - ```cd userinterface``` and run ```npm start```.
 - Run the "innerLayer.py".
-- Use the "wipes_and_Creates_Database_and_Tables" script to create the Database and table, it will also clear them.
-- Execute the "getInnerLayer" script in MySQL by clicking the lightning bolt icon.
+- The "wipes_and_Creates_Database_and_Tables" is clear the table.
 - With these steps completed, you're now set up to test the project, including the web application and threat levels functionality.
 
 # OuterLayer
