@@ -57,7 +57,7 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - ```cd innerLayer``` and run ```node instaKilo.js```.
 - ```cd userinterface``` and run ```npm start```.
 - Run the "innerLayer.py".
-- The "wipes_and_Creates_Database_and_Tables" is clear the table.
+- The "wipes_and_Creates_Database_and_Tables" is used to clear the tables.
 - With these steps completed, you're now set up to test the project, including the web application and threat levels functionality.
 
 # OuterLayer
