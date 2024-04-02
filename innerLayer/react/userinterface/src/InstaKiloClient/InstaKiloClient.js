@@ -74,7 +74,7 @@ function InstaKiloClient({username, password, webSocket, requestedUserData, sear
   if (showAddPostWindow && !showSearchWindow) {
     contentToRender = <AddPostWindow addPost={addPost}/>;
   } else if (showSearchWindow) {
-    contentToRender = <SearchWindow webSocket={webSocket} searchValue={searchValue} searchedUserList={searchedUserList} searchedPostList={searchedPostList} />;
+    contentToRender = <SearchWindow webSocket={webSocket} searchValue={searchValue} searchedUserList={searchedUserList} searchedPostList={searchedPostList} likePost = {likePost} addCommentToPost = {addCommentToPost}/>;
   } else {
     contentToRender = <Content webSocket={webSocket} requestedUserData={requestedUserData} searchedPostList={searchedPostList} globalShowUser={globalShowUser} setGlobalShowUser={setGlobalShowUser}
                       setShowSearchWindow={setShowSearchWindow} postList = {postList} likePost = {likePost} addCommentToPost = {addCommentToPost}/>;

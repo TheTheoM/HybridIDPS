@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Post from './Post';
 import User from './User';
-const SearchWindow = ({webSocket, searchValue, searchedUserList, searchedPostList}) => {
+const SearchWindow = ({webSocket, searchValue, searchedUserList, searchedPostList, likePost, addCommentToPost}) => {
 
     useEffect(() => {
         if (searchValue.length > 0 && searchValue.trim() !== "") {
@@ -41,7 +41,7 @@ const SearchWindow = ({webSocket, searchValue, searchedUserList, searchedPostLis
                     {(searchedPostList).length > 0 ? (
                         (searchedPostList).map(post => (
                             <Post username = {post.username} imageUrl = {post.imageUrl} likes = {post.likes} comments = {post.comments}
-                                  content = {post.content}  />
+                                  content = {post.content} likePost = {likePost} postID = {post.id} addCommentToPost = {addCommentToPost}/>
                             // <p key={post.postTitle}>{post.postTitle}</p>
                         ))
                     ) : (

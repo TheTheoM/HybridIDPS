@@ -43,14 +43,9 @@ const Post = ({ username, imageUrl, likes, comments, content, likePost, postID, 
         }
     }
 
-    function showUserByName(username) {
-
-    }
-
-
     return (
     <div className="post">
-        <div className="post-header" onClick={() => {showUserByName(username)}}>
+        <div className="post-header">
         <img
             className="post-avatar"
             src={`https://www.gravatar.com/avatar/${username}?d=identicon`}
