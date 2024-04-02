@@ -15,7 +15,7 @@
           ],
           "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1280px-Image_created_with_a_mobile_phone.png",
           "timestamp": "2024-03-19T05:52:19.664Z",
-          "likes": 3,
+          "likes": 4,
           "comments": [
             {
               "username": "JohnSmith123",
@@ -28,6 +28,22 @@
             {
               "username": "JohnSmith123",
               "comment": "adasd"
+            },
+            {
+              "username": "JohnSmith123",
+              "comment": "\"new realty\" I'm going to hack your nuerlink and show a new reality"
+            },
+            {
+              "username": "JohnSmith123",
+              "comment": "Can you even see the ground now?"
+            },
+            {
+              "username": "JohnSmith123",
+              "comment": "Can you even think?"
+            },
+            {
+              "username": "JohnSmith123",
+              "comment": "what is a think"
             }
           ]
         },

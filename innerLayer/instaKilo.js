@@ -143,7 +143,7 @@ class WebSocketServer {
                                           // For example 192.168.1.0 - 192.168.1.10 will be sydney then .10 to .20 will be London for example.  This will not change the 
                                           // validity of the system, as this is not a test of geolocation accuracy but behavioral. 
     let device_Username = null;
-    addEvent(null, ip_address, geolocation, "connectedToServer", payload = null, timestamp = null) // Connected to Server
+    this.innerLayer.addEvent(null, device_ip_address, geolocation, "connectedToServer", null, null) // Connected to Server
 
     socket.send(JSON.stringify({ message: 'Are you registered?', action: 'checkRegistration' }));
     socket.on('message', (message) => {
@@ -227,8 +227,6 @@ class WebSocketServer {
 
           if (isSuccessful) {
             socket.send(JSON.stringify({ posts:  this.getPostList(20000), action: 'postList'}));
-            this.innerLayer.addEvent(device_Username, null,  device_ip_address, geolocation, 'getPostList', 0, null, null)
-
             this.innerLayer.addEvent(device_Username, target_username,  device_ip_address, geolocation, 'addComment', null, 
                                     JSON.stringify({'isSuccessful': true, 'postID': data.postID, 'comment': data.comment}))
           } else {
