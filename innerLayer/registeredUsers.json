@@ -88,5 +88,13 @@
         }
       ]
     }
+  ],
+  [
+    "hi",
+    {
+      "password": "hi",
+      "email": "hi",
+      "posts": []
+    }
   ]
 ]

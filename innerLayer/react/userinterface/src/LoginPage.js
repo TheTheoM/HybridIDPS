@@ -39,26 +39,35 @@ function LoginPage({webSocket, isConnected, isRegistered, username, setUsername,
   return (
     <>
       {!isConnected ? (
-        <h3>Failed To Connect to Server. Ensure 'server.js' is running. If it is running, ensure you have created the .env file</h3>
+        <div className='container'>
+          <div className='failedToConnect'>
+            <h1>Failed To Connect to Server. </h1>
+            <h3>Ensure 'server.js' is running.</h3>
+            <h3> If it is running, ensure you have created the .env file</h3>
+          </div>
+        </div> 
       ) : isRegistered ? (
-        <>
-          <input type="text" placeholder="Username" value={username} onChange={handleUsernameChange} />
-          <input type="password" placeholder="Password" value={password} onChange={handlePasswordChange}
-                 onKeyDown={(e) => { if (e.key === "Enter") {handleLogIn()}}}/>
-          <button onClick={handleLogIn}>Log In</button>
-
-          {invalidPassword ? <h3 style={{color: 'red'}}>Invalid Username or Password</h3> : ""}
-
-          
-        </>
+        <div className='container'>
+          <div className='register_and_logIn' style={{border: invalidPassword ? '2px solid rgb(243, 105, 90)' : ''}}>
+            <input type="text" placeholder="Username" value={username} onChange={handleUsernameChange} />
+            <input type="password" placeholder="Password" value={password} onChange={handlePasswordChange}
+                  onKeyDown={(e) => { if (e.key === "Enter") {handleLogIn()}}}/>
+            <button onClick={handleLogIn}>Log In</button>
+        
+            {invalidPassword ? <h3 style={{color: 'red'}}>Invalid Username or Password</h3> : ""}
+          </div>
+        </div>
       ) : (
-        <>
+        <div className='container'>
+          <div className='register_and_logIn'>
           <input type="text" placeholder="Username" value={username} onChange={handleUsernameChange} />
           <input type="password" placeholder="Password" value={password} onChange={handlePasswordChange} 
-                 onKeyDown={(e)=>{if (e.key === "Enter") {handleLogIn()}}}/>
-          <input type="email" placeholder="Email" value={email} onChange={handleEmailChange} />
+                 />
+          <input type="email" placeholder="Email" value={email} onChange={handleEmailChange} 
+          onKeyDown={(e)=>{if (e.key === "Enter") {handleRegistration()}}}/>
           <button onClick={handleRegistration}>Register</button>
-        </>
+          </div>
+        </div>
       )}
     </>
   );
