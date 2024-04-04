@@ -51,6 +51,20 @@ class MySQLConnection:
             print(f"Error adding bulk data to outerLayer: {e}")
             return False
 
+    def hazmat_wipe_Table(self, tableName):
+        try:
+            sql_query = f"DELETE FROM {tableName}"
+            cursor = self.connection.cursor()
+            cursor.execute(sql_query)
+            row_count = cursor.rowcount
+            self.connection.commit()
+            cursor.close()
+            print(f"{row_count} records deleted from table {tableName} successfully.")
+            return True
+        except Exception as e:
+            print(f"Error deleting records from table {tableName}: {e}")
+            return False
+        
     def disconnect(self):
         self.connection.close()
         print('MySQL database connection closed.')
@@ -58,6 +72,6 @@ class MySQLConnection:
 if __name__ == "__main__":
     mySqlConnection = MySQLConnection()
     mySqlConnection.connect()
-    mySqlConnection.add_data_to_outer_layer("192.168.1.100", "Londen, Australia", "Login", 0, None, None, None, None)
-    mySqlConnection.execute_query('SELECT * from hybrid_idps.outerLayer', lambda error, results: print('The results are: ', results))
     mySqlConnection.disconnect()
+    # mySqlConnection.add_data_to_outer_layer("192.168.1.100", "Londen, Australia", "Login", 0, None, None, None, None)
+    # mySqlConnection.execute_query('SELECT * from hybrid_idps.outerLayer', lambda error, results: print('The results are: ', results))

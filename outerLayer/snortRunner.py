@@ -8,10 +8,10 @@ from threading import Thread
 import traceback
 import websocket
 import json
-
+import sys
+from wipeAlertFile import hazmat_wipe_alert_file
 from sqlConnector import MySQLConnection 
 
-snort_bin_path = r'C:\Snort\bin'
 
 def list_interfaces(find_Interface_subString = None):
     # If you don't know what interface your running run this.
@@ -38,6 +38,7 @@ def list_interfaces(find_Interface_subString = None):
                 return int(foundInterface[0])
             else:
                 print("\033[91m" + f"No Interface was found with Substring {find_Interface_subString}" + "\033[0m")
+                sys.exit()
                 
                 
             return -1
@@ -252,14 +253,7 @@ def handle_Snort_Alerts(displayAlerts, fileData, read_Up_To):
     return newSnortAlerts, read_Up_To
 
 if __name__ == '__main__':
-    # Enabling SQL Connection #
-    
-    # This file was save snort alerts to a database #
-    
-    mySqlConnection = MySQLConnection()
-    mySqlConnection.connect()
-    displayAlerts = True
-    
+    # This file will save snort alerts to a database #
     snort_Dirs = {
         'Snort Directory':  r'C:\Snort',
         'Log Directory':    r'C:\Snort\log',
@@ -271,9 +265,16 @@ if __name__ == '__main__':
         'Snort Configuration File': r'c:\Snort\etc\snort.conf',
     }
     
+    mySqlConnection = MySQLConnection()
+    mySqlConnection.connect()
+    mySqlConnection.hazmat_wipe_Table('outerLayer')
+    hazmat_wipe_alert_file(snort_Dirs['Alert File'])
+    displayAlerts = True
+    
+    
     checkDirectories(snort_Dirs)
     file_Check_Interval = 2 
-    interface_Number = list_interfaces(find_Interface_subString = "Family Controller") # You may need to change this. When running the code, it will print ur interfaces. Add a substring from it to this.
+    interface_Number = list_interfaces(find_Interface_subString = "Ethernet Controller") # You may need to change this. When running the code, it will print ur interfaces. Add a substring from it to this.
     displayRules(snort_Dirs['Local Rules File'])
     runSnort(snort_Dirs, interface_Number=interface_Number)
 
