@@ -40,7 +40,7 @@ class MySQLConnection:
 
     def add_data_to_outer_layer_bulk(self, data):
         try:
-            sql_query = "INSERT INTO outerLayer (ip_address, geolocation, event_type, threat_level, timestamp) VALUES (%s, %s, %s, %s, %s)"
+            sql_query = "INSERT INTO outerLayer (ip_address, geolocation, timestamp, event_type, threat_level, source_port, destination_port, protocol) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
             cursor = self.connection.cursor()
             cursor.executemany(sql_query, data)
             self.connection.commit()
@@ -61,7 +61,3 @@ if __name__ == "__main__":
     mySqlConnection.add_data_to_outer_layer("192.168.1.100", "Londen, Australia", "Login", 0, None, None, None, None)
     mySqlConnection.execute_query('SELECT * from hybrid_idps.outerLayer', lambda error, results: print('The results are: ', results))
     mySqlConnection.disconnect()
-
-
-        
-            

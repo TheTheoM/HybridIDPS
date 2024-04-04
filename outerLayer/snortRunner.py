@@ -140,8 +140,8 @@ def check_file_changes(file_path, file_Check_Interval, displayAlerts, mySqlConne
                     #Sending Data to server
                     if displayAlerts:
                         for alert in newSnortAlerts:
-                            (src_ip, dest_ip, dateTime, alertId, alertName) = alert
-                            print(f"Source IP: {src_ip}, Destination IP: {dest_ip}, Date/Time: {dateTime}, Alert ID: {alertId}, Alert Name: {alertName}")
+                            (src_ip, dest_ip, dateTime, alertId, alertName, src_port, dest_port, protocol) = alert
+                            print(f"Source IP: {src_ip}, Destination IP: {dest_ip}, Date/Time: {dateTime}, Alert ID: {alertId}, Alert Name: {alertName}, Source Port: {src_port}, Destination Port: {dest_port}, Protocol: {protocol}")
 
                             
                     mySqlConnection.add_data_to_outer_layer_bulk(newSnortAlerts)
@@ -176,6 +176,14 @@ def get_ip_and_time_line(ip_and_time_line):
     # date, time = dateTime.split('-')
     return dateTime, src_ip, dest_ip
 
+def get_protocol(protocol_Line):
+    parts = protocol_Line.split()
+    if len(parts) == 6:
+        protocol, ttl, tos, id, ip_len, dgm_len, = parts
+    else:
+        protocol, ttl, tos, id, ip_len, dgm_len, df = parts 
+    return protocol
+
 def dateTime_to_ISO(dateTimeString):
     current_year = datetime.now().year
     combined_string = f'{current_year}/{dateTimeString}'
@@ -197,25 +205,38 @@ def handle_Snort_Alerts(displayAlerts, fileData, read_Up_To):
             # [**] [1:1000001:0] TEsting ICMp alert [**]
             alertLine = lines[0]
             ip_and_time_Line   = lines[2]
+            protocol_Line = lines[3]
             try:
                 alertId, alertName = get_Alert_ID_and_Name(alertLine)
                 
-                if (not alertId or  not alertName):
+                if (not alertId or not alertName):
                     continue
                 
                 dateTime, src_ip, dest_ip = get_ip_and_time_line(ip_and_time_Line)
-
+                
                 isoDateTime = dateTime_to_ISO(dateTime)
 
-                index = src_ip.rfind(":") #192.168.1.135: get  last:
-                src_ip = src_ip[:index]
+                protocol = get_protocol(protocol_Line)
+
+                if (alertName == "ICMP Ping"):
+                    src_port = None
+                    dest_port = None
+                else:
+                    index = src_ip.rfind(":")  # Extract source port from the IP address
+                    src_port = src_ip[index+1:]
+                    src_ip = src_ip[:index]
+
+                    index = dest_ip.rfind(":")  # Extract destination port from the IP address
+                    dest_port = dest_ip[index+1:]
+                    dest_ip = dest_ip[:index]
+
 
                 # dataLine = {'src_ip': src_ip, 'dest_ip': dest_ip, 'dateTime': dateTime, 'alertId': alertId, 'alertName' : alertName}
                 # ip_address, geolocation, event_type, threat_level, dateTime
 
                 geolocation = CalculateGeoLocation(src_ip)
                 threat_level = CalculateThreatLevel() #Always 0 Need to Complete.
-                dataLine = (src_ip, geolocation, alertName, threat_level, isoDateTime)
+                dataLine = (src_ip, geolocation, isoDateTime, alertName, threat_level,  src_port, dest_port, protocol)
 
                 
                 newSnortAlerts.append(dataLine)
@@ -252,12 +273,9 @@ if __name__ == '__main__':
     
     checkDirectories(snort_Dirs)
     file_Check_Interval = 2 
-    interface_Number = list_interfaces(find_Interface_subString = "Ethernet Controller") # You may need to change this. When running the code, it will print ur interfaces. Add a substring from it to this.
+    interface_Number = list_interfaces(find_Interface_subString = "Family Controller") # You may need to change this. When running the code, it will print ur interfaces. Add a substring from it to this.
     displayRules(snort_Dirs['Local Rules File'])
     runSnort(snort_Dirs, interface_Number=interface_Number)
 
     
     Thread(target = check_file_changes, args=(snort_Dirs['Alert File'], file_Check_Interval, displayAlerts, mySqlConnection)).start()   #Checks the alert.ids and sends updates to server.
-    
-    
-    
