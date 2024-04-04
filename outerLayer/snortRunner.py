@@ -60,6 +60,7 @@ def checkDirectories(snort_Dirs):
     for dir_name, dir_path in snort_Dirs.items():
         if not doesPathExist(dir_path):
             print(f"\033[91m[ERROR] {dir_name} directory: {dir_path} does not exist.\033[0m")
+            sys.exit()
         else:
             print(f"\033[92m[SUCCESS] {dir_name} directory exists.\033[0m")
 
@@ -70,6 +71,10 @@ def displayRules(local_rules_file_path):
     try:
         with open(local_rules_file_path, 'r') as file:
             lines = [line.strip() for line in file]
+            
+            if len(lines) == 0:
+                return False
+            
             max_line_length = max(len(line) for line in lines)
             
             print("┌" + "─" * (max_line_length + 2) + "┐")  # Top of the box
@@ -252,18 +257,25 @@ def handle_Snort_Alerts(displayAlerts, fileData, read_Up_To):
 
     return newSnortAlerts, read_Up_To
 
+def filePrefix():
+    script_location = os.path.realpath(__file__)
+    HybridIDPS_index = script_location.index("HybridIDPS") + len('HybridIDPS') 
+    return fr"{script_location[:HybridIDPS_index]}"
+
 if __name__ == '__main__':
     # This file will save snort alerts to a database #
     snort_Dirs = {
         'Snort Directory':  r'C:\Snort',
         'Log Directory':    r'C:\Snort\log',
         'Rules Directory':  r'C:\Snort\rules',
-        'Local Rules File': r'C:\Snort\rules\local.rules',
+        'Local Rules File': fr'{filePrefix()}\snortFiles\rules\local.rules',
         'Bin Directory':    r'C:\Snort\bin',
         'Etc Directory':    r'C:\Snort\etc',
-        'Alert File':       r'C:\Snort\log\alert.ids',
+        'Alert File':       fr'C:\Snort\log\alert.ids',
         'Snort Configuration File': r'c:\Snort\etc\snort.conf',
     }
+    
+    print(fr"{filePrefix()}\snortFiles\rules\local.rules")
     
     mySqlConnection = MySQLConnection()
     mySqlConnection.connect()
