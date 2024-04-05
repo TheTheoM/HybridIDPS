@@ -6,7 +6,9 @@ class MySQLConnection:
         self.user = user
         self.password = password
         self.database = database
+        self.verbose = True
         self.connection = None
+        self.connect()
 
     def connect(self):
         self.connection = mysql.connector.connect(
@@ -16,16 +18,16 @@ class MySQLConnection:
             database=self.database
         )
         if self.connection.is_connected():
-            print(f'Connected to MySQL database as id {self.connection.connection_id}')
+            print(f'Connected to MySQL database as id {self.connection.connection_id}') if self.verbose else None
         else:
             print('Failed to connect to MySQL database')
 
-    def execute_query(self, sql_query, callback):
+    def execute_query(self, sql_query):
         cursor = self.connection.cursor(dictionary=True)
         cursor.execute(sql_query)
         results = cursor.fetchall()
         cursor.close()
-        callback(None, results)
+        return results
         
     def add_data_to_outer_layer(self, ip_address, geolocation, event_type, threat_level, dateTime, source_port, destination_port, protocol, payload):
         # need to implement dateTime. Its probs different standards from node.js to python to sql. make all utc iso whatever
@@ -35,7 +37,7 @@ class MySQLConnection:
         cursor.execute(sql_query, data)
         self.connection.commit()
         cursor.close()
-        print('Data added to outerLayer successfully.')
+        print('Data added to outerLayer successfully.')  if self.verbose else None
         return True
 
     def add_data_to_outer_layer_bulk(self, data):
@@ -45,7 +47,7 @@ class MySQLConnection:
             cursor.executemany(sql_query, data)
             self.connection.commit()
             cursor.close()
-            print('Bulk data added to outerLayer successfully.')
+            print('Bulk data added to outerLayer successfully.')  if self.verbose else None
             return True
         except Exception as e:
             print(f"Error adding bulk data to outerLayer: {e}")
@@ -65,13 +67,26 @@ class MySQLConnection:
             print(f"Error deleting records from table {tableName}: {e}")
             return False
         
+    def setVerbose(self, verboseState):
+        self.verbose = verboseState
+        
     def disconnect(self):
         self.connection.close()
-        print('MySQL database connection closed.')
+        print('MySQL database connection closed.')  if self.verbose else None
+        
+    def add_threat_to_outer_Layer_Threats_DB(self, ip_address, logName, geolocation, timestamp, threatName, threatLevel):
+        sql_query = "INSERT INTO outerLayerThreats (ip_address, logName, geolocation, timestamp, threatName, threat_level) VALUES (%s, %s, %s, %s, %s, %s)"
+        cursor = self.connection.cursor()
+        data = (ip_address, logName, geolocation, timestamp, threatName, threatLevel)
+        cursor.execute(sql_query, data)
+        self.connection.commit()
+        cursor.close()
+        print('Data added to outerLayerThreats successfully.')  if self.verbose else None
+        return True
+
 
 if __name__ == "__main__":
     mySqlConnection = MySQLConnection()
-    mySqlConnection.connect()
     mySqlConnection.disconnect()
     # mySqlConnection.add_data_to_outer_layer("192.168.1.100", "Londen, Australia", "Login", 0, None, None, None, None)
     # mySqlConnection.execute_query('SELECT * from hybrid_idps.outerLayer', lambda error, results: print('The results are: ', results))

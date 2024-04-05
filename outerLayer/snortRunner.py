@@ -278,7 +278,6 @@ if __name__ == '__main__':
     print(fr"{filePrefix()}\snortFiles\rules\local.rules")
     
     mySqlConnection = MySQLConnection()
-    mySqlConnection.connect()
     mySqlConnection.hazmat_wipe_Table('outerLayer')
     hazmat_wipe_alert_file(snort_Dirs['Alert File'])
     displayAlerts = True

@@ -1,6 +1,7 @@
 import time
 import importlib
 import json
+from sqlConnector import MySQLConnection 
 
 try:
     import mysql.connector
@@ -8,42 +9,12 @@ except ImportError:
     print("\033[91mmysql.connector is not installed. Run 'pip install mysql-connector-python' \033[0m")
 
 
-class MySQLConnection:
-    def __init__(self, host='localhost', user='Hybrid_IDPS', password='css2', database='hybrid_idps'):
-        self.host = host
-        self.user = user
-        self.password = password
-        self.database = database
-        self.connection = None
-        self.verbose = False
-        self.connect()
-
-    def connect(self):
-        self.connection = mysql.connector.connect(
-            host=self.host,
-            user=self.user,
-            password=self.password,
-            database=self.database
-        )
-        if self.connection.is_connected():
-            print(f'Connected to MySQL database as id {self.connection.connection_id}') if self.verbose else None
-        else:
-            print('Failed to connect to MySQL database') if self.verbose else None
-
-    def execute_query(self, sql_query):
-        cursor = self.connection.cursor(dictionary=True)
-        cursor.execute(sql_query)
-        results = cursor.fetchall()
-        cursor.close()
-        return results
-        
-    def disconnect(self):
-        self.connection.close()
-        print('MySQL database connection closed.') if self.verbose else None
 
 class OuterLayer():
     def __init__(self) -> None:
-        self.database = MySQLConnection()
+        self.database = MySQLConnection(host='localhost', user='Hybrid_IDPS', password='css2', database='hybrid_idps')
+        self.database.setVerbose(False)
+        self.database.hazmat_wipe_Table('outerLayerThreats')
         self.devices = {}
         self.threatTable = {
             "portScanning": 0.2,
@@ -76,7 +47,7 @@ class OuterLayer():
         event_type = 'Port Scanning Detected'
         threatName = "portScanning"
         
-        scanningCountThreshold = 20 #Over 20 its portScanning (tuneable)
+        scanningCountThreshold = 1 #Over 20 its portScanning (tuneable)
         
         results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
         results = self.extract_ips(results)
@@ -88,7 +59,7 @@ class OuterLayer():
                 if count > scanningCountThreshold:
                     logName = f"{threatName}-{event['timestamp']}"
                     # self.add_threat(ip, logName, all_events[:1])
-                    self.add_threat(ip, logName, threatName)
+                    self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
                     count = 0
 
     def analyze_log_in(self):
@@ -104,7 +75,7 @@ class OuterLayer():
                 if count > 10:
                     logName = f"{threatName}-{event['timestamp']}"
                     # self.add_threat(ip, logName, all_events[:1])
-                    self.add_threat(ip, logName, threatName)
+                    self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
                     count = 0
 
     def display_Events_and_calc_threat_level(self):
@@ -116,6 +87,7 @@ class OuterLayer():
             for threatName, threadType in logs.items():
                 print(f"        {threatName}")
                 threatLevel += self.threatTable[threadType]
+                
             if threatLevel > 1: threatLevel = 1
             self.set_threat_level(ip, threatLevel)
             color_code = "\033[92m"  # Green
@@ -139,12 +111,20 @@ class OuterLayer():
         results = self.database.execute_query(f"SELECT DISTINCT ip_address from hybrid_idps.outerLayer")
         ip_addresses = [ip['ip_address'] for ip in results]
         for ip in ip_addresses:
-            self.devices[ip] = {'threatLevel': 0, 'logs': {}}
+            if ip not in self.devices:
+                self.devices[ip] = {'threatLevel': 0, 'logs': {}}
                 
-    def add_threat(self, ip_address, logName,  log):
+    def add_threat(self, ip_address, logName, geolocation, timestamp, threatName):
         if ip_address in self.devices:
             device = self.devices[ip_address]
-            device['logs'][logName] = log
+            threatLevel = self.threatTable[threatName]
+            
+            if logName not in device['logs']:
+                print('adds')
+                print(device['logs'])
+                device['logs'][logName] = threatName
+                self.database.add_threat_to_outer_Layer_Threats_DB(ip_address, logName, geolocation, timestamp, threatName, threatLevel)
+            
         else:
             print(f"Device with IP address {ip_address} does not exist.")
             

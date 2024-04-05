@@ -1,0 +1,1 @@
+SELECT * FROM hybrid_idps.outerLayerThreats;
