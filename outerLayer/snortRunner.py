@@ -105,7 +105,10 @@ def CalculateGeoLocation(src_ip):
 def runSnort(snort_Dirs, interface_Number):
     snort_bin_path = snort_Dirs['Bin Directory']
     snort_config_path = snort_Dirs['Snort Configuration File']
-    snort_command = fr'.\snort -i {interface_Number} -c {snort_config_path} -A full '
+    log_dir_path   = snort_Dirs['Log Directory']
+    snort_command = fr'.\snort -i {interface_Number} -c {snort_config_path} -A full -l {log_dir_path}'
+    
+        
     full_snort_path = os.path.join(snort_bin_path, 'snort.exe')  # Assuming the executable is named snort.exe
     runas_command = fr'runas /user:Administrator "{snort_command}"'
     try:
@@ -259,23 +262,34 @@ def handle_Snort_Alerts(displayAlerts, fileData, read_Up_To):
 
 def filePrefix():
     script_location = os.path.realpath(__file__)
-    HybridIDPS_index = script_location.index("HybridIDPS") + len('HybridIDPS') 
+    HybridIDPS_index = script_location.rfind("HybridIDPS-main") + len('HybridIDPS-main') 
     return fr"{script_location[:HybridIDPS_index]}"
 
 if __name__ == '__main__':
     # This file will save snort alerts to a database #
+    # snort_Dirs = {
+    #     'Snort Directory':  r'C:\Snort',
+    #     'Log Directory':    fr'{filePrefix()}\Snort\log\\',
+    #     'Rules Directory':  r'C:\Snort\rules',
+    #     'Local Rules File': fr'{filePrefix()}\snortFiles\rules\local.rules',
+    #     'Bin Directory':    r'C:\Snort\bin',
+    #     'Etc Directory':    r'C:\Snort\etc',
+    #     'Alert File':       fr'C:\Snort\log\alert.ids',
+    #     'Snort Configuration File': fr'{filePrefix()}\snortFiles\configFile\snort.conf',
+    # }
+    
     snort_Dirs = {
-        'Snort Directory':  r'C:\Snort',
-        'Log Directory':    r'C:\Snort\log',
-        'Rules Directory':  r'C:\Snort\rules',
-        'Local Rules File': fr'{filePrefix()}\snortFiles\rules\local.rules',
-        'Bin Directory':    r'C:\Snort\bin',
-        'Etc Directory':    r'C:\Snort\etc',
-        'Alert File':       fr'C:\Snort\log\alert.ids',
-        'Snort Configuration File': r'c:\Snort\etc\snort.conf',
+        'Snort Directory':      fr'{filePrefix()}\Snort',
+        'Log Directory':        fr'{filePrefix()}\Snort\log\\',
+        'Rules Directory':      fr'{filePrefix()}\Snort\rules',
+        'Etc Directory':        fr'{filePrefix()}\Snort\etc',
+        'Local Rules File':     fr'{filePrefix()}\Snort\etc\localRule\local.rules',
+        'Bin Directory':        fr'{filePrefix()}\Snort\bin',
+        'Alert File':           fr'{filePrefix()}\Snort\log\alert.ids',
+        'Snort Configuration File': fr'{filePrefix()}\Snort\etc\snort.conf',
     }
     
-    print(fr"{filePrefix()}\snortFiles\rules\local.rules")
+    
     
     mySqlConnection = MySQLConnection()
     mySqlConnection.hazmat_wipe_Table('outerLayer')
