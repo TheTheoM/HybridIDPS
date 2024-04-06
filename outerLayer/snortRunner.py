@@ -282,17 +282,7 @@ def filePrefix():
 
 if __name__ == '__main__':
     # This file will save snort alerts to a database #
-    # snort_Dirs = {
-    #     'Snort Directory':  r'C:\Snort',
-    #     'Log Directory':    fr'{filePrefix()}\Snort\log\\',
-    #     'Rules Directory':  r'C:\Snort\rules',
-    #     'Local Rules File': fr'{filePrefix()}\snortFiles\rules\local.rules',
-    #     'Bin Directory':    r'C:\Snort\bin',
-    #     'Etc Directory':    r'C:\Snort\etc',
-    #     'Alert File':       fr'C:\Snort\log\alert.ids',
-    #     'Snort Configuration File': fr'{filePrefix()}\snortFiles\configFile\snort.conf',
-    # }
-    
+
     snort_Dirs = {
         'Snort Directory':      fr'{filePrefix()}\Snort',
         'Log Directory':        fr'{filePrefix()}\Snort\log\\',
