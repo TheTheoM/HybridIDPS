@@ -1,2 +1,3 @@
-**/node_modules/
 **/Snort/log/snort.log.*
+**/node_modules/
+HybridIDPS/Snort/log/snort.log.1709532614

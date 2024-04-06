@@ -265,8 +265,13 @@ def handle_Snort_Alerts(displayAlerts, fileData, read_Up_To):
 
 def filePrefix():
     script_location = os.path.realpath(__file__)
-    HybridIDPS_index = script_location.rfind("HybridIDPS-main") + len('HybridIDPS-main') 
-
+    HybridIDPS_index = script_location.rfind("HybridIDPS") + len('HybridIDPS') 
+    
+    for idx in range(HybridIDPS_index, len(script_location)):
+        if script_location[idx] == "\\":
+            HybridIDPS_index = idx
+            break
+         
     if any(char.isspace() for char in script_location):
         print("\033[31mTHERE CAN BE NO SPACES IN FILE PATH.\033[0m")
         print(script_location)
