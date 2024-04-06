@@ -15,9 +15,8 @@ from sqlConnector import MySQLConnection
 
 def list_interfaces(find_Interface_subString = None):
     # If you don't know what interface your running run this.sl
-    snort_bin_path = r'C:\Snort\bin'
     try:
-        os.chdir(snort_bin_path)
+        os.chdir(snort_Dirs['Bin Directory'])
         
         result = subprocess.run('.\snort -W', shell=True, capture_output=True, text=True)
 
