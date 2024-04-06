@@ -106,9 +106,11 @@ def runSnort(snort_Dirs, interface_Number):
     snort_bin_path = snort_Dirs['Bin Directory']
     snort_config_path = snort_Dirs['Snort Configuration File']
     log_dir_path   = snort_Dirs['Log Directory']
-    snort_command = fr'.\snort -i {interface_Number} -c {snort_config_path} -A full -l {log_dir_path}'
+    rule_path = snort_Dirs['Local Rules File']
     
-        
+    # snort_command = fr'.\snort -i {interface_Number} -c "{snort_config_path}" -A full -l "{log_dir_path}"'
+    snort_command = fr".\snort -i {interface_Number} -c {snort_config_path} -A full -l {log_dir_path}"
+    
     full_snort_path = os.path.join(snort_bin_path, 'snort.exe')  # Assuming the executable is named snort.exe
     runas_command = fr'runas /user:Administrator "{snort_command}"'
     try:
@@ -116,6 +118,7 @@ def runSnort(snort_Dirs, interface_Number):
         print("  - You may be asked to enter your admin-password, in a new cmd window. Do it. ")
         os.chdir(snort_bin_path)
         subprocess.Popen(runas_command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=subprocess.DETACHED_PROCESS)
+        
     except Exception as e:
         print(f'Unexpected error: {e}')
 
@@ -263,6 +266,15 @@ def handle_Snort_Alerts(displayAlerts, fileData, read_Up_To):
 def filePrefix():
     script_location = os.path.realpath(__file__)
     HybridIDPS_index = script_location.rfind("HybridIDPS-main") + len('HybridIDPS-main') 
+
+
+    if any(char.isspace() for char in script_location):
+        print("\033[31mTHERE CAN BE NO SPACES IN FILE PATH.\033[0m")
+        print(script_location)
+        sys.exit()
+
+
+    
     return fr"{script_location[:HybridIDPS_index]}"
 
 if __name__ == '__main__':
