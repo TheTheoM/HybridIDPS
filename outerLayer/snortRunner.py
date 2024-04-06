@@ -14,9 +14,10 @@ from sqlConnector import MySQLConnection
 
 
 def list_interfaces(find_Interface_subString = None):
-    # If you don't know what interface your running run this.sl
+    # If you don't know what interface your running run this.
+    snort_bin_path = r'C:\Snort\bin'
     try:
-        os.chdir(snort_Dirs['Bin Directory'])
+        os.chdir(snort_bin_path)
         
         result = subprocess.run('.\snort -W', shell=True, capture_output=True, text=True)
 
@@ -104,12 +105,7 @@ def CalculateGeoLocation(src_ip):
 def runSnort(snort_Dirs, interface_Number):
     snort_bin_path = snort_Dirs['Bin Directory']
     snort_config_path = snort_Dirs['Snort Configuration File']
-    log_dir_path   = snort_Dirs['Log Directory']
-    rule_path = snort_Dirs['Local Rules File']
-    
-    # snort_command = fr'.\snort -i {interface_Number} -c "{snort_config_path}" -A full -l "{log_dir_path}"'
-    snort_command = fr".\snort -i {interface_Number} -c {snort_config_path} -A full -l {log_dir_path}"
-    
+    snort_command = fr'.\snort -i {interface_Number} -c {snort_config_path} -A full '
     full_snort_path = os.path.join(snort_bin_path, 'snort.exe')  # Assuming the executable is named snort.exe
     runas_command = fr'runas /user:Administrator "{snort_command}"'
     try:
@@ -117,7 +113,6 @@ def runSnort(snort_Dirs, interface_Number):
         print("  - You may be asked to enter your admin-password, in a new cmd window. Do it. ")
         os.chdir(snort_bin_path)
         subprocess.Popen(runas_command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=subprocess.DETACHED_PROCESS)
-        
     except Exception as e:
         print(f'Unexpected error: {e}')
 
@@ -271,29 +266,42 @@ def filePrefix():
             HybridIDPS_index = idx
             break
          
-    if any(char.isspace() for char in script_location):
-        print("\033[31mTHERE CAN BE NO SPACES IN FILE PATH.\033[0m")
-        print(script_location)
-        space_index = script_location.index(' ')
-        print(' ' * space_index + '^')
-        sys.exit()
+    # if any(char.isspace() for char in script_location):
+    #     print("\033[31mTHERE CAN BE NO SPACES IN FILE PATH.\033[0m")
+    #     print(script_location)
+    #     space_index = script_location.index(' ')
+    #     print(' ' * space_index + '^')
+    #     sys.exit()
     
     return fr"{script_location[:HybridIDPS_index]}"
 
+def overwrite_snort_local_rules():
+    try:
+        with open(snort_Dirs['Local Rules File'], 'r') as f:
+            local_rules_content = f.read()
+
+        with open(snort_Dirs['Snort Local Rules File'], 'w') as f:
+            f.write(local_rules_content)
+
+        print("Snort local rules file overwritten successfully with HybridIDPS local.rules")
+    except FileNotFoundError:
+        print("File not found. Check the file paths.")
+    except Exception as e:
+        print("An error occurred:", e)
+
 if __name__ == '__main__':
     # This file will save snort alerts to a database #
-
     snort_Dirs = {
-        'Snort Directory':      fr'{filePrefix()}\Snort',
-        'Log Directory':        fr'{filePrefix()}\Snort\log\\',
-        'Rules Directory':      fr'{filePrefix()}\Snort\rules',
-        'Etc Directory':        fr'{filePrefix()}\Snort\etc',
-        'Local Rules File':     fr'{filePrefix()}\Snort\etc\localRule\local.rules',
-        'Bin Directory':        fr'{filePrefix()}\Snort\bin',
-        'Alert File':           fr'{filePrefix()}\Snort\log\alert.ids',
-        'Snort Configuration File': fr'{filePrefix()}\Snort\etc\snort.conf',
+        'Snort Directory':          r'C:\Snort',
+        'Log Directory':            r'C:\Snort\log',
+        'Rules Directory':          r'C:\Snort\rules',
+        'Local Rules File':         fr'{filePrefix()}\snortFiles\localRule\local.rules',
+        'Snort Local Rules File':   r'C:\Snort\rules\local.rules',
+        'Bin Directory':            r'C:\Snort\bin',
+        'Etc Directory':            r'C:\Snort\etc',
+        'Alert File':               fr'C:\Snort\log\alert.ids',
+        'Snort Configuration File': r'c:\Snort\etc\snort.conf',
     }
-    
     
     
     mySqlConnection = MySQLConnection()
@@ -303,6 +311,7 @@ if __name__ == '__main__':
     
     
     checkDirectories(snort_Dirs)
+    overwrite_snort_local_rules()
     file_Check_Interval = 2 
     interface_Number = list_interfaces(find_Interface_subString = "Controller") # You may need to change this. When running the code, it will print ur interfaces. Add a substring from it to this.
     displayRules(snort_Dirs['Local Rules File'])
