@@ -14,7 +14,7 @@ from sqlConnector import MySQLConnection
 
 
 def list_interfaces(find_Interface_subString = None):
-    # If you don't know what interface your running run this.
+    # If you don't know what interface your running run this.sl
     snort_bin_path = r'C:\Snort\bin'
     try:
         os.chdir(snort_bin_path)
@@ -267,13 +267,12 @@ def filePrefix():
     script_location = os.path.realpath(__file__)
     HybridIDPS_index = script_location.rfind("HybridIDPS-main") + len('HybridIDPS-main') 
 
-
     if any(char.isspace() for char in script_location):
         print("\033[31mTHERE CAN BE NO SPACES IN FILE PATH.\033[0m")
         print(script_location)
+        space_index = script_location.index(' ')
+        print(' ' * space_index + '^')
         sys.exit()
-
-
     
     return fr"{script_location[:HybridIDPS_index]}"
 
