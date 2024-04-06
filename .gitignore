@@ -1,3 +1,2 @@
 **/node_modules/
-
-**/snort.log.*
+**/Snort/log/snort.log.*
