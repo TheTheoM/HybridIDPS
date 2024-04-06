@@ -224,7 +224,7 @@ def handle_Snort_Alerts(displayAlerts, fileData, read_Up_To):
 
                 protocol = get_protocol(protocol_Line)
 
-                if (alertName == "ICMP Ping"):
+                if (protocol == "ICMP Ping" or protocol == "IPV6-ICMP"):
                     src_port = None
                     dest_port = None
                 else:
