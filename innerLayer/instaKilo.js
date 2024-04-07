@@ -139,11 +139,11 @@ class WebSocketServer {
   handleConnection(socket, req) {
     let device_ip_address = req.connection.remoteAddress;
     
-    let geolocation       = "Sydney AU"   //We will implement a custom routing table, so we don't have to actual vpn to different locations to simulate this
+    let geolocation       = this.findLocation(device_ip_address)   //We will implement a custom routing table, so we don't have to actual vpn to different locations to simulate this
                                           // For example 192.168.1.0 - 192.168.1.10 will be sydney then .10 to .20 will be London for example.  This will not change the 
                                           // validity of the system, as this is not a test of geolocation accuracy but behavioral. 
     let device_Username = null;
-    this.innerLayer.addEvent(null, device_ip_address, geolocation, "connectedToServer", null, null) // Connected to Server
+    this.innerLayer.addEvent(null, null, device_ip_address, geolocation, "connectedToServer", null, null) // Connected to Server
 
     socket.send(JSON.stringify({ message: 'Are you registered?', action: 'checkRegistration' }));
     socket.on('message', (message) => {
@@ -262,6 +262,37 @@ class WebSocketServer {
       }
     });
   }
+
+  findLocation(ip) {
+    if (ip.includes(':')) {
+      // Extract the IPv4 part from the IPv6 address
+      const ipv4Part = ip.split(':').pop();
+      // Remove the prefix '::ffff:' if present
+      const ipv4 = ipv4Part.includes('::ffff:') ? ipv4Part.replace('::ffff:', '') : ipv4Part;
+      // Continue with IPv4 logic for the converted address
+      ip = ipv4;
+    }
+    const ip_ranges = {
+      "192.168.1.0-192.168.1.42":    "Australia",
+      "192.168.1.43-192.168.1.85":   "New Zealand",
+      "192.168.1.86-192.168.1.128":  "Minsk",
+      "192.168.1.129-192.168.1.171": "Prague",
+      "192.168.1.172-192.168.1.214": "Finland",
+      "192.168.1.215-192.168.1.255": "Mars",
+    };
+    const ipInt = ip.split('.').reduce((acc, val) => (acc << 8) + parseInt(val, 10), 0);
+  
+    for (const [ipRange, location] of Object.entries(ip_ranges)) {
+        const [startIp, endIp] = ipRange.split('-');
+        const startIpInt = startIp.split('.').reduce((acc, val) => (acc << 8) + parseInt(val, 10), 0);
+        const endIpInt = endIp.split('.').reduce((acc, val) => (acc << 8) + parseInt(val, 10), 0);
+        if (startIpInt <= ipInt && ipInt <= endIpInt) {
+            return location;
+        }
+    }
+    return "Unknown Location";
+  }
+  
   
   async privateToPublic(privateIp) {
     try {

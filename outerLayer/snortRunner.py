@@ -11,7 +11,7 @@ import json
 import sys
 from wipeAlertFile import hazmat_wipe_alert_file
 from sqlConnector import MySQLConnection 
-
+from ipGeoMapper import find_location, subdivide_ip_range
 
 def list_interfaces(find_Interface_subString = None):
     # If you don't know what interface your running run this.
@@ -99,9 +99,14 @@ def CalculateThreatLevel():
     return 0
 
 def CalculateGeoLocation(src_ip):
-    # TODO Need to make this do something. Need to add some fake geo-locate to innerLayer.
-    return "London Australia"
+    if val := find_location(src_ip):
+        return val
+    else:
+        # print(f"[Warning]: IP: {src_ip} not mapped to a ip-range.")
+        return "unknown Geolocation"
 
+
+        
 def runSnort(snort_Dirs, interface_Number):
     snort_bin_path = snort_Dirs['Bin Directory']
     snort_config_path = snort_Dirs['Snort Configuration File']
