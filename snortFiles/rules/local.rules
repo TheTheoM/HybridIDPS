@@ -22,3 +22,5 @@
 alert icmp any any -> any any (msg:"ICMP Ping"; sid:1000001;)
 
 alert tcp any any -> any 1:1024 (msg:"Port Scanning Detected"; flags:S; threshold: type threshold, track by_src, count 5, seconds 60; sid:10000005; rev:1;)
+
+Honey Soy Chips

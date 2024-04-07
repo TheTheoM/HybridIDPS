@@ -42,8 +42,15 @@ function LoginPage({webSocket, isConnected, isRegistered, username, setUsername,
         <div className='container'>
           <div className='failedToConnect'>
             <h1>Failed To Connect to Server. </h1>
-            <h3>Ensure 'server.js' is running.</h3>
+            <h3>Ensure 'instaKilo.js' is running:</h3>
+            <code>cd innerLayer</code>
+            <br></br>
+            <code>node instaKilo.js</code>
             <h3> If it is running, ensure you have created the .env file</h3>
+            <h3> If it it fails to run, ensure you have installed the required packages:</h3>
+            <code>cd innerLayer</code>
+            <br></br>
+            <code>npm install .</code>
           </div>
         </div> 
       ) : isRegistered ? (

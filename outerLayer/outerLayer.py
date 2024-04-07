@@ -33,6 +33,9 @@ class OuterLayer():
                 
                 self.analyze_port_scanning()
                 
+                # self.analyze_syn_flood() #TODO
+                
+                
                 # self.analyze_log_in()
                 
                 ###### Analyzer Functions ######
