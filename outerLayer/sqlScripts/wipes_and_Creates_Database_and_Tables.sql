@@ -23,7 +23,7 @@ CREATE TABLE outerLayerThreats (
     geolocation VARCHAR(255) NULL,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     threatName VARCHAR(45),
-    threat_level float(4)  NULL,
+    threat_level float(4) UNSIGNED NULL,
     CONSTRAINT chk_outer_threat_level CHECK (threat_level IS NULL OR (threat_level >= 0 AND threat_level <= 10))
 );
 
@@ -40,15 +40,16 @@ CREATE TABLE innerLayer (
 );
 
 CREATE TABLE innerLayerThreats (
-	id INT AUTO_INCREMENT PRIMARY KEY,
-    ip_address VARCHAR(45),
-    logName VARCHAR(45),
-    geolocation VARCHAR(255) NULL,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    threatName VARCHAR(45),
-    threat_level float(4)  NULL,
-    CONSTRAINT chk_inner_threat_level CHECK (threat_level IS NULL OR (threat_level >= 0 AND threat_level <= 10))
-
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ username VARCHAR(100) NULL,
+ target_username VARCHAR(100) NULL,
+ ip_address VARCHAR(45),
+ geolocation VARCHAR(255) NULL,
+ timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ event_type VARCHAR(50) NULL,
+ threat_level float(4) UNSIGNED NULL,
+ payload TEXT,
+ CONSTRAINT chk_inner_threat_level CHECK (threat_level IS NULL OR (threat_level >= 0 AND threat_level <= 10))
 );
 
 CREATE TABLE hybridLayer (
