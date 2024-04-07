@@ -47,7 +47,7 @@ CREATE TABLE innerLayerThreats (
  geolocation VARCHAR(255) NULL,
  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
  event_type VARCHAR(50) NULL,
- threat_level TINYINT UNSIGNED NULL,
+ threat_level float(4) UNSIGNED NULL,
  payload TEXT,
  CONSTRAINT chk_inner_threat_level CHECK (threat_level IS NULL OR (threat_level >= 0 AND threat_level <= 10))
 );
