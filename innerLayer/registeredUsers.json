@@ -52,6 +52,10 @@
             {
               "username": "JohnSmith123",
               "comment": "Who are you?"
+            },
+            {
+              "username": "wanker",
+              "comment": "from da phone"
             }
           ]
         },
@@ -65,8 +69,31 @@
           ],
           "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1280px-Image_created_with_a_mobile_phone.png",
           "timestamp": "2024-04-02T07:49:05.799Z",
+          "likes": 1,
+          "comments": [
+            {
+              "username": "JohnSmith123",
+              "comment": "OF Link In BIO"
+            }
+          ]
+        },
+        {
+          "id": "1io2i2t85",
+          "username": "JohnSmith123",
+          "postTitle": "Hi Arsh",
+          "content": "I have a deep hatred for you.",
+          "keyWords": [
+            "hate"
+          ],
+          "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1280px-Image_created_with_a_mobile_phone.png",
+          "timestamp": "2024-04-08T07:24:09.450Z",
           "likes": 0,
-          "comments": []
+          "comments": [
+            {
+              "username": "JohnSmith123",
+              "comment": "hi arsh"
+            }
+          ]
         }
       ]
     }
@@ -98,6 +125,14 @@
     {
       "password": "hi",
       "email": "hi",
+      "posts": []
+    }
+  ],
+  [
+    "wanker",
+    {
+      "password": "a",
+      "email": "g",
       "posts": []
     }
   ]

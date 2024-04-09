@@ -99,18 +99,30 @@ class InnerLayer():
 
     def add_devices(self):
         results = self.database.execute_query(f"SELECT DISTINCT ip_address from hybrid_idps.innerLayer")
-        ip_addresses = [ip['ip_address'] for ip in results]
+        ip_addresses = [ip['ip_address'] for ip in results] #Possibly IPV6
+        
         for ip in ip_addresses:
-            self.devices[ip] = {'threatLevel': 0, 'logs': {}}
+            if ip.startswith("::ffff:"):     # ip_address ::ffff:192.168.1.99
+                ip = ip.split(":")[-1]       # ip_address 192.168.1.99
+
+            if ip in self.devices:
+                self.devices[ip] = {'threatLevel': 0, 'logs': {}}
                 
     def add_threat(self, logName, threatName, username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload):
+        if ip_address.startswith("::ffff:"):     # ip_address ::ffff:192.168.1.99
+            ip_address = ip_address.split(":")[-1] # ip_address 192.168.1.99
+        
         if ip_address in self.devices:
             device = self.devices[ip_address]
             threatLevel = self.threatTable[threatName]
             
+            print(device['logs'])
+            print(logName in device['logs'])
+            
             if logName not in device['logs']:
                 device = self.devices[ip_address]
                 device['logs'][logName] = threatName
+                print('adds' + logName)
                 self.database.add_threat_to_inner_Layer_Threats_DB(username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload)
         else:
             print(f"Device with IP address {ip_address} does not exist.")
