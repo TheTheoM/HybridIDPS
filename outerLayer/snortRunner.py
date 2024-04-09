@@ -98,12 +98,6 @@ def displayRules(local_rules_file_path):
 def CalculateThreatLevel():
     return 0
 
-def CalculateGeoLocation(src_ip):
-    if val := find_location(src_ip):
-        return val
-    else:
-        # print(f"[Warning]: IP: {src_ip} not mapped to a ip-range.")
-        return "Unknown Geolocation"
 
 
         
@@ -244,8 +238,8 @@ def handle_Snort_Alerts(displayAlerts, fileData, read_Up_To):
 
                 # dataLine = {'src_ip': src_ip, 'dest_ip': dest_ip, 'dateTime': dateTime, 'alertId': alertId, 'alertName' : alertName}
                 # ip_address, geolocation, event_type, threat_level, dateTime
-                
-                geolocation = CalculateGeoLocation(src_ip)
+
+                geolocation = find_location(src_ip)
 
                 threat_level = CalculateThreatLevel() #Always 0 Need to Complete.
                 dataLine = (src_ip, geolocation, isoDateTime, alertName, threat_level,  src_port, dest_port, protocol)
