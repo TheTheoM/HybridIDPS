@@ -244,10 +244,8 @@ def handle_Snort_Alerts(displayAlerts, fileData, read_Up_To):
 
                 # dataLine = {'src_ip': src_ip, 'dest_ip': dest_ip, 'dateTime': dateTime, 'alertId': alertId, 'alertName' : alertName}
                 # ip_address, geolocation, event_type, threat_level, dateTime
-                if (protocol != "IPV6-ICMP"):
-                    geolocation = CalculateGeoLocation(src_ip)
-                else:
-                    geolocation = "Unknown Geolocation"
+                
+                geolocation = CalculateGeoLocation(src_ip)
 
                 threat_level = CalculateThreatLevel() #Always 0 Need to Complete.
                 dataLine = (src_ip, geolocation, isoDateTime, alertName, threat_level,  src_port, dest_port, protocol)
