@@ -33,8 +33,13 @@ class OuterLayer():
                 
                 self.analyze_port_scanning()
                 
-                # self.analyze_syn_flood() #TODO
+                # self.analyze_tcp_flood() #TODO
                 
+                # self.analyze_udp_flood() #TODO
+
+                # self.analyze_icmp_flood() #TODO
+
+                # self.analyze_ssh_brute_force() #TODO
                 
                 # self.analyze_log_in()
                 
@@ -47,8 +52,8 @@ class OuterLayer():
                 self.database.disconnect()
 
     def analyze_port_scanning(self):
-        event_type = 'Port Scanning Detected'
-        threatName = "portScanning"
+        event_type = 'Possible Port Scanning'
+        threatName = "Port Scanning"
         
         scanningCountThreshold = 1 #Over 20 its portScanning (tuneable)
         
@@ -65,6 +70,83 @@ class OuterLayer():
                     self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
                     count = 0
 
+    def analyze_tcp_flood(self):
+        event_types = ['Possible SYN Flood', 'Possible ACK Flood', 'Possible RST Flood', 'Possible FIN Flood']
+        threatName = "TCP Flood Attack"
+        
+        scanningCountThreshold = 1 #Over 20 its portScanning (tuneable)
+        
+        for event_type in event_types:
+            results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
+            results = self.extract_ips(results)
+            for ip, all_events in results.items():
+                count = 0
+                for event in all_events:
+                    count += 1
+
+                    if count > scanningCountThreshold:
+                        logName = f"{threatName}-{event['timestamp']}"
+                        # self.add_threat(ip, logName, all_events[:1])
+                        self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
+                        count = 0
+
+    def analyze_udp_flood(self):
+        event_type = 'Possible UDP Flood'
+        threatName = "UDP Flood Attack"
+        
+        scanningCountThreshold = 1 #Over 20 its portScanning (tuneable)
+        
+        results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
+        results = self.extract_ips(results)
+        for ip, all_events in results.items():
+            count = 0
+            for event in all_events:
+                count += 1
+
+                if count > scanningCountThreshold:
+                    logName = f"{threatName}-{event['timestamp']}"
+                    # self.add_threat(ip, logName, all_events[:1])
+                    self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
+                    count = 0
+
+    def analyze_icmp_flood(self):
+        event_type = 'Possible ICMP Flood'
+        threatName = "ICMP Flood Attack"
+        
+        scanningCountThreshold = 1 #Over 20 its portScanning (tuneable)
+        
+        results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
+        results = self.extract_ips(results)
+        for ip, all_events in results.items():
+            count = 0
+            for event in all_events:
+                count += 1
+
+                if count > scanningCountThreshold:
+                    logName = f"{threatName}-{event['timestamp']}"
+                    # self.add_threat(ip, logName, all_events[:1])
+                    self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
+                    count = 0
+
+    def analyze_ssh_brute_force(self):
+        event_type = 'Possible SSH Brute Force'
+        threatName = "SSH Brute Force Attack"
+        
+        scanningCountThreshold = 1 #Over 20 its portScanning (tuneable)
+        
+        results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
+        results = self.extract_ips(results)
+        for ip, all_events in results.items():
+            count = 0
+            for event in all_events:
+                count += 1
+
+                if count > scanningCountThreshold:
+                    logName = f"{threatName}-{event['timestamp']}"
+                    # self.add_threat(ip, logName, all_events[:1])
+                    self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
+                    count = 0 
+    
     def analyze_log_in(self):
         event_type = 'invalidCredentials'
         threatName = "bruteForce"
