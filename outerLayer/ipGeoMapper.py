@@ -46,7 +46,7 @@ def find_location(ip):
     except Exception as E:
         print(f"[Warning]: find_location() failed with ip: {ip}")
         
-    return 'Unknown Location'
+    return 'Unknown Geolocation'
 
 
 if __name__ == "__main__":
