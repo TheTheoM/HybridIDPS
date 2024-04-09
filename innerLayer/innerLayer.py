@@ -13,9 +13,12 @@ class InnerLayer():
         self.database.hazmat_wipe_Table('innerLayer')
         self.database.hazmat_wipe_Table('innerLayerThreats')
         self.devices = {}
+        # self.threat_counts = {} #This may needs to be removed, work in progress
         self.threatTable = {
-            "bruteForce": 0.2,
+            "spamCredentials": 0.2,
             "login":      0.9,
+            "massReporting": 0.3,
+            "massAccountCreation": 0.5,
         }
         self.central_analyzer()
 
@@ -28,15 +31,36 @@ class InnerLayer():
                 self.database.connect()
                 self.add_devices()
                 ###### Analyzer Functions ######
+
+                #Atm this works but always proc when one brute force attack is detected
+                for ip in self.devices:
+                    spam_count = self.count_spam_credentials(ip)
+                    if spam_count > 2:
+                        self.analyze_log_in()
+
+
+                #This one seems more promissing but running into an issue with it contantly being add to
+                # for ip in self.devices:
+                #     spam_count = self.threat_counts.get("SpamCredentials", 0)
+                #     # print("Threat counts:", self.threat_counts)
+                #     if spam_count > 3:  # Adjust the threshold as needed
+                #         self.analyze_log_in()
                 
                 self.analyze_brute_force()
-                
-                self.analyze_log_in()
+
+                self.analyze_mass_reporting()
                 
                 ###### Analyzer Functions ######
+
                 self.display_Events_and_calc_threat_level()
                 start_time = time.time()
                 self.database.disconnect()
+    
+
+    def count_spam_credentials(self, ip):
+        event_type = 'invalidCredentials'
+        results = self.database.execute_query(f"SELECT COUNT(*) AS count FROM hybrid_idps.innerLayer WHERE event_type = '{event_type}' AND ip_address = '{ip}'")
+        return results[0]['count']
 
     def analyze_log_in(self):
         event_type = 'successfulLogin'
@@ -53,7 +77,7 @@ class InnerLayer():
 
     def analyze_brute_force(self):
         event_type = 'invalidCredentials'
-        threatName = "bruteForce"
+        threatName = "spamCredentials"
         threat_level = self.threatTable[threatName]
         results = self.database.execute_query(f"SELECT * from hybrid_idps.innerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
         results = self.extract_ips(results)
@@ -61,6 +85,7 @@ class InnerLayer():
             count = 0
             for event in all_events:
                 count += 1
+                # print(count)
                 if count > 10:
                     logName = f"{threatName}-{event['timestamp']}"
                     # self.add_threat(ip, logName, all_events[:1])
@@ -68,6 +93,46 @@ class InnerLayer():
                                     threatName, threat_level, event['payload'])
                     count = 0
 
+                    # I have this one here but it seems to always be called so it is just constanly being added 1, my logic may be wrong
+                    # self.threat_counts[threatName] = self.threat_counts.get(threatName, 0) + 1
+
+    def analyze_mass_reporting(self):
+        event_type = 'reportUserByUsername'
+        threatName = "massReporting"
+        threat_level = self.threatTable[threatName]
+        results = self.database.execute_query(f"SELECT * from hybrid_idps.innerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
+        results = self.extract_ips(results)
+        for ip, all_events in results.items():
+            count = 0
+            for event in all_events:
+                count += 1
+                if count > 3:
+                    logName = f"{threatName}-{event['timestamp']}"
+                    # self.add_threat(ip, logName, all_events[:1])
+                    self.add_threat(logName, threatName,  event['username'], event['target_username'], event['ip_address'], event['geolocation'], event['timestamp'],
+                                    threatName, threat_level, event['payload'])
+                    count = 0
+
+
+##    This thing will need to be altered and depends on how we are going to handle registering, cause you are already classified as registered on our lauched computers ## 
+
+    # def analyze_mass_account_creation(self):   
+    #     event_type = 'reportUserByUsername'
+    #     threatName = "register"
+    #     threat_level = self.threatTable[threatName]
+    #     results = self.database.execute_query(f"SELECT * from hybrid_idps.innerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
+    #     results = self.extract_ips(results)
+    #     for ip, all_events in results.items():
+    #         count = 0
+    #         for event in all_events:
+    #             count += 1
+    #             if count > 3:
+    #                 logName = f"{threatName}-{event['timestamp']}"
+    #                 # self.add_threat(ip, logName, all_events[:1])
+    #                 self.add_threat(logName, threatName,  event['username'], event['target_username'], event['ip_address'], event['geolocation'], event['timestamp'],
+    #                                 threatName, threat_level, event['payload'])
+    #                 count = 0
+        
     def display_Events_and_calc_threat_level(self):
         for ip, deviceData in self.devices.items():
             print("\n")
@@ -135,6 +200,3 @@ class InnerLayer():
 
 if __name__ == "__main__":
     x = InnerLayer()
-
-        
-            
