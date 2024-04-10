@@ -15,7 +15,7 @@
           ],
           "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1280px-Image_created_with_a_mobile_phone.png",
           "timestamp": "2024-03-19T05:52:19.664Z",
-          "likes": 3,
+          "likes": 8,
           "comments": [
             {
               "username": "JohnSmith123",
@@ -87,7 +87,7 @@
           ],
           "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1280px-Image_created_with_a_mobile_phone.png",
           "timestamp": "2024-04-08T07:24:09.450Z",
-          "likes": 0,
+          "likes": 66500,
           "comments": [
             {
               "username": "JohnSmith123",
@@ -146,6 +146,14 @@
     {
       "password": "a",
       "email": "g",
+      "posts": []
+    }
+  ],
+  [
+    "example_user",
+    {
+      "password": "example_password",
+      "email": "example@example.com",
       "posts": []
     }
   ]

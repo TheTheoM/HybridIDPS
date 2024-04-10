@@ -439,3 +439,4 @@ const wss = new WebSocketServer(8100, events);
 process.on('exit', () => {
   wss.saveRegisteredUsersToFile();
 });
+
