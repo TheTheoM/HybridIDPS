@@ -17,8 +17,13 @@ class OuterLayer():
         self.database.hazmat_wipe_Table('outerLayerThreats')
         self.devices = {}
         self.threatTable = {
-            "portScanning": 0.2,
-            "pinging":      0.9,
+            "Port Scanning": 0.4,
+            "TCP Flood Attack": 0.7,
+            "UDP Flood Attack": 0.7,
+            "ICMP Flood Attack": 0.7,
+            "SSH Brute Force Attack": 0.8,
+            "Unsual Incoming Traffic": 0.3,
+            "Unsual Outgoing Traffic": 0.3,
         }
         self.central_analyzer()
 
@@ -41,7 +46,9 @@ class OuterLayer():
 
                 # self.analyze_ssh_brute_force() #TODO
                 
-                # self.analyze_log_in()
+                # self.analyze_unusual_incoming_geolocation()
+
+                # self.analyze_unusual_outgoing_geolocation()
                 
                 ###### Analyzer Functions ######
                 
@@ -145,23 +152,48 @@ class OuterLayer():
                     logName = f"{threatName}-{event['timestamp']}"
                     # self.add_threat(ip, logName, all_events[:1])
                     self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
-                    count = 0 
-    
-    def analyze_log_in(self):
-        event_type = 'invalidCredentials'
-        threatName = "bruteForce"
-        
-        results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
-        results = self.extract_ips(results)
-        for ip, all_events in results.items():
-            count = 0
-            for event in all_events:
-                count += 1
-                if count > 10:
-                    logName = f"{threatName}-{event['timestamp']}"
-                    # self.add_threat(ip, logName, all_events[:1])
-                    self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
                     count = 0
+
+    def analyze_unusual_incoming_geolocation(self):
+        event_types = ['Incoming TCP Traffic', 'Incoming UDP Traffic']
+        threatName = "Unsual Incoming Traffic"
+        
+        scanningCountThreshold = 1 #Over 20 its portScanning (tuneable)
+        
+        for event_type in event_types:
+            results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
+            results = self.extract_ips(results)
+            for ip, all_events in results.items():
+                count = 0
+                for event in all_events:
+                    count += 1
+
+                    if count > scanningCountThreshold:
+                        logName = f"{threatName}-{event['timestamp']}"
+                        # self.add_threat(ip, logName, all_events[:1])
+                        self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
+                        count = 0
+    
+    def analyze_unusual_outgoing_geolocation(self):
+        event_types = ['Outgoing TCP Traffic', 'Outgoing UDP Traffic']
+        threatName = "Unsual Outgoing Traffic"
+        
+        scanningCountThreshold = 1 #Over 20 its portScanning (tuneable)
+        
+        for event_type in event_types:
+            results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
+            results = self.extract_ips(results)
+            for ip, all_events in results.items():
+                count = 0
+                for event in all_events:
+                    count += 1
+
+                    if count > scanningCountThreshold:
+                        logName = f"{threatName}-{event['timestamp']}"
+                        # self.add_threat(ip, logName, all_events[:1])
+                        self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
+                        count = 0
+    
 
     def display_Events_and_calc_threat_level(self):
         for ip, deviceData in self.devices.items():
