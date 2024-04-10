@@ -47,6 +47,7 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
    * Connect to server: 
       - Username - root
       - Password - what you set it (admin)
+
 ## 6. Import the SQL scripts to make a database
 - Open MySQL Workbench and connect to the local instance using root as username and admin as password, then click "Remember Login".
 - Navigate to the "File" tab and select "Open SQL Script".
@@ -77,9 +78,11 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 
 ### 3. Fix the broken Snort config file and create missing files. 
   - This will go over alot of the same as this youtube, but I will shorten it to steps shown below to save you time. https://www.youtube.com/watch?v=naLbhKW62nY
+  
 #### 3.1 Download the rules folder and snort.conf from this github.
   - Replace the rules folder at C:\Snort\rules with the downloaded folder. If the rules-folder doesn't exist, paste it in anyway.
   - Replace the snort.conf at C:\Snort\etc\snort.conf with the downloaded file. 
+  - Open the snort.conf, find "ipvar HOME_NET any", and change the "any" to your PC's local address. 
 
 #### 3.2 Check if the alert.ids file exists
 - Check if the alert.ids file exists in C:\Snort\log\alert.ids. If it doesn't exist, or the log-folder itself doesn't exist. Create both, with the alert.ids file *must* be empty with no whitespace with no whitespace.
