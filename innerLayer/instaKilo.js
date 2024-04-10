@@ -271,11 +271,8 @@ class WebSocketServer {
 
   findLocation(ip) {
     if (ip.includes(':')) {
-        // Extract the IPv4 part from the IPv6 address
         const ipv4Part = ip.split(':').pop();
-        // Remove the prefix '::ffff:' if present
         const ipv4 = ipv4Part.includes('::ffff:') ? ipv4Part.replace('::ffff:', '') : ipv4Part;
-        // Continue with IPv4 logic for the converted address
         ip = ipv4;
     }
     const ip_ranges = {
