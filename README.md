@@ -51,6 +51,7 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - Open MySQL Workbench and connect to the local instance using root as username and admin as password, then click "Remember Login".
 - Navigate to the "File" tab and select "Open SQL Script".
 - Locate the "HybridIDPS-main\outerLayer\sqlScripts" folder and open the desired scripts individually.
+- Execute the "wipes_and_Creates_Database_and_Tables".
 
 ## 7. Run the project
 - Terminate all running programs to ensure a clean restart.
