@@ -30,12 +30,13 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 ## 4. Run instaKilo.js and React Interface
 - ```cd innerLayer```, run the javascript file ```node instaKilo.js```.
 - Confirm that the message "WebSocket server is running on port 8100" appears. Ignore the message about being unable to connect to the MySQL database for now.
+- Open a new terminal.
 - ```cd userinterface```, run the command ```npm start```.
 - If all set, the web app window will open in your default browser shortly.
 - In VSCode, open "innerLayer.py" and run it. If it errors out, install MySQL Connector Python by ```pip install mysql-connector-python``` in terminal.
 
 ## 5. Install MySQL: https://dev.mysql.com/downloads/installer/ 
-- Download the “Windows (x86, 32-bit), MSI Installer” with the larger file size.
+- Download the “Windows (x86, 32-bit), MSI Installer” (Community Installer) with the larger file size.
 - Then run the installer (The key ones are noted below, just next other ones and execute them):
    * Setup type: Full
    * Development Computer
@@ -50,6 +51,7 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - Open MySQL Workbench and connect to the local instance using root as username and admin as password, then click "Remember Login".
 - Navigate to the "File" tab and select "Open SQL Script".
 - Locate the "HybridIDPS-main\outerLayer\sqlScripts" folder and open the desired scripts individually.
+- Execute the "wipes_and_Creates_Database_and_Tables".
 
 ## 7. Run the project
 - Terminate all running programs to ensure a clean restart.
