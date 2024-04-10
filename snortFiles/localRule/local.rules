@@ -24,7 +24,7 @@
 
 
 # PORT SCAN DETECTION
-alert tcp any any -> $HOME_NET 1:2048 (msg:"Possible Port Scanning"; flags:S; detection_filter: track by_src, count 10, seconds 60; sid:1000002;)
+alert tcp any any -> $HOME_NET 1:2048 (msg:"Possible Port Scanning"; flags:S; detection_filter: track by_src, count 30, seconds 30; sid:1000002;)
 
 
 # FLOOD/DOS ATTACK DETECTION
