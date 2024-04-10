@@ -43,6 +43,7 @@ def find_location(ip):
             end_ip_int = int(''.join([f'{int(x):08b}' for x in end_ip.split('.')]), 2)
             if start_ip_int <= ip_int <= end_ip_int:
                 return location
+            
     except Exception as E:
         print(f"[Warning]: find_location() failed with ip: {ip}")
         

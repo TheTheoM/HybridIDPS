@@ -138,6 +138,12 @@ class WebSocketServer {
   
   handleConnection(socket, req) {
     let device_ip_address = req.connection.remoteAddress;
+
+    if (device_ip_address.includes(':')) {
+      const ipv4Part = device_ip_address.split(':').pop();
+      const ipv4 = ipv4Part.includes('::ffff:') ? ipv4Part.replace('::ffff:', '') : ipv4Part;
+      device_ip_address = ipv4;
+    }
     
     let geolocation       = this.findLocation(device_ip_address)   //We will implement a custom routing table, so we don't have to actual vpn to different locations to simulate this
                                           // For example 192.168.1.0 - 192.168.1.10 will be sydney then .10 to .20 will be London for example.  This will not change the 
