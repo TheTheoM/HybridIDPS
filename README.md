@@ -98,4 +98,24 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
       * To:
          - interface_Number = list_interfaces(find_Interface_subString = 'Ethernet Controller')
 - This step is necessary as your interface number *will* change over time, so this way the computer will select the correct one. 
-  
+
+## 4. Install MySQL: https://dev.mysql.com/downloads/installer/ 
+- Download the “Windows (x86, 32-bit), MSI Installer” with the larger file size.
+- Then run the installer (The key ones are noted below, just next other ones and execute them):
+   * Setup type: Full
+   * Development Computer
+   * MySQL Root password (don’t lose it): whatever you want (admin)
+   * Add user (this is obtain through the innerLayer.py): 
+      - Username - Hybrid_IDPS
+      - Password - css2
+   * Connect to server: 
+      - Username - root
+      - Password - what you set it (admin)
+## 5. Import the SQL scripts to make a database
+- Open MySQL Workbench and connect to the local instance using root as username and admin as password, then click "Remember Login".
+- Navigate to the "File" tab and select "Open SQL Script".
+- Locate the "HybridIDPS-main\outerLayer\sqlScripts" folder and open the desired scripts individually.
+
+## 6. To run the outerLayer now its setup:
+ - Run snortRunner.py (if not already)
+ - run outerLayer.py
