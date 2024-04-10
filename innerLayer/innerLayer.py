@@ -1,4 +1,5 @@
 import time
+from datetime import datetime, timedelta, timezone
 import importlib
 from sqlConnector import MySQLConnection
 try:
@@ -16,8 +17,9 @@ class InnerLayer():
         # self.threat_counts = {} #This may needs to be removed, work in progress
         self.threatTable = {
             "spamCredentials":     0.2,
-            "massReporting":       0.3,
-            "massAccountCreation": 0.5,
+            "massReporting":       0.2,
+            "massAccountCreationIP": 0.5,
+            "massAccountCreationGeo": 0.7,
         }
         self.central_analyzer()
 
@@ -35,7 +37,7 @@ class InnerLayer():
 
                 self.analyze_mass_reporting()
 
-                self.analyze_mass_account_creation()
+                self.analyze_mass_account_creation_ip()
                 
                 ###### Analyzer Functions ######
 
@@ -47,57 +49,77 @@ class InnerLayer():
     def analyze_spam_credentials(self):
         event_type = 'invalidCredentials'
         threatName = "spamCredentials"
+        threshold = 10
+
         threat_level = self.threatTable[threatName]
         results = self.database.execute_query(f"SELECT * from hybrid_idps.innerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
         results = self.extract_ips(results)
+
         for ip, all_events in results.items():
             count = 0
             for event in all_events:
                 count += 1
-                if count > 10:
+                if count > threshold:
                     logName = f"{threatName}-{event['timestamp']}"
                     self.add_threat(logName, threatName,  event['username'], event['target_username'], event['ip_address'], event['geolocation'], event['timestamp'],
                                     threatName, threat_level, event['payload'])
                     count = 0
-
-                    # I have this one here but it seems to always be called so it is just constanly being added 1, my logic may be wrong
-                    # self.threat_counts[threatName] = self.threat_counts.get(threatName, 0) + 1
 
     def analyze_mass_reporting(self):
         event_type = 'reportUserByUsername'
         threatName = "massReporting"
+        threshold = 100
+        time_frame = 2
+        current_time = datetime.now(timezone.utc)
+        time_limit = current_time - timedelta(minutes=time_frame)
+
         threat_level = self.threatTable[threatName]
-        results = self.database.execute_query(f"SELECT * from hybrid_idps.innerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
-        results = self.extract_ips(results)
-        for ip, all_events in results.items():
+        results = self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayer WHERE event_type = '{event_type}' AND timestamp >= '{time_limit.strftime('%Y-%m-%d %H:%M:%S')}' ORDER BY timestamp DESC")
+        results = self.extract_user(results)
+
+        for user, user_events in results.items():
             count = 0
-            for event in all_events:
+            for event in user_events:
                 count += 1
-                if count > 3:
+                if count > threshold:
                     logName = f"{threatName}-{event['timestamp']}"
                     self.add_threat(logName, threatName,  event['username'], event['target_username'], event['ip_address'], event['geolocation'], event['timestamp'],
                                     threatName, threat_level, event['payload'])
                     count = 0
 
 
-##    This thing will need to be altered and depends on how we are going to handle registering, cause you are already classified as registered on our lauched computers ## 
+    def analyze_mass_account_creation_ip(self):   
+        event_type = 'registrationSuccess'
+        threatName = "massAccountCreationIP"
+        threshold = 100
+        time_frame = 2
+        current_time = datetime.now(timezone.utc)
+        time_limit = current_time - timedelta(minutes=time_frame)
 
-    def analyze_mass_account_creation(self):   
-        event_type = 'register'
-        threatName = "massAccountCreation"
         threat_level = self.threatTable[threatName]
-        results = self.database.execute_query(f"SELECT * from hybrid_idps.innerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
+        results = self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayer WHERE event_type = '{event_type}' AND timestamp >= '{time_limit.strftime('%Y-%m-%d %H:%M:%S')}' ORDER BY timestamp DESC")
         results = self.extract_ips(results)
+
         for ip, all_events in results.items():
             count = 0
             for event in all_events:
                 count += 1
-                if count > 3:
+                if count > threshold:
                     logName = f"{threatName}-{event['timestamp']}"
-                    # self.add_threat(ip, logName, all_events[:1])
                     self.add_threat(logName, threatName,  event['username'], event['target_username'], event['ip_address'], event['geolocation'], event['timestamp'],
                                     threatName, threat_level, event['payload'])
                     count = 0
+
+    # def analyze_mass_account_creation_geo(self):
+    #     event_type = 'register'
+    #     threatName = "massAccountCreationGeo"
+    #     threshold = 3
+
+    #     threat_level = self.threatTable[threatName]
+    #     results = self.database.execute_query(f"SELECT geolocation from hybrid_idps.innerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
+    #     results = self.extract_geo(results)
+
+
         
     def display_Events_and_calc_threat_level(self):
         for ip, deviceData in self.devices.items():
@@ -127,6 +149,24 @@ class InnerLayer():
                 ip_dict[ip] = []
             ip_dict[ip].append(entry)
         return ip_dict
+    
+    def extract_geo(self, results):
+        geo_dict = {}
+        for entry in results:
+            geo = entry['geolocation']
+            if geo not in geo_dict:
+                geo_dict[geo] = []
+            geo_dict[geo].append(entry)
+        return geo_dict
+    
+    def extract_user(self, results):
+        user_dict = {}
+        for entry in results:
+            user = entry['username']
+            if user not in user_dict:
+                user_dict[user] = []
+            user_dict[user].append(entry)
+        return user_dict
 
     def add_devices(self):
         results = self.database.execute_query(f"SELECT DISTINCT ip_address from hybrid_idps.innerLayer")
