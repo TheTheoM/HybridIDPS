@@ -20,11 +20,11 @@
 #-------------
 
 # PINGS DETECTION
-# alert icmp any any -> $HOME_NET any (msg:"ICMP Ping"; sid:1000001;)
+# alert icmp any any -> $HOME_NET any (msg:"ICMP Ping"; sid:10000001;)
 
 
 # PORT SCAN DETECTION
-alert tcp any any -> $HOME_NET 1:2048 (msg:"Possible Port Scanning"; flags:S; detection_filter: track by_src, count 30, seconds 30; sid:1000002;)
+alert tcp any any -> $HOME_NET 1:2048 (msg:"Possible Port Scanning"; flags:S; detection_filter: track by_src, count 30, seconds 30; sid:10000002;)
 
 
 # FLOOD/DOS ATTACK DETECTION
@@ -41,10 +41,10 @@ alert tcp any any -> $HOME_NET 22 (msg:"Possible SSH Brute Force"; flags: S; det
 
 
 # INCOMING TRAFFIC DETECTION
-alert tcp any any -> $HOME_NET any (msg:"Incoming TCP Traffic"; sid:100000010; rev:1;)
-alert udp any any -> $HOME_NET any (msg:"Incoming UDP Traffic"; sid:100000011; rev:1;)
+#alert tcp any any -> $HOME_NET any (msg:"Incoming TCP Traffic"; sid:10000010; rev:1;)
+#alert udp any any -> $HOME_NET any (msg:"Incoming UDP Traffic"; sid:10000011; rev:1;)
 
 
 # OUTGOING TRAFFIC DETECTION
-alert tcp $HOME_NET any -> any any (msg:"Outgoing TCP Traffic"; sid:100000012; rev:1;)
-alert udp $HOME_NET any -> any any (msg:"Outgoing UDP Traffic"; sid:100000013; rev:1;)
+#alert tcp $HOME_NET any -> any any (msg:"Outgoing TCP Traffic"; sid:100000012; rev:1;)
+#alert udp $HOME_NET any -> any any (msg:"Outgoing UDP Traffic"; sid:100000013; rev:1;)
