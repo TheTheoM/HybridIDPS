@@ -145,8 +145,8 @@ def check_file_changes(file_path, file_Check_Interval, displayAlerts, mySqlConne
                     #Sending Data to server
                     if displayAlerts:
                         for alert in newSnortAlerts:
-                            (src_ip, dest_ip, dateTime, alertId, alertName, src_port, dest_port, protocol) = alert
-                            print(f"Source IP: {src_ip}, Destination IP: {dest_ip}, Date/Time: {dateTime}, Alert ID: {alertId}, Alert Name: {alertName}, Source Port: {src_port}, Destination Port: {dest_port}, Protocol: {protocol}")
+                            (src_ip, dest_ip, dateTime, alertName, threat_level, src_port, dest_port, protocol) = alert
+                            print(f"Source IP: {src_ip}, Destination IP: {dest_ip}, Date/Time: {dateTime}, Alert Name: {alertName}, Threat Level: {threat_level}, Source Port: {src_port}, Destination Port: {dest_port}, Protocol: {protocol}")
 
                             
                     mySqlConnection.add_data_to_outer_layer_bulk(newSnortAlerts)
@@ -242,7 +242,7 @@ def handle_Snort_Alerts(displayAlerts, fileData, read_Up_To):
                 geolocation = find_location(src_ip)
 
                 threat_level = CalculateThreatLevel() #Always 0 Need to Complete.
-                dataLine = (src_ip, geolocation, isoDateTime, alertName, threat_level,  src_port, dest_port, protocol)
+                dataLine = (src_ip, geolocation, isoDateTime, alertName, threat_level, src_port, dest_port, protocol)
 
                 
                 newSnortAlerts.append(dataLine)
