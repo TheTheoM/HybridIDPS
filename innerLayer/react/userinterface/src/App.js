@@ -3,13 +3,17 @@ import logo from './logo.svg';
 import './App.css';
 import LoginPage from './LoginPage.js';
 import InstaKiloClient from './InstaKiloClient/InstaKiloClient.js';
+import BanWindow from './BanWindow.js'
+
 function App() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const [isConnected, setIsConnected] = useState(false); 
   const [isRegistered, setIsRegistered] = useState(false); 
+  const [isUsernameBanned, setIsUsernameBanned] = useState(false); 
   const [isLoggedIn, setIsLoggedIn] = useState(0);
+  const [isBanned, setIsBanned] = useState(0);
   const [invalidPassword, setInvalidPassword] = useState(0); 
   const [requestedUserData, setRequestedUserData] = useState({}); 
   const [searchedUserList, setSearchedUserList] = useState({}); 
@@ -49,6 +53,14 @@ function App() {
         case 'registrationSuccess':
           setIsRegistered(true);
           break;
+
+        case 'usernameTaken':
+          setIsUsernameBanned(1)
+          break;
+
+        case 'banned':
+          setIsBanned(1)
+          break;
       
         case 'viewFeedAndUser':
           console.log("Logged In Successfully");
@@ -87,13 +99,21 @@ function App() {
   }, []);
 
   return (
-    <div className="App">
-      {isLoggedIn ?
-        <InstaKiloClient username = {username} webSocket = {webSocket} requestedUserData = {requestedUserData} searchedUserList = {searchedUserList} searchedPostList = {searchedPostList} postList = {postList}/>
-      :
-        <LoginPage webSocket = {webSocket} isConnected = {isConnected} isRegistered = {isRegistered} username = {username} setUsername = {setUsername}
-                password = {password} setPassword = {setPassword} email = {email} setEmail = {setEmail} invalidPassword = {invalidPassword}/>
-      }
+    <div className="App"> 
+      {!isBanned ? 
+        <>
+          {isLoggedIn ?
+            <InstaKiloClient username = {username} webSocket = {webSocket} requestedUserData = {requestedUserData} searchedUserList = {searchedUserList} searchedPostList = {searchedPostList} postList = {postList}/>
+          :
+            <LoginPage webSocket = {webSocket} isConnected = {isConnected} isRegistered = {isRegistered} username = {username} setUsername = {setUsername}
+                    password = {password} setPassword = {setPassword} email = {email} setEmail = {setEmail} invalidPassword = {invalidPassword} 
+                    isUsernameBanned = {isUsernameBanned}
+            />
+          }
+        </>
+        : <BanWindow/>}
+
+    
     </div>
   );
 }

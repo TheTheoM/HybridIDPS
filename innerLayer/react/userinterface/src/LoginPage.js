@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-function LoginPage({webSocket, isConnected, isRegistered, username, setUsername,  password, setPassword,  email, setEmail, invalidPassword}) {
+function LoginPage({webSocket, isConnected, isRegistered, username, setUsername,  password, setPassword,  email, setEmail, invalidPassword, isUsernameBanned}) {
   const handleUsernameChange = (event) => {
     setUsername(event.target.value);
   };
@@ -55,7 +55,7 @@ function LoginPage({webSocket, isConnected, isRegistered, username, setUsername,
         </div> 
       ) : isRegistered ? (
         <div className='container'>
-          <div className='register_and_logIn' style={{border: invalidPassword ? '2px solid rgb(243, 105, 90)' : ''}}>
+          <div className='register_and_logIn' style={{border: invalidPassword ? '2px solid rgb(243, 105, 90)' : '2px solid gray'}}>
             <input type="text" placeholder="Username" value={username} onChange={handleUsernameChange} />
             <input type="password" placeholder="Password" value={password} onChange={handlePasswordChange}
                   onKeyDown={(e) => { if (e.key === "Enter") {handleLogIn()}}}/>
@@ -65,14 +65,18 @@ function LoginPage({webSocket, isConnected, isRegistered, username, setUsername,
           </div>
         </div>
       ) : (
-        <div className='container'>
-          <div className='register_and_logIn'>
+        <div className='container'> 
+          <div className='register_and_logIn' style={{ border: isUsernameBanned ? '2px solid red' : '2px solid gray' }}>
           <input type="text" placeholder="Username" value={username} onChange={handleUsernameChange} />
           <input type="password" placeholder="Password" value={password} onChange={handlePasswordChange} 
                  />
           <input type="email" placeholder="Email" value={email} onChange={handleEmailChange} 
           onKeyDown={(e)=>{if (e.key === "Enter") {handleRegistration()}}}/>
           <button onClick={handleRegistration}>Register</button>
+
+          {isUsernameBanned ? <p style={{'color': 'red'}}> Username Banned </p> : ""}
+
+          
           </div>
         </div>
       )}

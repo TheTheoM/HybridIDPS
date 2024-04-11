@@ -100,9 +100,9 @@ class InnerLayer():
                     count = 0
         
     def display_Events_and_calc_threat_level(self):
-        for ip, deviceData in self.devices.items():
+        for username, deviceData in self.devices.items():
             print("\n")
-            print(f"IP: {ip}")
+            print(f"username: {username}")
             logs = deviceData["logs"]
             threatLevel = 0
             for threatName, threadType in logs.items():
@@ -110,7 +110,7 @@ class InnerLayer():
                 threatLevel += self.threatTable[threadType]
                 
             if threatLevel > 1: threatLevel = 1
-            self.set_threat_level(ip, threatLevel)
+            self.set_threat_level(username, threatLevel)
             color_code = "\033[92m"  # Green
             if threatLevel > 0.5:
                 color_code = "\033[91m"  # Red
@@ -129,36 +129,36 @@ class InnerLayer():
         return ip_dict
 
     def add_devices(self):
-        results = self.database.execute_query(f"SELECT DISTINCT ip_address from hybrid_idps.innerLayer")
-        ip_addresses = [ip['ip_address'] for ip in results] #Possibly IPV6
+        results = self.database.execute_query(f"SELECT DISTINCT username from hybrid_idps.innerLayer")
+        usernameList = [result['username'] for result in results] #Possibly IPV6
         
-        for ip in ip_addresses:
-            if ip.startswith("::ffff:"):     # ip_address ::ffff:192.168.1.99
-                ip = ip.split(":")[-1]       # ip_address 192.168.1.99
-            if ip not in self.devices:
-                self.devices[ip] = {'threatLevel': 0, 'logs': {}}
+        for username in usernameList:
+            # if ip.startswith("::ffff:"):     # ip_address ::ffff:192.168.1.99
+            #     ip = ip.split(":")[-1]       # ip_address 192.168.1.99
+            if username not in self.devices:
+                self.devices[username] = {'threatLevel': 0, 'logs': {}}
         
         
     def add_threat(self, logName, threatName, username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload):
         if ip_address.startswith("::ffff:"):     # ip_address ::ffff:192.168.1.99
             ip_address = ip_address.split(":")[-1] # ip_address 192.168.1.99
         
-        if ip_address in self.devices:
-            device = self.devices[ip_address]
+        if username in self.devices:
+            device = self.devices[username]
             threatLevel = self.threatTable[threatName]
 
             if logName not in device['logs']:
-                device = self.devices[ip_address]
+                device = self.devices[username]
                 device['logs'][logName] = threatName
                 self.database.add_threat_to_inner_Layer_Threats_DB(username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload)
         else:
             print(f"Failed to add_threat. Device with IP address {ip_address} does not exist.")
             
-    def set_threat_level(self, ip_address, newThreatLevel):
-        if ip_address in self.devices:
-            device = self.devices[ip_address]['threatLevel'] = newThreatLevel
+    def set_threat_level(self, username, newThreatLevel):
+        if username in self.devices:
+            device = self.devices[username]['threatLevel'] = newThreatLevel
         else:
-            print(f"Failed to set_threat_level. Device with IP address {ip_address} does not exist.")
+            print(f"Failed to set_threat_level. Device with username {username} does not exist.")
 
 if __name__ == "__main__":
     x = InnerLayer()

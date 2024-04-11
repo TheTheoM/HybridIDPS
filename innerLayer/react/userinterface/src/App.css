@@ -574,3 +574,25 @@ html {
 .register_and_logIn button {
   width: 200px;
 }
+
+.banWindow {
+  border-radius: 15px;
+  border: 3px solid red;
+  height: 500px;
+  width:  500px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.banWindow h1 {
+  font-size: 6em; /* Large font size */
+  font-weight: bold; /* Bold font weight */
+  color: red; /* Red color */
+  text-transform: uppercase; /* All caps */
+  text-shadow: 3px 3px 2px black; /* Shadow effect */
+  text-align: center; /* Center the text */
+  margin: 0px;
+}
