@@ -104,7 +104,7 @@ def CalculateThreatLevel():
 def runSnort(snort_Dirs, interface_Number):
     snort_bin_path = snort_Dirs['Bin Directory']
     snort_config_path = snort_Dirs['Snort Configuration File']
-    snort_command = fr'.\snort -i {interface_Number} -c {snort_config_path} -A full '
+    snort_command = fr'.\snort -i {interface_Number} -c {snort_config_path} -A full -k none'
     full_snort_path = os.path.join(snort_bin_path, 'snort.exe')  # Assuming the executable is named snort.exe
     runas_command = fr'runas /user:Administrator "{snort_command}"'
     try:
@@ -145,8 +145,8 @@ def check_file_changes(file_path, file_Check_Interval, displayAlerts, mySqlConne
                     #Sending Data to server
                     if displayAlerts:
                         for alert in newSnortAlerts:
-                            (src_ip, dest_ip, dateTime, alertName, threat_level, src_port, dest_port, protocol) = alert
-                            print(f"Source IP: {src_ip}, Destination IP: {dest_ip}, Date/Time: {dateTime}, Alert Name: {alertName}, Threat Level: {threat_level}, Source Port: {src_port}, Destination Port: {dest_port}, Protocol: {protocol}")
+                            (src_ip, geolocation, dateTime, alertName, threat_level, src_port, dest_port, protocol) = alert
+                            print(f"Source IP: {src_ip}, Geolocation: {geolocation}, Date/Time: {dateTime}, Alert Name: {alertName}, Threat Level: {threat_level}, Source Port: {src_port}, Destination Port: {dest_port}, Protocol: {protocol}")
 
                             
                     mySqlConnection.add_data_to_outer_layer_bulk(newSnortAlerts)
@@ -219,6 +219,10 @@ def handle_Snort_Alerts(displayAlerts, fileData, read_Up_To):
                 
                 dateTime, src_ip, dest_ip = get_ip_and_time_line(ip_and_time_Line)
                 
+                if alertName == "Outgoing TCP Traffic" or alertName == "Outgoing UDP Traffic" or alertName == "Outgoing ICMP Ping":
+                    # Swap src_ip and dest_ip
+                    src_ip, dest_ip = dest_ip, src_ip
+
                 isoDateTime = dateTime_to_ISO(dateTime)
 
                 protocol = get_protocol(protocol_Line)
