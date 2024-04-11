@@ -3,7 +3,8 @@
 # Function to perform port scan using hping3
 perform_hping3_scan() {
     read -p "Enter target IP address: " target_ip
-    hping3 --scan 1-2048 -S "$target_ip"
+    read -p "Enter source IP address: " source_ip
+    hping3 --scan 1-2048 -S -a "$source_ip" "$target_ip"
 }
 
 # Function to perform port scan using nmap
