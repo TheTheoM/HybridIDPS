@@ -13,7 +13,7 @@ except ImportError:
 
 
 class OuterLayer():
-    def __init__(self):
+    def __init__(self) -> None:
         self.database = MySQLConnection(host='localhost', user='Hybrid_IDPS', password='css2', database='hybrid_idps')
         self.database.setVerbose(False)
         self.database.hazmat_wipe_Table('outerLayerThreats')
@@ -30,14 +30,14 @@ class OuterLayer():
             
         }
 
-
+        self.ipBanList = []
         self.locationBanList = [
             "Prague",
             "Minsk",
-            "New Zealand"
+            "New Zealand",
+            "North Korea",
+            "Romania"
         ]
-
-        self.ipBanList = []
 
 
         self.central_analyzer()
@@ -59,14 +59,13 @@ class OuterLayer():
                 
                 self.analyze_udp_flood() #TODO
 
-
                 self.analyze_icmp_flood() #TODO
 
                 self.analyze_ssh_brute_force() #TODO
                 
                 self.analyze_unusual_incoming_geolocation()
 
-                #self.analyze_unusual_outgoing_geolocation()
+                self.analyze_unusual_outgoing_geolocation()
                 
 
 
@@ -203,8 +202,8 @@ class OuterLayer():
                             count = 0
 
     def analyze_unusual_outgoing_geolocation(self): 
-        event_types = ['Outgoing TCP Traffic', 'Outgoing UDP Traffic']
-        threatName = "Unusual Incoming Traffic"
+        event_types = ['Outgoing TCP Traffic', 'Outgoing UDP Traffic', "Outgoing ICMP Ping"]
+        threatName = "Unusual Outgoing Traffic"
         
         # Define your threshold for determining what constitutes unusual traffic
         threshold = 5  # Placeholder threshold, adjust as needed
@@ -244,7 +243,7 @@ class OuterLayer():
                 color_code = "\033[93m"  # Yellow
             reset_color = "\033[0m"
             print(f"    {color_code}[Threat Level]:   {threatLevel} {reset_color}")
-        print(f"the ban list is {self.ipBanList}")
+        
             
     def extract_ips(self, results):
         ip_dict = {}
