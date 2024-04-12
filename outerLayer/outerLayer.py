@@ -1,14 +1,14 @@
 import time
 import importlib
 import json
-from sqlConnector import MySQLConnection 
-
+import os, sys
+sys.path.append(os.path.abspath("../helperFiles"))
+from sqlConnector import MySQLConnection  
+ 
 try:
     import mysql.connector
 except ImportError:
     print("\033[91mmysql.connector is not installed. Run 'pip install mysql-connector-python' \033[0m")
-
-
 
 class OuterLayer():
     def __init__(self) -> None:

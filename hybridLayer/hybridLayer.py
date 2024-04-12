@@ -1,45 +1,15 @@
 import time
 import importlib
 import json
+import sys, os
+sys.path.append(os.path.abspath("../helperFiles"))
+from sqlConnector import MySQLConnection 
 
 try:
     import mysql.connector
 except ImportError:
     print("\033[91mmysql.connector is not installed. Run 'pip install mysql-connector-python' \033[0m")
 
-
-class MySQLConnection:
-    def __init__(self, host='localhost', user='Hybrid_IDPS', password='css2', database='hybrid_idps'):
-        self.host = host
-        self.user = user
-        self.password = password
-        self.database = database
-        self.connection = None
-        self.verbose = False
-        self.connect()
-
-    def connect(self):
-        self.connection = mysql.connector.connect(
-            host=self.host,
-            user=self.user,
-            password=self.password,
-            database=self.database
-        )
-        if self.connection.is_connected():
-            print(f'Connected to MySQL database as id {self.connection.connection_id}') if self.verbose else None
-        else:
-            print('Failed to connect to MySQL database') if self.verbose else None
-
-    def execute_query(self, sql_query):
-        cursor = self.connection.cursor(dictionary=True)
-        cursor.execute(sql_query)
-        results = cursor.fetchall()
-        cursor.close()
-        return results
-        
-    def disconnect(self):
-        self.connection.close()
-        print('MySQL database connection closed.') if self.verbose else None
 
 class HybridLayer():
     def __init__(self) -> None:
@@ -60,7 +30,19 @@ class HybridLayer():
                 self.add_devices()
                 ###### Analyzer Functions ######
                 
-                self.analyze_port_scanning()
+                # self.database.get_banned_ips()
+
+                usernames = self.database.get_usernames_above_threshold(0.25)
+                
+                
+                print(usernames)
+                
+                ips_by_username = self.database.get_inner_ips_by_username(usernames)
+                
+                print(ips_by_username)
+                
+                threatIps = self.database.get_banned_ips(0.25, False)
+                
                 
                 # self.analyze_log_in()
                 

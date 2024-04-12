@@ -9,9 +9,12 @@ import traceback
 import websocket
 import json
 import sys
+import os, sys
+sys.path.append(os.path.abspath("../helperFiles"))
+from sqlConnector import MySQLConnection  
 from wipeAlertFile import hazmat_wipe_alert_file
-from sqlConnector import MySQLConnection 
 from ipGeoMapper import find_location, subdivide_ip_range
+ 
 
 def list_interfaces(find_Interface_subString = None):
     # If you don't know what interface your running run this.

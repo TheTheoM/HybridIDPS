@@ -1,7 +1,11 @@
 import time
 from datetime import datetime, timedelta, timezone
 import importlib
-from sqlConnector import MySQLConnection
+import sys, os
+sys.path.append(os.path.abspath("../helperFiles"))
+from sqlConnector import MySQLConnection 
+
+
 try:
     import mysql.connector
 except ImportError:
@@ -68,7 +72,7 @@ class InnerLayer():
     def analyze_mass_reporting(self):
         event_type = 'reportUserByUsername'
         threatName = "massReporting"
-        threshold = 100
+        threshold = 1
         time_frame = 2
         current_time = datetime.now(timezone.utc)
         time_limit = current_time - timedelta(minutes=time_frame)
