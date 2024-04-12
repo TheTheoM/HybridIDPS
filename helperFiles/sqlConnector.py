@@ -146,33 +146,36 @@ class MySQLConnection:
 
     def get_ip_threat_levels(self):
         banned_ips = []
-        results = self.execute_query("SELECT ip_address, threat_level FROM outerLayerThreats ORDER BY timestamp DESC")
+        results = self.execute_query("SELECT ip_address, threat_level, timestamp FROM outerLayerThreats ORDER BY timestamp DESC")
         
         ip_threat_levels = {}
         for entry in results:
-            ip_address = entry['ip_address']
+            ip_address   = entry['ip_address']
             threat_level = entry['threat_level']
+            timestamp    = entry['timestamp']
 
             if ip_address in ip_threat_levels:
-                ip_threat_levels[ip_address] += threat_level
+                ip_threat_levels[ip_address]['threat_level'] += threat_level 
             else:
-                ip_threat_levels[ip_address] = threat_level
+                ip_threat_levels[ip_address] = {'threat_level': threat_level, 'timeStamp': timestamp}
                 
         return ip_threat_levels
 
     def get_username_threat_levels(self):
         banned_ips = []
-        results = self.execute_query("SELECT ip_address, threat_level FROM innerLayerThreats ORDER BY timestamp DESC")
+        results = self.execute_query("SELECT ip_address, threat_level, timestamp, username FROM innerLayerThreats ORDER BY timestamp DESC")
         
         ip_threat_levels = {}
         for entry in results:
             ip_address = entry['ip_address']
             threat_level = entry['threat_level']
+            timestamp    = entry['timestamp']
+            username     = entry['username']
             
             if ip_address in ip_threat_levels:
-                ip_threat_levels[ip_address] += threat_level
+                ip_threat_levels[ip_address]['threat_level'] += threat_level 
             else:
-                ip_threat_levels[ip_address] = threat_level
+                ip_threat_levels[ip_address] = {'threat_level': threat_level, 'timeStamp': timestamp, 'username': username}
                 
         return ip_threat_levels
 

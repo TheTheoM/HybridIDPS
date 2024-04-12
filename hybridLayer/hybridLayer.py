@@ -18,7 +18,7 @@ class HybridLayer():
         self.database = MySQLConnection()
         self.devices = {}
         self.threatTable = {
-            "portScanning": 0.2,
+            "Basic-Hybrid-Threat": 0.2,
             "pinging":      0.9,
         }
         
@@ -50,20 +50,40 @@ class HybridLayer():
 
 
     def basic_correlation(self):
-        threatType = "Basic Threat"
+        threatType = "Basic-Hybrid-Threat"
 
         ipThreatLevels       = self.database.get_ip_threat_levels()
         usernameThreatLevels = self.database.get_username_threat_levels()
         
+        common_keys = set(ipThreatLevels.keys()).intersection(usernameThreatLevels.keys()) # Find the intersection of the keys
 
+        common_items = {key: (ipThreatLevels[key], usernameThreatLevels[key]) for key in common_keys}
+                
+        for ip, value in common_items.items():
+            outerLayerData, innerLayerData = value
+            
+            threat_level_outer, timeStamp_outer = outerLayerData.values()
+            
+            threat_level_inner, timeStamp_inner, username = innerLayerData.values()
+
+            combined_threat_level = threat_level_outer + threat_level_inner
+
+
+            if combined_threat_level > self.threshold:
+                if timeStamp_outer > timeStamp_inner:
+                    most_recent = timeStamp_outer
+                else:
+                    most_recent = timeStamp_inner
+                self.add_threat(f"{ip} - {username}", f"{threatType} {most_recent}", threatType)
         
-        
-        print(ipThreatLevels)
-        print(usernameThreatLevels)
+        # print(ipThreatLevels)
+        # print(usernameThreatLevels)
 
 
-        
-
+# {'192.168.1.123': ({'threat_level': 0.8, 'timeStamp': datetime.datetime(2024, 4, 12, 23, 15, 39)},
+#                   {'threat_level': 0.8,  'timeStamp': datetime.datetime(2024, 4, 12, 14, 13, 46)}),
+#  '192.168.1.78': ({'threat_level': 1.8,  'timeStamp': datetime.datetime(2024, 4, 12, 23, 15, 30)},
+#                   {'threat_level': 0.8,  'timeStamp': datetime.datetime(2024, 4, 12, 14, 15, 11)})}   
 
 
     def basic_correlation_old(self):
@@ -131,12 +151,12 @@ class HybridLayer():
             self.devices[ip] = {'threatLevel': 0, 'logs': {}}
                 
     def add_threat(self, ip_address, logName,  log):
-        if ip_address in self.devices:
-            device = self.devices[ip_address]
-            device['logs'][logName] = log
-        else:
-            print(f"Device with IP address {ip_address} does not exist.")
-            
+        if ip_address not in self.devices:
+            self.devices[ip_address] = {'threatLevel': 0, 'logs': {}}
+
+        device = self.devices[ip_address]
+        device['logs'][logName] = log
+        
     def set_threat_level(self, ip_address, newThreatLevel):
         if ip_address in self.devices:
             device = self.devices[ip_address]['threatLevel'] = newThreatLevel
