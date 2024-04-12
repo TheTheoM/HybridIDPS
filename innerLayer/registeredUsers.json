@@ -2,7 +2,7 @@
   [
     "JohnSmith123",
     {
-      "password": "JohnSmith123",    
+      "password": "JohnSmith123",
       "email": "JohnSmith123@gmail.com",
       "posts": [
         {
@@ -998,6 +998,14 @@
     {
       "password": "example_password",
       "email": "example@example.com",
+      "posts": []
+    }
+  ],
+  [
+    "Testing Account",
+    {
+      "password": "testingAccount",
+      "email": "testing@account.com",
       "posts": []
     }
   ]
