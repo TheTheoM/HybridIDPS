@@ -1,14 +1,14 @@
 import time
 import importlib
 import json
-import os, sys
-sys.path.append(os.path.abspath("../helperFiles"))
-from sqlConnector import MySQLConnection  
- 
+from sqlConnector import MySQLConnection 
+
 try:
     import mysql.connector
 except ImportError:
     print("\033[91mmysql.connector is not installed. Run 'pip install mysql-connector-python' \033[0m")
+
+
 
 class OuterLayer():
     def __init__(self) -> None:
@@ -23,10 +23,16 @@ class OuterLayer():
             "UDP Flood Attack": 0.6,
             "ICMP Flood Attack": 0.6,
             "SSH Brute Force Attack": 0.4,
-            "Unsual Incoming Traffic": 0.1,
-            "Unsual Outgoing Traffic": 0.1,
+            "Unusual Incoming Traffic": 0.1,
+            "Unusual Outgoing Traffic": 0.1,
         }
         self.central_analyzer()
+        self.locationBanList = {
+            "Prague"
+            "Minsk"
+            "New Zealand"
+        }
+        self.ipBanList = {              }
 
     def central_analyzer(self):
         interval = 1
@@ -47,7 +53,7 @@ class OuterLayer():
 
                 self.analyze_ssh_brute_force() #TODO
                 
-                #self.analyze_unusual_incoming_geolocation()
+                self.analyze_unusual_incoming_geolocation()
 
                 #self.analyze_unusual_outgoing_geolocation()
                 
@@ -154,35 +160,16 @@ class OuterLayer():
                     self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
                     count = 0
 
-    def analyze_unusual_incoming_geolocation(self):
-        event_types = ['Incoming TCP Traffic', 'Incoming UDP Traffic']
-        threatName = "Unsual Incoming Traffic"
-        
-        scanningCountThreshold = 1 #Over 20 its portScanning (tuneable)
-        
-        for event_type in event_types:
-            results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
-            results = self.extract_ips(results)
-            for ip, all_events in results.items():
-                count = 0
-                for event in all_events:
-                    count += 1
-
-                    if count > scanningCountThreshold:
-                        logName = f"{threatName}-{event['timestamp']}"
-                        # self.add_threat(ip, logName, all_events[:1])
-                        self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
-                        count = 0
+    
     
     def analyze_unusual_incoming_geolocation(self):
-        event_types = ['Incoming TCP Traffic', 'Incoming UDP Traffic']
+        event_types = ['Outgoing TCP Traffic', 'Outgoing UDP Traffic']
         threatName = "Unusual Incoming Traffic"
         
         # Define your threshold for determining what constitutes unusual traffic
         threshold = 5  # Placeholder threshold, adjust as needed
         
-        # Define the list of unusual geolocations
-        unusual_geolocations = ["Prague", "Finland", "Mars"]
+        
         
         for event_type in event_types:
             results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
@@ -193,21 +180,18 @@ class OuterLayer():
                     count += 1
 
                     # Check if the geolocation is in the list of unusual geolocations
-                    if event['geolocation'] in unusual_geolocations:
+                    if event['geolocation'] in self.locationBanList:
                         if count > threshold:
                             logName = f"{threatName}-{event['timestamp']}"
                             self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
                             count = 0
 
-    def analyze_unusual_outgoing_geolocation(self):
+    def analyze_unusual_outgoing_geolocation(self): 
         event_types = ['Outgoing TCP Traffic', 'Outgoing UDP Traffic']
-        threatName = "Unsual Outgoing Traffic"
+        threatName = "Unusual Incoming Traffic"
         
         # Define your threshold for determining what constitutes unusual traffic
         threshold = 5  # Placeholder threshold, adjust as needed
-        
-        # Define the list of unusual geolocations
-        unusual_geolocations = ["Prague", "Finland", "Mars"]
         
         for event_type in event_types:
             results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
@@ -218,7 +202,7 @@ class OuterLayer():
                     count += 1
 
                     # Check if the geolocation is in the list of unusual geolocations
-                    if event['geolocation'] in unusual_geolocations:
+                    if event['geolocation'] in self.locationBanList:
                         if count > threshold:
                             logName = f"{threatName}-{event['timestamp']}"
                             self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
