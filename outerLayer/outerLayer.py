@@ -13,7 +13,7 @@ except ImportError:
 
 
 class OuterLayer():
-    def __init__(self) -> None:
+    def __init__(self):
         self.database = MySQLConnection(host='localhost', user='Hybrid_IDPS', password='css2', database='hybrid_idps')
         self.database.setVerbose(False)
         self.database.hazmat_wipe_Table('outerLayerThreats')
@@ -29,13 +29,20 @@ class OuterLayer():
             "Unusual Outgoing Traffic": 0.1,
             
         }
-        self.central_analyzer()
-        self.locationBanList = {
-            "Prague"
-            "Minsk"
+
+
+        self.locationBanList = [
+            "Prague",
+            "Minsk",
             "New Zealand"
-        }
-        self.ipBanList = {              }
+        ]
+
+        self.ipBanList = []
+
+
+        self.central_analyzer()
+        
+ 
 
     def central_analyzer(self):
         interval = 1
@@ -61,13 +68,17 @@ class OuterLayer():
 
                 #self.analyze_unusual_outgoing_geolocation()
                 
+
+
+
                 ###### Analyzer Functions ######
                 
-                
+                self.ipBanList = self.database.get_banned_ips(self.ban_threshold)
+
                 self.display_Events_and_calc_threat_level()
                 
                 self.database.get_banned_ips(self.ban_threshold)
-                self.ban_threshold()
+                
 
                 start_time = time.time()
                 self.database.disconnect()
@@ -168,7 +179,7 @@ class OuterLayer():
     
     
     def analyze_unusual_incoming_geolocation(self):
-        event_types = ['Outgoing TCP Traffic', 'Outgoing UDP Traffic']
+        event_types = ['Incoming TCP Traffic', 'Incoming UDP Traffic',"Incoming ICMP Ping"]
         threatName = "Unusual Incoming Traffic"
         
         # Define your threshold for determining what constitutes unusual traffic
@@ -233,6 +244,7 @@ class OuterLayer():
                 color_code = "\033[93m"  # Yellow
             reset_color = "\033[0m"
             print(f"    {color_code}[Threat Level]:   {threatLevel} {reset_color}")
+        print(f"the ban list is {self.ipBanList}")
             
     def extract_ips(self, results):
         ip_dict = {}
@@ -270,9 +282,7 @@ class OuterLayer():
         else:
             print(f"Device with IP address {ip_address} does not exist.")
 
-    def fill_ban_table(self):
-        self.ipBanList += self.database.get_banned_ips(self.ban_threshold)
-        print(f"Ban List contains {self.ipBanList} ")
+
 
 
 if __name__ == "__main__":
