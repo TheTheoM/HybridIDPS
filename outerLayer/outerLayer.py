@@ -1,3 +1,4 @@
+import subprocess
 import time
 import importlib
 import json
@@ -17,6 +18,7 @@ class OuterLayer():
         self.database = MySQLConnection(host='localhost', user='Hybrid_IDPS', password='css2', database='hybrid_idps')
         self.database.setVerbose(False)
         self.database.hazmat_wipe_Table('outerLayerThreats')
+        self.remove_firewall_rules()
         self.devices = {}
         self.ban_threshold = 1
         self.threatTable = {
@@ -76,8 +78,9 @@ class OuterLayer():
 
                 self.display_Events_and_calc_threat_level()
                 
-                self.database.get_banned_ips(self.ban_threshold)
+                # self.database.get_banned_ips(self.ban_threshold)
                 
+                self.generate_firewall_rules(self.ipBanList)
 
                 start_time = time.time()
                 self.database.disconnect()
@@ -283,7 +286,54 @@ class OuterLayer():
         else:
             print(f"Device with IP address {ip_address} does not exist.")
 
+    def run_powershell_as_admin(self, command):
+        # Create a subprocess with administrative privileges
+        process = subprocess.Popen(['powershell.exe', '-Command', command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output, error = process.communicate()
+        if process.returncode != 0:
+            raise subprocess.CalledProcessError(process.returncode, command, output=output, stderr=error)
+        return output.decode('utf-8')
 
+    def generate_firewall_rules(self, banned_ips):
+        existing_rules = self.get_existing_firewall_rules()  # Get existing firewall rules
+        
+        powershell_commands = []
+        for ip in banned_ips:
+            # Check if a rule for the IP already exists
+            if not any(f"Block Snort Inbound {ip}" in rule or f"Block Snort Outbound {ip}" in rule for rule in existing_rules):
+                # Create PowerShell commands to block inbound and outbound traffic from the banned IP
+                powershell_commands.append(f'New-NetFirewallRule -DisplayName "Block Snort Inbound {ip}" -Direction Inbound -LocalPort Any -Protocol Any -Action Block -RemoteAddress {ip}')
+                powershell_commands.append(f'New-NetFirewallRule -DisplayName "Block Snort Outbound {ip}" -Direction Outbound -LocalPort Any -Protocol Any -Action Block -RemoteAddress {ip}')
+            
+        # Execute all PowerShell commands as administrator
+        for cmd in powershell_commands:
+            try:
+                self.run_powershell_as_admin(cmd)
+            except subprocess.CalledProcessError as e:
+                print(f"Error executing PowerShell command: {e}")
+                # Handle the error here, such as logging or displaying an error message to the user
+
+    def get_existing_firewall_rules(self):
+        # PowerShell command to get existing firewall rules with "Block Snort" in the display name
+        try:
+            # Run PowerShell command
+            output = self.run_powershell_as_admin("Get-NetFirewallRule | Where-Object { $_.DisplayName -like 'Block Snort*' } | Select-Object -ExpandProperty DisplayName")
+            # Split the output by newline to get individual rule names
+            existing_rule_names = output.strip().split('\n')
+            return existing_rule_names
+        except subprocess.CalledProcessError as e:
+            print(f"Error executing PowerShell command: {e}")
+            # Handle the error here, such as logging or displaying an error message to the user
+            return []
+
+    def remove_firewall_rules(self):
+        try:
+            # Remove all firewall rules with display names containing "Block Snort" as administrator
+            self.run_powershell_as_admin("Remove-NetFirewallRule -DisplayName 'Block Snort*'")
+            print("Firewall rules removed successfully.")
+        except subprocess.CalledProcessError as e:
+            print(f"Error removing firewall rules: {e}")
+            # Handle the error here, such as logging or displaying an error message to the user
 
 
 if __name__ == "__main__":
