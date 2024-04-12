@@ -1,6 +1,9 @@
 import time
 import importlib
-from sqlConnector import MySQLConnection
+import os, sys
+sys.path.append(os.path.abspath("../helperFiles"))
+from sqlConnector import MySQLConnection  
+
 try:
     import mysql.connector
 except ImportError:

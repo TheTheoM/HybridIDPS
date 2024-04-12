@@ -93,7 +93,52 @@ class MySQLConnection:
         cursor.close()
         print('Data added to innerLayerThreats successfully.')  if self.verbose else None
         return True
+    
+    
+    def get_inner_ips_by_username(self, usernames):
+        usernameIPs = {}
+        for username in usernames:
+            sql_query = f"SELECT distinct ip_address FROM hybrid_idps.innerLayerThreats WHERE username = '{username}'"
+            for result in self.execute_query(sql_query):
+                for IP in result['ip_address']:
+                    usernameIPs.setdefault(username, [])
+                    usernameIPs[username].append(IP)
+                    
+        return usernameIPs
+    
+    def get_usernames_above_threshold(self, threat_Threshold):
+        sql_query = "SELECT username, threat_level FROM hybrid_idps.innerLayerThreats ORDER BY timestamp DESC"
 
+        username_threat_levels = {}
+        
+        for result in self.execute_query(sql_query):
+            username, threat_level = result.values()
+            username_threat_levels.setdefault(username, 0)
+            username_threat_levels[username] += threat_level
+                
+        return [username for username, threat_level in username_threat_levels.items() if threat_level >= threat_Threshold]
+                
+    def get_banned_ips(self, ban_threshold, printUpdates = True):
+        banned_ips = []
+        results = self.execute_query("SELECT ip_address, threat_level FROM outerLayerThreats ORDER BY timestamp DESC")
+        
+        ip_threat_levels = {}
+        for entry in results:
+            ip_address = entry['ip_address']
+            threat_level = entry['threat_level']
+            if ip_address in ip_threat_levels:
+                ip_threat_levels[ip_address] += threat_level
+            else:
+                ip_threat_levels[ip_address] = threat_level
+        
+        for ip_address, total_threat_level in ip_threat_levels.items():
+            if total_threat_level >= ban_threshold and ip_address not in banned_ips:
+                banned_ips.append(ip_address)
+                if printUpdates:
+                    print(f"IP: {ip_address}, Threat Level: {total_threat_level}, Ban Threshold: {ban_threshold}")
+                    print(f"Added {ip_address} to the ban list.")
+
+        return banned_ips
 
 if __name__ == "__main__":
     mySqlConnection = MySQLConnection()
