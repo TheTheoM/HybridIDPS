@@ -2,7 +2,7 @@
   [
     "JohnSmith123",
     {
-      "password": "JohnSmith123",    
+      "password": "JohnSmith123",
       "email": "JohnSmith123@gmail.com",
       "posts": [
         {
@@ -15,7 +15,7 @@
           ],
           "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1280px-Image_created_with_a_mobile_phone.png",
           "timestamp": "2024-03-19T05:52:19.664Z",
-          "likes": 19999999,
+          "likes": 20000000,
           "comments": [
             {
               "username": "JohnSmith123",
@@ -998,6 +998,22 @@
     {
       "password": "example_password",
       "email": "example@example.com",
+      "posts": []
+    }
+  ],
+  [
+    "124",
+    {
+      "password": "124",
+      "email": "124",
+      "posts": []
+    }
+  ],
+  [
+    "999",
+    {
+      "password": "999",
+      "email": "999",
       "posts": []
     }
   ]

@@ -98,12 +98,15 @@ class MySQLConnection:
     def get_inner_ips_by_username(self, usernames):
         usernameIPs = {}
         for username in usernames:
-            sql_query = f"SELECT distinct ip_address FROM hybrid_idps.innerLayerThreats WHERE username = '{username}'"
+            sql_query = f"SELECT distinct username FROM hybrid_idps.innerLayerThreats WHERE username = '{username}'"
             for result in self.execute_query(sql_query):
-                IP = result['ip_address']
-                # for IP in result['ip_address']:
-                usernameIPs.setdefault(username, [])
-                usernameIPs[username].append(IP)
+                username = result['username']
+                sql_query = f"SELECT distinct ip_address FROM hybrid_idps.innerLayer WHERE username = '{username}'"
+                for result in self.execute_query(sql_query):
+                    IP = result['ip_address']
+                    # for IP in result['ip_address']:
+                    usernameIPs.setdefault(username, [])
+                    usernameIPs[username].append(IP)
                     
         return usernameIPs
     
@@ -140,6 +143,38 @@ class MySQLConnection:
                     print(f"Added {ip_address} to the ban list.")
 
         return banned_ips
+
+    def get_ip_threat_levels(self):
+        banned_ips = []
+        results = self.execute_query("SELECT ip_address, threat_level FROM outerLayerThreats ORDER BY timestamp DESC")
+        
+        ip_threat_levels = {}
+        for entry in results:
+            ip_address = entry['ip_address']
+            threat_level = entry['threat_level']
+
+            if ip_address in ip_threat_levels:
+                ip_threat_levels[ip_address] += threat_level
+            else:
+                ip_threat_levels[ip_address] = threat_level
+                
+        return ip_threat_levels
+
+    def get_username_threat_levels(self):
+        banned_ips = []
+        results = self.execute_query("SELECT ip_address, threat_level FROM innerLayerThreats ORDER BY timestamp DESC")
+        
+        ip_threat_levels = {}
+        for entry in results:
+            ip_address = entry['ip_address']
+            threat_level = entry['threat_level']
+            
+            if ip_address in ip_threat_levels:
+                ip_threat_levels[ip_address] += threat_level
+            else:
+                ip_threat_levels[ip_address] = threat_level
+                
+        return ip_threat_levels
 
 if __name__ == "__main__":
     mySqlConnection = MySQLConnection()

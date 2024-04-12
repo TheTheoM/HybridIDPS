@@ -2,6 +2,8 @@ import time
 import importlib
 import json
 import sys, os
+from datetime import datetime
+
 sys.path.append(os.path.abspath("../helperFiles"))
 from sqlConnector import MySQLConnection 
 try:
@@ -19,6 +21,9 @@ class HybridLayer():
             "portScanning": 0.2,
             "pinging":      0.9,
         }
+        
+        self.threshold = 0.25
+        
         self.central_analyzer()
 
     def central_analyzer(self):
@@ -32,18 +37,7 @@ class HybridLayer():
                 
                 # self.database.get_banned_ips()
 
-                usernames = self.database.get_usernames_above_threshold(0.25)
-                
-                print(usernames)
-                
-                ips_by_username = self.database.get_inner_ips_by_username(usernames)
-                
-                print(ips_by_username)
-                
-                threatIps = self.database.get_banned_ips(0.25, False)
-                
-                print(threatIps)
-                
+                self.basic_correlation()
                 
                 # self.analyze_log_in()
                 
@@ -54,40 +48,53 @@ class HybridLayer():
                 start_time = time.time()
                 self.database.disconnect()
 
-    def analyze_port_scanning(self):
-        event_type = 'Port Scanning Detected'
-        threatName = "portScanning"
-        
-        scanningCountThreshold = 20 #Over 20 its portScanning (tuneable)
-        
-        results = self.database.execute_query(f"SELECT * from hybrid_idps.HybridLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
-        results = self.extract_ips(results)
-        for ip, all_events in results.items():
-            count = 0
-            for event in all_events:
-                count += 1
 
-                if count > scanningCountThreshold:
-                    logName = f"{threatName}-{event['timestamp']}"
-                    # self.add_threat(ip, logName, all_events[:1])
-                    self.add_threat(ip, logName, threatName)
-                    count = 0
+    def basic_correlation(self):
+        threatType = "Basic Threat"
 
-    def analyze_log_in(self):
-        event_type = 'invalidCredentials'
-        threatName = "bruteForce"
+        ipThreatLevels       = self.database.get_ip_threat_levels()
+        usernameThreatLevels = self.database.get_username_threat_levels()
         
-        results = self.database.execute_query(f"SELECT * from hybrid_idps.HybridLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
-        results = self.extract_ips(results)
-        for ip, all_events in results.items():
-            count = 0
-            for event in all_events:
-                count += 1
-                if count > 10:
-                    logName = f"{threatName}-{event['timestamp']}"
-                    # self.add_threat(ip, logName, all_events[:1])
-                    self.add_threat(ip, logName, threatName)
-                    count = 0
+
+        
+        
+        print(ipThreatLevels)
+        print(usernameThreatLevels)
+
+
+        
+
+
+
+    def basic_correlation_old(self):
+        threatType = "Basic Threat"
+        
+        usernames = self.database.get_usernames_above_threshold(self.threshold)
+        # print(usernames)
+        ips_by_username = self.database.get_inner_ips_by_username(usernames)
+        # print(f'Inner Layer Threats: {ips_by_username}')
+        threatIps_outerLayer = self.database.get_banned_ips(self.threshold, False)
+        # print(f'Outer Layer Threats: {threatIps_outerLayer}')
+        for IP in threatIps_outerLayer:
+            susUsername = self.find_matching_usernames(IP, ips_by_username)
+            # print(f'Hybrid Threat: {susUsername}')
+            current_datetime = datetime.now()
+            datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+
+            self.add_threat(IP, ips_by_username + " " + datetime_string,  threatType)
+
+
+
+
+
+
+    def find_matching_usernames(self, ip_address, user_ip_dict):
+        matching_usernames = []
+        for username, ip_list in user_ip_dict.items():
+            if ip_address in ip_list:
+                matching_usernames.append(username)
+        return matching_usernames
+
 
     def display_Events_and_calc_threat_level(self):
         for ip, deviceData in self.devices.items():
