@@ -83,6 +83,30 @@ class MySQLConnection:
         cursor.close()
         print('Data added to outerLayerThreats successfully.')  if self.verbose else None
         return True
+    
+    def get_banned_ips(self,ban_threshold):
+        banned_ips = []
+        # Retrieve entries from the outerLayerThreat table
+        results = self.execute_query("SELECT ip_address, threat_level FROM outerLayerThreats ORDER BY timestamp DESC")
+        
+        # Calculate total threat level for each IP address
+        ip_threat_levels = {}
+        for entry in results:
+            ip_address = entry['ip_address']
+            threat_level = entry['threat_level']
+            if ip_address in ip_threat_levels:
+                ip_threat_levels[ip_address] += threat_level
+            else:
+                ip_threat_levels[ip_address] = threat_level
+        
+        # Check if any IP addresses exceed the ban threshold
+        for ip_address, total_threat_level in ip_threat_levels.items():
+            if total_threat_level >= ban_threshold and ip_address not in banned_ips:
+                banned_ips.append(ip_address)
+                print(f"IP: {ip_address}, Threat Level: {total_threat_level}, Ban Threshold: {ban_threshold}")
+                print(f"Added {ip_address} to the ban list.")
+
+        return banned_ips
 
 
 if __name__ == "__main__":

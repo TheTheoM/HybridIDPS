@@ -17,7 +17,6 @@ class OuterLayer():
         self.database.hazmat_wipe_Table('outerLayerThreats')
         self.devices = {}
         self.ban_threshold = 1
-        self.banned_ips = []
         self.threatTable = {
             "Port Scanning": 0.3,
             "TCP Flood Attack": 0.6,
@@ -57,7 +56,7 @@ class OuterLayer():
                 
                 self.display_Events_and_calc_threat_level()
                 
-                self.get_banned_ips()
+                self.database.get_banned_ips(self.ban_threshold)
 
                 start_time = time.time()
                 self.database.disconnect()
@@ -281,28 +280,6 @@ class OuterLayer():
             device = self.devices[ip_address]['threatLevel'] = newThreatLevel
         else:
             print(f"Device with IP address {ip_address} does not exist.")
-
-    def get_banned_ips(self):
-        
-        # Retrieve entries from the outerLayerThreat table
-        results = self.database.execute_query("SELECT ip_address, threat_level FROM outerLayerThreats ORDER BY timestamp DESC")
-        
-        # Calculate total threat level for each IP address
-        ip_threat_levels = {}
-        for entry in results:
-            ip_address = entry['ip_address']
-            threat_level = entry['threat_level']
-            if ip_address in ip_threat_levels:
-                ip_threat_levels[ip_address] += threat_level
-            else:
-                ip_threat_levels[ip_address] = threat_level
-        
-        # Check if any IP addresses exceed the ban threshold
-        for ip_address, total_threat_level in ip_threat_levels.items():
-            if total_threat_level >= self.ban_threshold and ip_address not in self.banned_ips:
-                self.banned_ips.append(ip_address)
-                print(f"IP: {ip_address}, Threat Level: {total_threat_level}, Ban Threshold: {self.ban_threshold}")
-                print(f"Added {ip_address} to the ban list.")
 
 
 if __name__ == "__main__":
