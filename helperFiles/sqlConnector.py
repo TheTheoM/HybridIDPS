@@ -6,7 +6,7 @@ class MySQLConnection:
         self.user = user
         self.password = password
         self.database = database
-        self.verbose = True
+        self.verbose = False
         self.connection = None
         self.connect()
 
@@ -100,9 +100,10 @@ class MySQLConnection:
         for username in usernames:
             sql_query = f"SELECT distinct ip_address FROM hybrid_idps.innerLayerThreats WHERE username = '{username}'"
             for result in self.execute_query(sql_query):
-                for IP in result['ip_address']:
-                    usernameIPs.setdefault(username, [])
-                    usernameIPs[username].append(IP)
+                IP = result['ip_address']
+                # for IP in result['ip_address']:
+                usernameIPs.setdefault(username, [])
+                usernameIPs[username].append(IP)
                     
         return usernameIPs
     

@@ -4,11 +4,11 @@ import json
 import sys, os
 sys.path.append(os.path.abspath("../helperFiles"))
 from sqlConnector import MySQLConnection 
-
 try:
     import mysql.connector
 except ImportError:
     print("\033[91mmysql.connector is not installed. Run 'pip install mysql-connector-python' \033[0m")
+
 
 
 class HybridLayer():
@@ -34,7 +34,6 @@ class HybridLayer():
 
                 usernames = self.database.get_usernames_above_threshold(0.25)
                 
-                
                 print(usernames)
                 
                 ips_by_username = self.database.get_inner_ips_by_username(usernames)
@@ -42,6 +41,8 @@ class HybridLayer():
                 print(ips_by_username)
                 
                 threatIps = self.database.get_banned_ips(0.25, False)
+                
+                print(threatIps)
                 
                 
                 # self.analyze_log_in()
