@@ -240,10 +240,12 @@ class OuterLayer():
             if threatLevel > 1: threatLevel = 1
             self.set_threat_level(ip, threatLevel)
             color_code = "\033[92m"  # Green
-            if threatLevel > 0.5:
-                color_code = "\033[91m"  # Red
-            elif 0 < threatLevel < 0.5:
+            
+            if 0 < threatLevel < 0.5:
                 color_code = "\033[93m"  # Yellow
+            elif threatLevel >= 0.5:
+                color_code = "\033[91m"  # Red
+                
             reset_color = "\033[0m"
             print(f"    {color_code}[Threat Level]:   {threatLevel} {reset_color}")
         

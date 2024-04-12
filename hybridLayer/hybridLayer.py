@@ -2,6 +2,8 @@ import time
 import importlib
 import json
 import sys, os
+from datetime import datetime
+
 sys.path.append(os.path.abspath("../helperFiles"))
 from sqlConnector import MySQLConnection 
 try:
@@ -16,9 +18,12 @@ class HybridLayer():
         self.database = MySQLConnection()
         self.devices = {}
         self.threatTable = {
-            "portScanning": 0.2,
+            "Basic-Hybrid-Threat": 0.2,
             "pinging":      0.9,
         }
+        
+        self.threshold = 0.25
+        
         self.central_analyzer()
 
     def central_analyzer(self):
@@ -32,18 +37,7 @@ class HybridLayer():
                 
                 # self.database.get_banned_ips()
 
-                usernames = self.database.get_usernames_above_threshold(0.25)
-                
-                print(usernames)
-                
-                ips_by_username = self.database.get_inner_ips_by_username(usernames)
-                
-                print(ips_by_username)
-                
-                threatIps = self.database.get_banned_ips(0.25, False)
-                
-                print(threatIps)
-                
+                self.basic_correlation()
                 
                 # self.analyze_log_in()
                 
@@ -54,40 +48,73 @@ class HybridLayer():
                 start_time = time.time()
                 self.database.disconnect()
 
-    def analyze_port_scanning(self):
-        event_type = 'Port Scanning Detected'
-        threatName = "portScanning"
-        
-        scanningCountThreshold = 20 #Over 20 its portScanning (tuneable)
-        
-        results = self.database.execute_query(f"SELECT * from hybrid_idps.HybridLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
-        results = self.extract_ips(results)
-        for ip, all_events in results.items():
-            count = 0
-            for event in all_events:
-                count += 1
 
-                if count > scanningCountThreshold:
-                    logName = f"{threatName}-{event['timestamp']}"
-                    # self.add_threat(ip, logName, all_events[:1])
-                    self.add_threat(ip, logName, threatName)
-                    count = 0
+    def basic_correlation(self):
+        threatType = "Basic-Hybrid-Threat"
 
-    def analyze_log_in(self):
-        event_type = 'invalidCredentials'
-        threatName = "bruteForce"
+        ipThreatLevels       = self.database.get_ip_threat_levels()
+        usernameThreatLevels = self.database.get_username_threat_levels()
         
-        results = self.database.execute_query(f"SELECT * from hybrid_idps.HybridLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
-        results = self.extract_ips(results)
-        for ip, all_events in results.items():
-            count = 0
-            for event in all_events:
-                count += 1
-                if count > 10:
-                    logName = f"{threatName}-{event['timestamp']}"
-                    # self.add_threat(ip, logName, all_events[:1])
-                    self.add_threat(ip, logName, threatName)
-                    count = 0
+        common_keys = set(ipThreatLevels.keys()).intersection(usernameThreatLevels.keys()) # Find the intersection of the keys
+
+        common_items = {key: (ipThreatLevels[key], usernameThreatLevels[key]) for key in common_keys}
+                
+        for ip, value in common_items.items():
+            outerLayerData, innerLayerData = value
+            
+            threat_level_outer, timeStamp_outer = outerLayerData.values()
+            
+            threat_level_inner, timeStamp_inner, username = innerLayerData.values()
+
+            combined_threat_level = threat_level_outer + threat_level_inner
+
+
+            if combined_threat_level > self.threshold:
+                if timeStamp_outer > timeStamp_inner:
+                    most_recent = timeStamp_outer
+                else:
+                    most_recent = timeStamp_inner
+                self.add_threat(f"{ip} - {username}", f"{threatType} {most_recent}", threatType)
+        
+        # print(ipThreatLevels)
+        # print(usernameThreatLevels)
+
+
+# {'192.168.1.123': ({'threat_level': 0.8, 'timeStamp': datetime.datetime(2024, 4, 12, 23, 15, 39)},
+#                   {'threat_level': 0.8,  'timeStamp': datetime.datetime(2024, 4, 12, 14, 13, 46)}),
+#  '192.168.1.78': ({'threat_level': 1.8,  'timeStamp': datetime.datetime(2024, 4, 12, 23, 15, 30)},
+#                   {'threat_level': 0.8,  'timeStamp': datetime.datetime(2024, 4, 12, 14, 15, 11)})}   
+
+
+    def basic_correlation_old(self):
+        threatType = "Basic Threat"
+        
+        usernames = self.database.get_usernames_above_threshold(self.threshold)
+        # print(usernames)
+        ips_by_username = self.database.get_inner_ips_by_username(usernames)
+        # print(f'Inner Layer Threats: {ips_by_username}')
+        threatIps_outerLayer = self.database.get_banned_ips(self.threshold, False)
+        # print(f'Outer Layer Threats: {threatIps_outerLayer}')
+        for IP in threatIps_outerLayer:
+            susUsername = self.find_matching_usernames(IP, ips_by_username)
+            # print(f'Hybrid Threat: {susUsername}')
+            current_datetime = datetime.now()
+            datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+
+            self.add_threat(IP, ips_by_username + " " + datetime_string,  threatType)
+
+
+
+
+
+
+    def find_matching_usernames(self, ip_address, user_ip_dict):
+        matching_usernames = []
+        for username, ip_list in user_ip_dict.items():
+            if ip_address in ip_list:
+                matching_usernames.append(username)
+        return matching_usernames
+
 
     def display_Events_and_calc_threat_level(self):
         for ip, deviceData in self.devices.items():
@@ -124,12 +151,12 @@ class HybridLayer():
             self.devices[ip] = {'threatLevel': 0, 'logs': {}}
                 
     def add_threat(self, ip_address, logName,  log):
-        if ip_address in self.devices:
-            device = self.devices[ip_address]
-            device['logs'][logName] = log
-        else:
-            print(f"Device with IP address {ip_address} does not exist.")
-            
+        if ip_address not in self.devices:
+            self.devices[ip_address] = {'threatLevel': 0, 'logs': {}}
+
+        device = self.devices[ip_address]
+        device['logs'][logName] = log
+        
     def set_threat_level(self, ip_address, newThreatLevel):
         if ip_address in self.devices:
             device = self.devices[ip_address]['threatLevel'] = newThreatLevel
