@@ -27,14 +27,22 @@ class OuterLayer():
             "SSH Brute Force Attack": 0.4,
             "Unusual Incoming Traffic": 0.1,
             "Unusual Outgoing Traffic": 0.1,
+            
         }
+
+        self.ipBanList = []
+        self.locationBanList = [
+            "Prague",
+            "Minsk",
+            "New Zealand",
+            "North Korea",
+            "Romania"
+        ]
+
+
         self.central_analyzer()
-        self.locationBanList = {
-            "Prague"
-            "Minsk"
-            "New Zealand"
-        }
-        self.ipBanList = {              }
+        
+ 
 
     def central_analyzer(self):
         interval = 1
@@ -57,14 +65,19 @@ class OuterLayer():
                 
                 self.analyze_unusual_incoming_geolocation()
 
-                #self.analyze_unusual_outgoing_geolocation()
+                self.analyze_unusual_outgoing_geolocation()
                 
+
+
+
                 ###### Analyzer Functions ######
                 
-                
+                self.ipBanList = self.database.get_banned_ips(self.ban_threshold)
+
                 self.display_Events_and_calc_threat_level()
                 
                 self.database.get_banned_ips(self.ban_threshold)
+                
 
                 start_time = time.time()
                 self.database.disconnect()
@@ -165,7 +178,7 @@ class OuterLayer():
     
     
     def analyze_unusual_incoming_geolocation(self):
-        event_types = ['Outgoing TCP Traffic', 'Outgoing UDP Traffic']
+        event_types = ['Incoming TCP Traffic', 'Incoming UDP Traffic',"Incoming ICMP Ping"]
         threatName = "Unusual Incoming Traffic"
         
         # Define your threshold for determining what constitutes unusual traffic
@@ -189,8 +202,8 @@ class OuterLayer():
                             count = 0
 
     def analyze_unusual_outgoing_geolocation(self): 
-        event_types = ['Outgoing TCP Traffic', 'Outgoing UDP Traffic']
-        threatName = "Unusual Incoming Traffic"
+        event_types = ['Outgoing TCP Traffic', 'Outgoing UDP Traffic', "Outgoing ICMP Ping"]
+        threatName = "Unusual Outgoing Traffic"
         
         # Define your threshold for determining what constitutes unusual traffic
         threshold = 5  # Placeholder threshold, adjust as needed
@@ -230,6 +243,7 @@ class OuterLayer():
                 color_code = "\033[93m"  # Yellow
             reset_color = "\033[0m"
             print(f"    {color_code}[Threat Level]:   {threatLevel} {reset_color}")
+        
             
     def extract_ips(self, results):
         ip_dict = {}
@@ -266,6 +280,8 @@ class OuterLayer():
             device = self.devices[ip_address]['threatLevel'] = newThreatLevel
         else:
             print(f"Device with IP address {ip_address} does not exist.")
+
+
 
 
 if __name__ == "__main__":
