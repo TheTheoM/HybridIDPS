@@ -179,7 +179,7 @@ class OuterLayer():
     
     
     def analyze_unusual_incoming_geolocation(self):
-        event_types = ['Incoming TCP Traffic', 'Incoming UDP Traffic',"Incoming ICMP Ping"]
+        event_types = ['Incoming TCP Traffic', 'Incoming UDP Traffic','Suspicious Port Activity']
         threatName = "Unusual Incoming Traffic"
         
         # Define your threshold for determining what constitutes unusual traffic
