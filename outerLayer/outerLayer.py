@@ -1,6 +1,9 @@
 import time
 import importlib
 import json
+import sys, os
+sys.path.append(os.path.abspath("../helperFiles"))
+from sqlConnector import MySQLConnection 
 from sqlConnector import MySQLConnection 
 
 try:
