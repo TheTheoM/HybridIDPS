@@ -25,6 +25,7 @@ class OuterLayer():
             "SSH Brute Force Attack": 0.4,
             "Unusual Incoming Traffic": 0.1,
             "Unusual Outgoing Traffic": 0.1,
+            
         }
         self.central_analyzer()
         self.locationBanList = {
@@ -49,6 +50,7 @@ class OuterLayer():
                 
                 self.analyze_udp_flood() #TODO
 
+
                 self.analyze_icmp_flood() #TODO
 
                 self.analyze_ssh_brute_force() #TODO
@@ -63,6 +65,7 @@ class OuterLayer():
                 self.display_Events_and_calc_threat_level()
                 
                 self.database.get_banned_ips(self.ban_threshold)
+                self.ban_threshold()
 
                 start_time = time.time()
                 self.database.disconnect()
@@ -264,6 +267,10 @@ class OuterLayer():
             device = self.devices[ip_address]['threatLevel'] = newThreatLevel
         else:
             print(f"Device with IP address {ip_address} does not exist.")
+
+    def fill_ban_table(self):
+        self.ipBanList += self.database.get_banned_ips(self.ban_threshold)
+        print(f"Ban List contains {self.ipBanList} ")
 
 
 if __name__ == "__main__":
