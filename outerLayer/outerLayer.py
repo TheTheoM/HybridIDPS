@@ -84,113 +84,67 @@ class OuterLayer():
 
                 start_time = time.time()
                 self.database.disconnect()
-
-    def analyze_port_scanning(self):
-        event_type = 'Possible Port Scanning'
-        threatName = "Port Scanning"
-        
-        scanningCountThreshold = 200
-        
-        results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
+                
+                
+    def analyze_event_type(self, event_type, threat_name, threshold):
+        results = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayer WHERE event_type = %s AND processed = False ORDER BY timestamp DESC", (event_type,))
         results = self.extract_ips(results)
         for ip, all_events in results.items():
             count = 0
             for event in all_events:
                 count += 1
-
-                if count > scanningCountThreshold:
-                    logName = f"{threatName}-{event['timestamp']}"
-                    # self.add_threat(ip, logName, all_events[:1])
-                    self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
+                if count > threshold:
+                    log_name = f"{threat_name}-{event['timestamp']}"
+                    self.add_threat(ip, log_name, event['geolocation'], event['timestamp'], threat_name)
                     count = 0
+                self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE ip_address = %s AND event_type = %s", (ip, event_type))
+
+
+    def analyze_port_scanning(self):
+        event_type = 'Possible Port Scanning'
+        threat_name = "Port Scanning"
+        threshold = 200
+        self.analyze_event_type(event_type, threat_name, threshold)
+
 
     def analyze_tcp_flood(self):
         event_types = ['Possible SYN Flood', 'Possible ACK Flood', 'Possible RST Flood', 'Possible FIN Flood']
-        threatName = "TCP Flood Attack"
-        
+        threat_name = "TCP Flood Attack"
         threshold = 10000
-        
         for event_type in event_types:
-            results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
-            results = self.extract_ips(results)
-            for ip, all_events in results.items():
-                count = 0
-                for event in all_events:
-                    count += 1
-
-                    if count > threshold:
-                        logName = f"{threatName}-{event['timestamp']}"
-                        self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
-                        count = 0
+            self.analyze_event_type(event_type, threat_name, threshold)
 
 
     def analyze_udp_flood(self):
         event_type = 'Possible UDP Flood'
-        threatName = "UDP Flood Attack"
-        
+        threat_name = "UDP Flood Attack"
         threshold = 10000
-        
-        results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
-        results = self.extract_ips(results)
-        for ip, all_events in results.items():
-            count = 0
-            for event in all_events:
-                count += 1
+        self.analyze_event_type(event_type, threat_name, threshold)
 
-                if count > threshold:
-                    logName = f"{threatName}-{event['timestamp']}"
-                    self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
-                    count = 0
 
     def analyze_icmp_flood(self):
         event_type = 'Possible ICMP Flood'
-        threatName = "ICMP Flood Attack"
-        
+        threat_name = "ICMP Flood Attack"
         threshold = 10000
-        
-        results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
-        results = self.extract_ips(results)
-        for ip, all_events in results.items():
-            count = 0
-            for event in all_events:
-                count += 1
+        self.analyze_event_type(event_type, threat_name, threshold)
 
-                if count > threshold:
-                    logName = f"{threatName}-{event['timestamp']}"
-                    self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
-                    count = 0
 
     def analyze_ssh_brute_force(self):
         event_type = 'Possible SSH Brute Force'
-        threatName = "SSH Brute Force Attack"
-        
+        threat_name = "SSH Brute Force Attack"
         threshold = 10
-        
-        results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
-        results = self.extract_ips(results)
-        for ip, all_events in results.items():
-            count = 0
-            for event in all_events:
-                count += 1
+        self.analyze_event_type(event_type, threat_name, threshold)
 
-                if count > threshold:
-                    logName = f"{threatName}-{event['timestamp']}"
-                    self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
-                    count = 0
 
-    
-    
     def analyze_unusual_incoming_geolocation(self):
         event_types = ['Incoming TCP Traffic', 'Incoming UDP Traffic',"Incoming ICMP Ping"]
         threatName = "Unusual Incoming Traffic"
         
         # Define your threshold for determining what constitutes unusual traffic
-        threshold = 5  # Placeholder threshold, adjust as needed
-        
-        
+        threshold = 10  # Placeholder threshold, adjust as needed
         
         for event_type in event_types:
-            results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
+            results = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayer WHERE event_type = '{event_type}' AND processed = False ORDER BY timestamp DESC")
             results = self.extract_ips(results)
             for ip, all_events in results.items():
                 count = 0
@@ -203,16 +157,18 @@ class OuterLayer():
                             logName = f"{threatName}-{event['timestamp']}"
                             self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
                             count = 0
+                        
+                        self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE ip_address = '{ip}' AND event_type = '{event_type}'")
 
     def analyze_unusual_outgoing_geolocation(self): 
         event_types = ['Outgoing TCP Traffic', 'Outgoing UDP Traffic', "Outgoing ICMP Ping"]
         threatName = "Unusual Outgoing Traffic"
         
         # Define your threshold for determining what constitutes unusual traffic
-        threshold = 5  # Placeholder threshold, adjust as needed
+        threshold = 10  # Placeholder threshold, adjust as needed
         
         for event_type in event_types:
-            results = self.database.execute_query(f"SELECT * from hybrid_idps.outerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
+            results = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayer WHERE event_type = '{event_type}' AND processed = False ORDER BY timestamp DESC")
             results = self.extract_ips(results)
             for ip, all_events in results.items():
                 count = 0
@@ -225,6 +181,8 @@ class OuterLayer():
                             logName = f"{threatName}-{event['timestamp']}"
                             self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
                             count = 0
+                        
+                        self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE ip_address = '{ip}' AND event_type = '{event_type}'")
     
 
     def display_Events_and_calc_threat_level(self):
@@ -338,6 +296,3 @@ class OuterLayer():
 
 if __name__ == "__main__":
     x = OuterLayer()
-
-        
-            

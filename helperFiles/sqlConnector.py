@@ -22,9 +22,9 @@ class MySQLConnection:
         else:
             print('Failed to connect to MySQL database')
 
-    def execute_query(self, sql_query):
+    def execute_query(self, sql_query, params=None):
         cursor = self.connection.cursor(dictionary=True)
-        cursor.execute(sql_query)
+        cursor.execute(sql_query, params)
         results = cursor.fetchall()
         cursor.close()
         return results
