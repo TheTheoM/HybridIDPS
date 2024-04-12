@@ -101,15 +101,13 @@ def displayRules(local_rules_file_path):
 def CalculateThreatLevel():
     return 0
 
-
-
-        
 def runSnort(snort_Dirs, interface_Number):
     snort_bin_path = snort_Dirs['Bin Directory']
     snort_config_path = snort_Dirs['Snort Configuration File']
     snort_command = fr'.\snort -i {interface_Number} -c {snort_config_path} -A full -k none'
     full_snort_path = os.path.join(snort_bin_path, 'snort.exe')  # Assuming the executable is named snort.exe
-    runas_command = fr'runas /user:Administrator "{snort_command}"'
+    # runas_command = fr'runas /user:Administrator "{snort_command}"'
+    runas_command = fr'{snort_command}'
     try:
         print("\033[93m" + f'Executing Snort Command: {runas_command}' + "\033[0m")       
         print("  - You may be asked to enter your admin-password, in a new cmd window. Do it. ")
