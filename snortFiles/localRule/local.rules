@@ -20,31 +20,31 @@
 #-------------
 
 # PINGS DETECTION
-# alert icmp any any -> $HOME_NET any (msg:"ICMP Ping"; sid:1000001;)
-
+alert icmp any any -> $HOME_NET any (msg:"Incoming ICMP Ping"; sid:10000001;)
+alert icmp $HOME_NET any -> any any (msg:"Outgoing ICMP Ping"; sid:10000002;)
 
 # PORT SCAN DETECTION
-alert tcp any any -> $HOME_NET 1:2048 (msg:"Possible Port Scanning"; flags:S; detection_filter: track by_src, count 30, seconds 30; sid:1000002;)
+alert tcp any any -> $HOME_NET 1:2048 (msg:"Possible Port Scanning"; flags:S; detection_filter: track by_src, count 30, seconds 30; sid:10000003;)
 
 
 # FLOOD/DOS ATTACK DETECTION
-alert tcp any any -> $HOME_NET any (msg:"Possible SYN Flood"; flags: S; flow: stateless; detection_filter: track by_dst, count 10000, seconds 5; sid:10000003; rev:1;)
-alert tcp any any -> $HOME_NET any (msg:"Possible ACK Flood"; flags: A; flow: stateless; detection_filter: track by_dst, count 10000, seconds 5; sid:10000004; rev:1;)
-alert tcp any any -> $HOME_NET any (msg:"Possible RST Flood"; flags: R; flow: stateless; detection_filter: track by_dst, count 10000, seconds 5; sid:10000005; rev:1;)
-alert tcp any any -> $HOME_NET any (msg:"Possible FIN Flood"; flags: F; flow: stateless; detection_filter: track by_dst, count 10000, seconds 5; sid:10000006; rev:1;)
-alert udp any any -> $HOME_NET any (msg:"Possible UDP Flood"; flow: stateless; detection_filter: track by_dst, count 10000, seconds 5; sid:10000007;rev:1;)
-alert icmp any any -> $HOME_NET any (msg:"Possible ICMP Flood"; detection_filter: track by_dst, count 10000, seconds 5; sid:10000008;rev:1;)
+alert tcp any any -> $HOME_NET any (msg:"Possible SYN Flood"; flags: S; flow: stateless; detection_filter: track by_dst, count 10000, seconds 5; sid:10000004; rev:1;)
+alert tcp any any -> $HOME_NET any (msg:"Possible ACK Flood"; flags: A; flow: stateless; detection_filter: track by_dst, count 10000, seconds 5; sid:10000005; rev:1;)
+alert tcp any any -> $HOME_NET any (msg:"Possible RST Flood"; flags: R; flow: stateless; detection_filter: track by_dst, count 10000, seconds 5; sid:10000006; rev:1;)
+alert tcp any any -> $HOME_NET any (msg:"Possible FIN Flood"; flags: F; flow: stateless; detection_filter: track by_dst, count 10000, seconds 5; sid:10000007; rev:1;)
+alert udp any any -> $HOME_NET any (msg:"Possible UDP Flood"; flow: stateless; detection_filter: track by_dst, count 10000, seconds 5; sid:10000008;rev:1;)
+alert icmp any any -> $HOME_NET any (msg:"Possible ICMP Flood"; detection_filter: track by_dst, count 10000, seconds 5; sid:10000009;rev:1;)
 
 
 # SSH BRUTE FORCE DETECTION
-alert tcp any any -> $HOME_NET 22 (msg:"Possible SSH Brute Force"; flags: S; detection_filter: track by_src, count 5, seconds 30; metadata:service ssh; sid:10000009; rev:1;)
+alert tcp any any -> $HOME_NET 22 (msg:"Possible SSH Brute Force"; flags: S; detection_filter: track by_src, count 5, seconds 30; metadata:service ssh; sid:10000010; rev:1;)
 
 
 # INCOMING TRAFFIC DETECTION
-alert tcp any any -> $HOME_NET any (msg:"Incoming TCP Traffic"; sid:100000010; rev:1;)
-alert udp any any -> $HOME_NET any (msg:"Incoming UDP Traffic"; sid:100000011; rev:1;)
+# alert tcp any any -> $HOME_NET any (msg:"Incoming TCP Traffic"; sid:10000011; rev:1;)
+# alert udp any any -> $HOME_NET any (msg:"Incoming UDP Traffic"; sid:10000012; rev:1;)
 
 
 # OUTGOING TRAFFIC DETECTION
-alert tcp $HOME_NET any -> any any (msg:"Outgoing TCP Traffic"; sid:100000012; rev:1;)
-alert udp $HOME_NET any -> any any (msg:"Outgoing UDP Traffic"; sid:100000013; rev:1;)
+# alert tcp $HOME_NET any -> any any (msg:"Outgoing TCP Traffic"; sid:10000013; rev:1;)
+# alert udp $HOME_NET any -> any any (msg:"Outgoing UDP Traffic"; sid:10000014; rev:1;)
