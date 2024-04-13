@@ -72,13 +72,14 @@ class OuterLayer():
 
                 ###### Analyzer Functions ######
                 
-                self.ipBanList = self.database.get_banned_ips(self.ban_threshold)
+                self.ipBanList = self.database.get_banned_ips(self.ban_threshold) + self.database.get_Hybrid_Ban_IPs_DB(self.ban_threshold)
+                print(self.ipBanList)
                 self.display_Events_and_calc_threat_level()
                 
                 # self.database.get_banned_ips(self.ban_threshold)
                 
                 self.generate_firewall_rules(self.ipBanList)
-
+                
                 start_time = time.time()
                 self.database.disconnect()
                 
@@ -245,7 +246,7 @@ class OuterLayer():
         # Create a subprocess with administrative privileges
         process = subprocess.Popen(['powershell.exe', '-Command', command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, error = process.communicate()
-        print(error)
+        # print(error)
         if process.returncode != 0:
             raise subprocess.CalledProcessError(process.returncode, command, output=output, stderr=error)
         return output.decode('utf-8')

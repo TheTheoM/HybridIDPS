@@ -24,6 +24,7 @@ class HybridLayer():
         }
         
         self.threshold = 0.25
+        self.ban_threshold = 1.3
         
         self.central_analyzer()
 
@@ -147,12 +148,13 @@ class HybridLayer():
         return ip_dict
 
     def add_devices(self):
-        results = self.database.execute_query(f"SELECT DISTINCT ip_address from hybrid_idps.HybridLayer")
+        results = self.database.execute_query(f"SELECT DISTINCT ip_address from hybrid_idps.hybridLayer")
         ip_addresses = [ip['ip_address'] for ip in results]
         for ip_and_username in ip_addresses:
             self.devices[ip_and_username] = {'threatLevel': 0, 'logs': {}}
                 
-    def add_threat(self, IP, username, logName,  log, threat_Level):
+
+    def add_threat(self, IP, username, logName, log, threat_Level):
         ip_and_username = f"{IP} - {username}"
 
         if ip_and_username not in self.devices:
@@ -162,7 +164,7 @@ class HybridLayer():
         
         if logName not in device['logs']:
             device['logs'][logName] = {'log': log, "threat_Level": threat_Level}
-            if threat_Level > self.threshold:
+            if threat_Level > self.ban_threshold:
                 print("[Ban Commandment]: ")
                 self.database.add_event_to_Hybrid_DB(username, IP, None)
         else:
