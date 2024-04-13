@@ -29,6 +29,7 @@ class OuterLayer():
             "SSH Brute Force Attack": 0.4,
             "Unusual Incoming Traffic": 0.1,
             "Unusual Outgoing Traffic": 0.1,
+            "Suspicious Port Activity": 0.1,
             
         }
 
@@ -137,7 +138,7 @@ class OuterLayer():
 
 
     def analyze_unusual_incoming_geolocation(self):
-        event_types = ['Incoming TCP Traffic', 'Incoming UDP Traffic',"Incoming ICMP Ping"]
+        event_types = ['Incoming TCP Traffic', 'Incoming UDP Traffic','Suspicious Port Activity']
         threatName = "Unusual Incoming Traffic"
         
         # Define your threshold for determining what constitutes unusual traffic
@@ -146,6 +147,8 @@ class OuterLayer():
         for event_type in event_types:
             results = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayer WHERE event_type = '{event_type}' AND processed = False ORDER BY timestamp DESC")
             results = self.extract_ips(results)
+           
+
             for ip, all_events in results.items():
                 count = 0
                 for event in all_events:
@@ -161,7 +164,7 @@ class OuterLayer():
                         self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE ip_address = '{ip}' AND event_type = '{event_type}'")
 
     def analyze_unusual_outgoing_geolocation(self): 
-        event_types = ['Outgoing TCP Traffic', 'Outgoing UDP Traffic', "Outgoing ICMP Ping"]
+        event_types = ['Suspicious Port Activity']
         threatName = "Unusual Outgoing Traffic"
         
         # Define your threshold for determining what constitutes unusual traffic
