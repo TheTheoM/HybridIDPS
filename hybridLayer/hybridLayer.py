@@ -41,7 +41,12 @@ class HybridLayer():
                 
                 # self.analyze_log_in()
                 
+
+                print(self.database.get_Hybrid_Ban_IPs_DB(0))
+                
+                
                 ###### Analyzer Functions ######
+                
                 
                 self.display_Events_and_calc_threat_level()
                     
@@ -58,7 +63,7 @@ class HybridLayer():
         common_keys = set(ipThreatLevels.keys()).intersection(usernameThreatLevels.keys()) # Find the intersection of the keys
 
         common_items = {key: (ipThreatLevels[key], usernameThreatLevels[key]) for key in common_keys}
-        
+
         for ip, value in common_items.items():
             outerLayerData, innerLayerData = value
             
@@ -67,14 +72,13 @@ class HybridLayer():
             threat_level_inner, timeStamp_inner, username = innerLayerData.values()
 
             combined_threat_level = threat_level_outer + threat_level_inner
-
-
+            
             if combined_threat_level > self.threshold:
                 if timeStamp_outer > timeStamp_inner:
                     most_recent = timeStamp_outer
                 else:
                     most_recent = timeStamp_inner
-                self.add_threat(f"{ip} - {username}", f"{threatType} {most_recent}", threatType, combined_threat_level)
+                self.add_threat(ip, username, f"{threatType} {most_recent}", threatType, combined_threat_level)
         
         # print(ipThreatLevels)
         # print(usernameThreatLevels)
@@ -101,7 +105,7 @@ class HybridLayer():
             current_datetime = datetime.now()
             datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
-            self.add_threat(f"{IP} - {susUsername}", ips_by_username + " " + datetime_string,  threatType)
+            # self.add_threat(IP, susUsername, ips_by_username + " " + datetime_string,  threatType)
 
 
     def find_matching_usernames(self, ip_address, user_ip_dict):
@@ -145,15 +149,19 @@ class HybridLayer():
         for ip_and_username in ip_addresses:
             self.devices[ip_and_username] = {'threatLevel': 0, 'logs': {}}
                 
-    def add_threat(self, ip_and_username, logName,  log, threat_Level):
+    def add_threat(self, IP, username, logName,  log, threat_Level):
+        ip_and_username = f"{IP} - {username}"
+
         if ip_and_username not in self.devices:
             self.devices[ip_and_username] = {'logs': {}}
 
         device = self.devices[ip_and_username]
-
+        device['logs'][logName] = {'log': log, "threat_Level": threat_Level}
+        
         if logName not in device['logs']:
-            device['logs'][logName] = {'log': log, "threat_Level": threat_Level}
-            self.database.add_event_to_Hybrid_DB()
+            if threat_Level > self.threshold:
+                print("[Ban Commandment]: ")
+                self.database.add_event_to_Hybrid_DB(IP, username, None)
 
 if __name__ == "__main__":
     x = HybridLayer()
