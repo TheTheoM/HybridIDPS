@@ -74,7 +74,7 @@ class HybridLayer():
                     most_recent = timeStamp_outer
                 else:
                     most_recent = timeStamp_inner
-                self.add_threat(f"{ip} - {username}", f"{threatType} {most_recent}", threatType)
+                self.add_threat(f"{ip} - {username}", f"{threatType} {most_recent}", threatType, combined_threat_level)
         
         # print(ipThreatLevels)
         # print(usernameThreatLevels)
@@ -101,11 +101,7 @@ class HybridLayer():
             current_datetime = datetime.now()
             datetime_string = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
-            self.add_threat(IP, ips_by_username + " " + datetime_string,  threatType)
-
-
-
-
+            self.add_threat(f"{IP} - {susUsername}", ips_by_username + " " + datetime_string,  threatType)
 
 
     def find_matching_usernames(self, ip_address, user_ip_dict):
@@ -117,23 +113,22 @@ class HybridLayer():
 
 
     def display_Events_and_calc_threat_level(self):
-        for ip, deviceData in self.devices.items():
-            print("\n")
-            print(f"IP: {ip}")
+        for ip_and_username, deviceData in self.devices.items():
+            print()
+            print(f"{ip_and_username}:")
+            
             logs = deviceData["logs"]
-            threatLevel = 0
-            for threatName, threadType in logs.items():
-                print(f"        {threatName}")
-                threatLevel += self.threatTable[threadType]
-            if threatLevel > 1: threatLevel = 1
-            self.set_threat_level(ip, threatLevel)
-            color_code = "\033[92m"  # Green
-            if threatLevel > 0.5:
-                color_code = "\033[91m"  # Red
-            elif 0 < threatLevel < 0.5:
-                color_code = "\033[93m"  # Yellow
-            reset_color = "\033[0m"
-            print(f"    {color_code}[Threat Level]:   {threatLevel} {reset_color}")
+            for logName, logData in logs.items():
+                log, threatLevel = logData.values()
+                color_code = "\033[92m"  # Green
+                
+                if 0 < threatLevel < 0.5:
+                    color_code = "\033[93m"  # Yellow
+                elif threatLevel >= 0.5:
+                    color_code = "\033[91m"  # Red
+                    
+                reset_color = "\033[0m"
+                print(f"    {log}   {color_code}[Threat Level]:   {threatLevel} {reset_color}")
             
     def extract_ips(self, results):
         ip_dict = {}
@@ -147,21 +142,16 @@ class HybridLayer():
     def add_devices(self):
         results = self.database.execute_query(f"SELECT DISTINCT ip_address from hybrid_idps.HybridLayer")
         ip_addresses = [ip['ip_address'] for ip in results]
-        for ip in ip_addresses:
-            self.devices[ip] = {'threatLevel': 0, 'logs': {}}
+        for ip_and_username in ip_addresses:
+            self.devices[ip_and_username] = {'threatLevel': 0, 'logs': {}}
                 
-    def add_threat(self, ip_address, logName,  log):
-        if ip_address not in self.devices:
-            self.devices[ip_address] = {'threatLevel': 0, 'logs': {}}
+    def add_threat(self, ip_and_username, logName,  log, threat_Level):
+        if ip_and_username not in self.devices:
+            self.devices[ip_and_username] = {'logs': {}}
 
-        device = self.devices[ip_address]
-        device['logs'][logName] = log
+        device = self.devices[ip_and_username]
+        device['logs'][logName] = {'log': log, "threat_Level": threat_Level}
         
-    def set_threat_level(self, ip_address, newThreatLevel):
-        if ip_address in self.devices:
-            device = self.devices[ip_address]['threatLevel'] = newThreatLevel
-        else:
-            print(f"Device with IP address {ip_address} does not exist.")
 
 if __name__ == "__main__":
     x = HybridLayer()
