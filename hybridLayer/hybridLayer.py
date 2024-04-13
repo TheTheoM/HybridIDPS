@@ -164,7 +164,7 @@ class HybridLayer():
         
         if logName not in device['logs']:
             device['logs'][logName] = {'log': log, "threat_Level": threat_Level}
-            if threat_Level > self.threshold:
+            if threat_Level > self.ban_threshold:
                 print("[Ban Commandment]: ")
                 self.database.add_event_to_Hybrid_DB(username, IP, None)
         else:
