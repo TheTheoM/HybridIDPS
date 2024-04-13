@@ -245,6 +245,7 @@ class OuterLayer():
         # Create a subprocess with administrative privileges
         process = subprocess.Popen(['powershell.exe', '-Command', command], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, error = process.communicate()
+        print(error)
         if process.returncode != 0:
             raise subprocess.CalledProcessError(process.returncode, command, output=output, stderr=error)
         return output.decode('utf-8')

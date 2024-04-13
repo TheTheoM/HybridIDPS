@@ -122,5 +122,6 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - Locate the "HybridIDPS-main\outerLayer\sqlScripts" folder and open the desired scripts individually.
 
 ## 6. To run the outerLayer now its setup:
+ - Before Running snortRunner.py and outerLayer.py, make modifications to Vscode so it runs in administrator mode otherwise errors will occur. To accomplish, search for Vscode in windows, right click the application and click open file location. Then right click again on teh Vscode icon when in File Explorer, then click properties in this window navigate to compatibility, there will be some check boxes near the bottom, click on run this program as administrator. This will have Vscode run as admin everytime you open it up, instead of having to right click, run as admin, everytime you open it.  
  - Run snortRunner.py (if not already)
  - run outerLayer.py
