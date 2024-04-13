@@ -309,11 +309,11 @@ if __name__ == '__main__':
     }
     
     
+    
     mySqlConnection = MySQLConnection()
     mySqlConnection.hazmat_wipe_Table('outerLayer')
     hazmat_wipe_alert_file(snort_Dirs['Alert File'])
     displayAlerts = True
-    
     
     checkDirectories(snort_Dirs)
     overwrite_snort_local_rules()
