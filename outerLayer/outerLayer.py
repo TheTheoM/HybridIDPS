@@ -69,14 +69,10 @@ class OuterLayer():
                 self.analyze_unusual_incoming_geolocation()
 
                 self.analyze_unusual_outgoing_geolocation()
-                
-
-
 
                 ###### Analyzer Functions ######
                 
                 self.ipBanList = self.database.get_banned_ips(self.ban_threshold)
-
                 self.display_Events_and_calc_threat_level()
                 
                 # self.database.get_banned_ips(self.ban_threshold)
@@ -233,8 +229,6 @@ class OuterLayer():
             threatLevel = self.threatTable[threatName]
             
             if logName not in device['logs']:
-                print('adds')
-                print(device['logs'])
                 device['logs'][logName] = threatName
                 self.database.add_threat_to_outer_Layer_Threats_DB(ip_address, logName, geolocation, timestamp, threatName, threatLevel)
             

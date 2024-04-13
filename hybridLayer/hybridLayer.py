@@ -58,7 +58,7 @@ class HybridLayer():
         common_keys = set(ipThreatLevels.keys()).intersection(usernameThreatLevels.keys()) # Find the intersection of the keys
 
         common_items = {key: (ipThreatLevels[key], usernameThreatLevels[key]) for key in common_keys}
-                
+        
         for ip, value in common_items.items():
             outerLayerData, innerLayerData = value
             
@@ -150,8 +150,10 @@ class HybridLayer():
             self.devices[ip_and_username] = {'logs': {}}
 
         device = self.devices[ip_and_username]
-        device['logs'][logName] = {'log': log, "threat_Level": threat_Level}
-        
+
+        if logName not in device['logs']:
+            device['logs'][logName] = {'log': log, "threat_Level": threat_Level}
+            self.database.add_event_to_Hybrid_DB()
 
 if __name__ == "__main__":
     x = HybridLayer()

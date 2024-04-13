@@ -94,7 +94,16 @@ class MySQLConnection:
         print('Data added to innerLayerThreats successfully.')  if self.verbose else None
         return True
     
-    
+    def add_event_to_Hybrid_DB(self, username, ip_address, timestamp):
+        sql_query = "INSERT INTO hybridLayer (username, ip_address, timestamp) VALUES (%s, %s, %s)"
+        cursor = self.connection.cursor()
+        data = (username, ip_address, timestamp)
+        cursor.execute(sql_query, data)
+        self.connection.commit()
+        cursor.close()
+        print('Data added to hybridLayer successfully.')  if self.verbose else None
+        return True
+        
     def get_inner_ips_by_username(self, usernames):
         usernameIPs = {}
         for username in usernames:
@@ -178,6 +187,9 @@ class MySQLConnection:
                 ip_threat_levels[ip_address] = {'threat_level': threat_level, 'timeStamp': timestamp, 'username': username}
                 
         return ip_threat_levels
+
+
+        
 
 if __name__ == "__main__":
     mySqlConnection = MySQLConnection()
