@@ -1,5 +1,6 @@
 import time
 from datetime import datetime, timedelta, timezone
+import json
 import importlib
 import sys, os
 sys.path.append(os.path.abspath("../helperFiles"))
@@ -20,10 +21,12 @@ class InnerLayer():
         self.devices = {}
         # self.threat_counts = {} #This may needs to be removed, work in progress
         self.threatTable = {
-            "spamCredentials":     0.2,
+            "spamCredentials":     0.1,
             "massReporting":       0.2,
-            "massAccountCreationIP": 0.5,
+            "massAccountCreationIP": 1,
             "massAccountCreationGeo": 0.7,
+            "payloadAttack": 1,
+            "sqlInjection": 0.6
         }
         self.central_analyzer()
 
@@ -42,6 +45,8 @@ class InnerLayer():
                 self.analyze_mass_reporting()
 
                 self.analyze_mass_account_creation_ip()
+
+                self.check_payload()
                 
                 ###### Analyzer Functions ######
 
@@ -53,13 +58,16 @@ class InnerLayer():
     def analyze_spam_credentials(self):
         event_type = 'invalidCredentials'
         threatName = "spamCredentials"
-        threshold = 10
+        threshold = 500
+        time_frame = 1 #Minutes
+        current_time = datetime.now(timezone.utc)
+        time_limit = current_time - timedelta(minutes=time_frame)
 
         threat_level = self.threatTable[threatName]
-        results = self.database.execute_query(f"SELECT * from hybrid_idps.innerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
-        results = self.extract_ips(results)
+        results = self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayer WHERE event_type = '{event_type}' AND timestamp >= '{time_limit.strftime('%Y-%m-%d %H:%M:%S')}' ORDER BY timestamp DESC")
+        results = self.extract_user(results)
 
-        for ip, all_events in results.items():
+        for user, all_events in results.items():
             count = 0
             for event in all_events:
                 count += 1
@@ -72,8 +80,8 @@ class InnerLayer():
     def analyze_mass_reporting(self):
         event_type = 'reportUserByUsername'
         threatName = "massReporting"
-        threshold = 1
-        time_frame = 2
+        threshold = 2
+        time_frame = 2 #Minutes
         current_time = datetime.now(timezone.utc)
         time_limit = current_time - timedelta(minutes=time_frame)
 
@@ -84,44 +92,67 @@ class InnerLayer():
         for user, user_events in results.items():
             count = 0
             for event in user_events:
-                count += 1
-                if count > threshold:
-                    logName = f"{threatName}-{event['timestamp']}"
-                    self.add_threat(logName, threatName,  event['username'], event['target_username'], event['ip_address'], event['geolocation'], event['timestamp'],
-                                    threatName, threat_level, event['payload'])
-                    count = 0
+                    count += 1
+                    if count > threshold:
+                        logName = f"{threatName}-{event['timestamp']}"
+                        self.add_threat(logName, threatName,  event['username'], event['target_username'], event['ip_address'], event['geolocation'], event['timestamp'],
+                                        threatName, threat_level, event['payload'])
+                        count = 0
 
 
     def analyze_mass_account_creation_ip(self):   
         event_type = 'registrationSuccess'
         threatName = "massAccountCreationIP"
-        threshold = 100
-        time_frame = 2
+        threshold = 50
+        time_frame = 2 #Minutes
         current_time = datetime.now(timezone.utc)
         time_limit = current_time - timedelta(minutes=time_frame)
 
         threat_level = self.threatTable[threatName]
-        results = self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayer WHERE event_type = '{event_type}' AND timestamp >= '{time_limit.strftime('%Y-%m-%d %H:%M:%S')}' ORDER BY timestamp DESC")
+        results = self.database.execute_query(f"""SELECT ip_address, COUNT(username) AS registration_count
+                                                FROM hybrid_idps.innerLayer 
+                                                WHERE event_type = '{event_type}' 
+                                                AND timestamp >= '{time_limit.strftime('%Y-%m-%d %H:%M:%S')}'
+                                                GROUP BY ip_address
+                                                HAVING COUNT(username) >= {threshold}""")
         results = self.extract_ips(results)
 
-        for ip, all_events in results.items():
-            count = 0
+        for ip, all_event in results.items():
+            if all_event[0]['registration_count'] > 1:
+                usernames_result = self.database.execute_query(f""" SELECT *
+                                                                    FROM hybrid_idps.innerLayer
+                                                                    WHERE ip_address = '{ip}'
+                                                                    AND event_type = '{event_type}'
+                                                                    AND timestamp >= '{time_limit.strftime('%Y-%m-%d %H:%M:%S')}'""")
+                usernames = self.extract_user(usernames_result)
+
+                for user in usernames:
+                    logName = f"{threatName}"
+                    self.add_threat(logName, threatName,  user, None, ip, None, None,
+                                    threatName, threat_level, None)
+
+
+
+    def check_payload(self):
+        event_type = 'likePost'
+        threatName = "payloadAttack"
+
+        threat_level = self.threatTable[threatName]
+        results = self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayer WHERE event_type = '{event_type}'")
+        results = self.extract_payload(results)
+
+        for payload, all_events in results.items():
             for event in all_events:
-                count += 1
-                if count > threshold:
+                payload_dict = json.loads(payload)
+                like_increment = payload_dict.get('likeIncrement')
+                if like_increment > 1:
                     logName = f"{threatName}-{event['timestamp']}"
                     self.add_threat(logName, threatName,  event['username'], event['target_username'], event['ip_address'], event['geolocation'], event['timestamp'],
                                     threatName, threat_level, event['payload'])
-                    count = 0
-
-    # def analyze_mass_account_creation_geo(self):
-    #     event_type = 'register'
-    #     threatName = "massAccountCreationGeo"
-    #     threshold = 3
-
-    #     threat_level = self.threatTable[threatName]
-    #     results = self.database.execute_query(f"SELECT geolocation from hybrid_idps.innerLayer WHERE event_type = '{event_type}' ORDER BY timestamp DESC")
-    #     results = self.extract_geo(results)
+                elif like_increment < -1:
+                    logName = f"{threatName}-{event['timestamp']}"
+                    self.add_threat(logName, threatName,  event['username'], event['target_username'], event['ip_address'], event['geolocation'], event['timestamp'],
+                                    threatName, threat_level, event['payload'])
 
 
         
@@ -171,6 +202,15 @@ class InnerLayer():
                 user_dict[user] = []
             user_dict[user].append(entry)
         return user_dict
+
+    def extract_payload(self, results):
+        payload_dict = {}
+        for entry in results:
+            payload = entry['payload']
+            if payload not in payload_dict:
+                payload_dict[payload] = []
+            payload_dict[payload].append(entry)
+        return payload_dict
 
     def add_devices(self):
         results = self.database.execute_query(f"SELECT DISTINCT username from hybrid_idps.innerLayer")
