@@ -16,7 +16,7 @@ except ImportError:
 class HybridLayer():
     def __init__(self) -> None:
         self.database = MySQLConnection()
-        self.database.hazmat_wipe_Table('hybridLayer')
+        self.database.hazmat_wipe_Table("HybridLayer")
         self.devices = {}
         self.threatTable = {
             "Basic-Hybrid-Threat": 0.2,
@@ -80,6 +80,8 @@ class HybridLayer():
                     most_recent = timeStamp_outer
                 else:
                     most_recent = timeStamp_inner
+                    
+                print("adds threat")
                 self.add_threat(ip, username, f"{threatType} {most_recent}", threatType, combined_threat_level)
         
         # print(ipThreatLevels)
@@ -159,14 +161,15 @@ class HybridLayer():
             self.devices[ip_and_username] = {'logs': {}}
 
         device = self.devices[ip_and_username]
-
+        
         if logName not in device['logs']:
-            if threat_Level > self.ban_threshold:
+            device['logs'][logName] = {'log': log, "threat_Level": threat_Level}
+            if threat_Level > self.threshold:
                 print("[Ban Commandment]: ")
                 self.database.add_event_to_Hybrid_DB(username, IP, None)
-
-        device['logs'][logName] = {'log': log, "threat_Level": threat_Level}
-
+        else:
+            device['logs'][logName]["threat_Level"] = threat_Level
+            
 
 if __name__ == "__main__":
     x = HybridLayer()
