@@ -56,5 +56,6 @@ CREATE TABLE innerLayerThreats (
 CREATE TABLE hybridLayer (
     id INT AUTO_INCREMENT PRIMARY KEY,
 	username VARCHAR(100) NULL,
-    ip_address VARCHAR(45)
+    ip_address VARCHAR(45),
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 );

@@ -24,7 +24,7 @@ alert icmp any any -> $HOME_NET any (msg:"Incoming ICMP Ping"; sid:10000001;)
 alert icmp $HOME_NET any -> any any (msg:"Outgoing ICMP Ping"; sid:10000002;)
 
 # PORT SCAN DETECTION
-alert tcp any any -> $HOME_NET any (msg:"Possible Port Scanning"; flags:S; detection_filter: track by_src, count 30, seconds 30; sid:10000003;)
+alert tcp any any -> $HOME_NET any (msg:"Possible Port Scanning"; flags:S; detection_filter: track by_src, count 30, seconds 5; sid:10000003;)
 
 
 # FLOOD/DOS ATTACK DETECTION
