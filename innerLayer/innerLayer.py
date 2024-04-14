@@ -79,8 +79,8 @@ class InnerLayer():
             likeIncrements = [val[1] for val in liked_post_ID_List if val[0] == post_id]
             print(f"LikeIncrements {likeIncrements} for post_id {post_id}")
             sql_post_likes_sum[post_id] = sum(likeIncrements) 
-            # sql_post_likes_sum[post_id]
-        
+            
+        print(sql_post_likes_sum)
      
 
 
