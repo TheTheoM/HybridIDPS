@@ -15,7 +15,7 @@ class InnerLayer():
     def __init__(self) -> None:
         self.database = MySQLConnection()
         self.database.setVerbose(False)
-        self.database.hazmat_wipe_Table('innerLayer')
+        # self.database.hazmat_wipe_Table('innerLayer')
         self.database.hazmat_wipe_Table('innerLayerThreats')
         self.devices = {}
         # self.threat_counts = {} #This may needs to be removed, work in progress
@@ -46,11 +46,37 @@ class InnerLayer():
 
                 self.check_payload_increment()
                 
+                self.doShit()
+  
                 ###### Analyzer Functions ######
 
                 self.display_Events_and_calc_threat_level()
                 start_time = time.time()
                 self.database.disconnect()
+                
+                
+    def doShit(self):
+        postListEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'addPost'")
+        post_ID_List = [postID[0] for postID in self.parse_payload(postListEntries)]
+        
+        print(post_ID_List)
+        
+        likePostEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'likePost'")
+
+        liked_post_ID_List = [postID[1:3] for postID in self.parse_payload(likePostEntries)]
+        
+        print(liked_post_ID_List)
+        
+        sql_post_likes_sum = {}
+        
+        for post_id in post_ID_List:
+            likeIncrements = [val[1] for val in liked_post_ID_List if val[0] == post_id]
+            print(f"LikeIncrements {likeIncrements} for post_id {post_id}")
+            sql_post_likes_sum[post_id] = sum(likeIncrements) 
+            
+        print(sql_post_likes_sum)
+     
+
 
     def analyze_spam_credentials(self):
         event_type = 'invalidCredentials'
@@ -203,6 +229,20 @@ class InnerLayer():
                 payload_dict[payload] = []
             payload_dict[payload].append(entry)
         return payload_dict
+    
+    def parse_payload(self, results):
+        return [list(json.loads(result['payload']).values()) for result in results]
+ 
+    def otherstuff(data):
+        result_dict = {}
+        for entry in data:
+            id, value = entry  
+            if id in result_dict:
+                result_dict[id] += value
+            else:
+                result_dict[id] = value
+
+        return result_dict
 
     def add_devices(self):
         results = self.database.execute_query(f"SELECT DISTINCT username from hybrid_idps.innerLayer")
