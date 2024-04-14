@@ -571,6 +571,8 @@ html {
   flex-direction: column;
 }
 
+
+
 .register_and_logIn button {
   width: 200px;
 }
@@ -599,4 +601,78 @@ html {
 
 .contentContainer {
   min-height: 100vh;
+}
+
+
+@media screen and (max-width: 1000px) {
+  .register_and_logIn {
+    width:   700px;
+    height:  700px;
+  }
+  .register_and_logIn input{
+    width:   80%;
+    height:  8%;
+    font-size: 3em;
+  }
+  .register_and_logIn button{
+    width: 80%;
+    height:  8%;
+    font-size: 3em;
+  }
+  .contentContainer {
+    width: 100%;
+  }
+  .Content {
+    width:  100% !important;
+    max-width: 80% !important;
+    font-size: 1.5em;
+  }
+
+  .post-likes {
+    height: 100px;
+  }
+
+  .add-comments {
+    height: 50px;
+  }
+
+  .TopBar {
+    height: 100px !important;
+    font-size: 2em;
+  }
+  
+  .searchContainer {
+    height: 50px  !important;
+  }
+  .searchContainer input {
+    height: 50px  !important;
+    font-size: 1em;
+  }
+  .addPostWindow {
+    width:  100% !important;
+    max-width: 80% !important;
+    height: 60% !important;
+    font-size: 3em;
+  }
+  .addPostWindow input {
+    height: 80px;
+    font-size: 0.5em;
+
+  }
+  .addPostWindow button {
+    height: 80px;
+    font-size: 1em;
+  }
+
+  .searchWindowContainer {
+    width: 100% !important;
+    height: 100% !important;
+    margin-bottom: 50px;
+  }
+  
+  .searchWindow {
+    width: 100% !important;
+    height: 100% !important;
+    margin-bottom: 50px;
+  }
 }
