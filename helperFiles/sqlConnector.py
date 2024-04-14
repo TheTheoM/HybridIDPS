@@ -188,7 +188,9 @@ class MySQLConnection:
                 
         return ip_threat_levels
 
-
+    def get_Hybrid_Ban_IPs_DB(self, threat_Threshold):
+        results = self.execute_query("SELECT distinct ip_address FROM hybridLayer")
+        return [result['ip_address'] for result in results]
         
 
 if __name__ == "__main__":

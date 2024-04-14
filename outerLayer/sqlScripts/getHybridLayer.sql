@@ -1,1 +1,1 @@
-SELECT * FROM hybrid_idps.hybridlayer;
+SELECT * FROM hybrid_idps.hybridLayer;
