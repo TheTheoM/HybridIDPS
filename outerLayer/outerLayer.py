@@ -105,27 +105,13 @@ class OuterLayer():
         self.analyze_event_type(event_type, threat_name, threshold)
 
 
-    def analyze_tcp_flood(self):
-        event_types = ['Possible SYN Flood', 'Possible ACK Flood', 'Possible RST Flood', 'Possible FIN Flood']
-        threat_name = "TCP Flood Attack"
+    def analyze_flood(self):
+        event_types = ['Possible SYN Flood', 'Possible ACK Flood', 'Possible RST Flood', 'Possible FIN Flood', 'Possible UDP Flood', 'Possible ICMP Flood']
+        threat_name = "Flood Attack"
         threshold = 10000
         for event_type in event_types:
             self.analyze_event_type(event_type, threat_name, threshold)
-
-
-    def analyze_udp_flood(self):
-        event_type = 'Possible UDP Flood'
-        threat_name = "UDP Flood Attack"
-        threshold = 10000
-        self.analyze_event_type(event_type, threat_name, threshold)
-
-
-    def analyze_icmp_flood(self):
-        event_type = 'Possible ICMP Flood'
-        threat_name = "ICMP Flood Attack"
-        threshold = 10000
-        self.analyze_event_type(event_type, threat_name, threshold)
-
+    
 
     def analyze_ssh_brute_force(self):
         event_type = 'Possible SSH Brute Force'
