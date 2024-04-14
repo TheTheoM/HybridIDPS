@@ -23,7 +23,7 @@ class OuterLayer():
         self.ban_threshold = 1
         self.threatTable = {
             "Port Scanning": 0.3,
-            "Flood Attack": 0.6,
+            "Flood Attack": 1,
             "SSH Brute Force Attack": 1,
             "Unusual Incoming Traffic": 0.1,
             "Unusual Outgoing Traffic": 0.1,
