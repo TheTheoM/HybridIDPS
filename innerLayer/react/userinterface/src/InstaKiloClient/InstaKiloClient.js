@@ -35,7 +35,7 @@ function InstaKiloClient({username, password, webSocket, requestedUserData, sear
     webSocket.current.send(JSON.stringify({
       'action': 'addPost',
       'username': username,
-      'id': newPost.postId,
+      'postID': newPost.postID,
       'postTitle': newPost.postTitle,
       'imageUrl':  newPost.imageUrl,
       'content': newPost.content,

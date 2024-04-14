@@ -46,16 +46,42 @@ class InnerLayer():
 
                 self.check_payload_increment()
                 
+                self.doShit()
+  
                 ###### Analyzer Functions ######
 
                 self.display_Events_and_calc_threat_level()
                 start_time = time.time()
                 self.database.disconnect()
+                
+                
+    def doShit(self):
+        postListEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'addPost'")
+        post_ID_List = [postID[0] for postID in self.parse_payload(postListEntries)]
+        
+        print(post_ID_List)
+        
+        likePostEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'likePost'")
+
+        liked_post_ID_List = [postID[1:3] for postID in self.parse_payload(likePostEntries)]
+        
+        print(liked_post_ID_List)
+        
+        sql_post_likes_sum = {}
+        
+        for post_id in post_ID_List:
+            likeIncrements = [val[1] for val in liked_post_ID_List if val[0] == post_id]
+            print(f"LikeIncrements {likeIncrements} for post_id {post_id}")
+            sql_post_likes_sum[post_id] = sum(likeIncrements) 
+
+        print(sql_post_likes_sum)
+     
+
 
     def analyze_spam_credentials(self):
         event_type = 'invalidCredentials'
         threatName = "spamCredentials"
-        threshold = 500
+        threshold = 20
         time_frame = 1 #Minutes
         current_time = datetime.now(timezone.utc)
         time_limit = current_time - timedelta(minutes=time_frame)
@@ -203,6 +229,20 @@ class InnerLayer():
                 payload_dict[payload] = []
             payload_dict[payload].append(entry)
         return payload_dict
+    
+    def parse_payload(self, results):
+        return [list(json.loads(result['payload']).values()) for result in results]
+ 
+    def otherstuff(data):
+        result_dict = {}
+        for entry in data:
+            id, value = entry  
+            if id in result_dict:
+                result_dict[id] += value
+            else:
+                result_dict[id] = value
+
+        return result_dict
 
     def add_devices(self):
         results = self.database.execute_query(f"SELECT DISTINCT username from hybrid_idps.innerLayer")
@@ -215,7 +255,7 @@ class InnerLayer():
                 self.devices[username] = {'threatLevel': 0, 'logs': {}}   
         
     def add_threat(self, logName, threatName, username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload):
-        if ip_address.startswith("::ffff:"):     # ip_address ::ffff:192.168.1.99
+        if ip_address and ip_address.startswith("::ffff:"):     # ip_address ::ffff:192.168.1.99
             ip_address = ip_address.split(":")[-1] # ip_address 192.168.1.99
         
         if username in self.devices:

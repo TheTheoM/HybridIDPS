@@ -1,3 +1,0 @@
-The Layer's have their own threat database.
-
-The Hybrid-Layer looks over

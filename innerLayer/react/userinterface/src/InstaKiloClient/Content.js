@@ -48,9 +48,9 @@ function Content({ webSocket, searchedUserList, goToHome, setSearchValue, search
    <div className='contentContainer'>
     <div className='Content'>
       {postList  && Object.keys(postList).length > 0 ? (
-          Object.entries(postList).map(([username, user]) => (
-              <Post username={user.username} imageUrl={user.imageUrl} content = {user.content} likes = {user.likes} comments = {user.comments} 
-                    hideUser = {user.hideUser} webSocket = {webSocket} likePost = {likePost} postID = {user.id} addCommentToPost = {addCommentToPost}/>
+          Object.entries(postList).map(([username, post]) => (
+              <Post username={post.username} postTitle = {post.postTitle} imageUrl={post.imageUrl} content = {post.content} likes = {post.likes} comments = {post.comments} 
+                    hideUser = {post.hideUser} webSocket = {webSocket} likePost = {likePost} postID = {post.postID} addCommentToPost = {addCommentToPost}/>
             ))
           ) : (
           <p>No posts found.</p>
