@@ -32,6 +32,9 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - Confirm that the message "WebSocket server is running on port 8100" appears. Ignore the message about being unable to connect to the MySQL database for now.
 - Open a new terminal.
 - ```cd userinterface```, run the command ```npm start```.
+    * If the error, ```opensslErrorStack```, occurs during the execution of the project, run the following commands:
+        - Run ```set NODE_OPTIONS=--openssl-legacy-provider```.
+        - Then run ```npm audit fix --force```.  
 - If all set, the web app window will open in your default browser shortly.
 - In VSCode, open "innerLayer.py" and run it. If it errors out, install MySQL Connector Python by ```pip install mysql-connector-python``` in terminal.
 
