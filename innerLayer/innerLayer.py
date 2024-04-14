@@ -15,7 +15,7 @@ class InnerLayer():
     def __init__(self) -> None:
         self.database = MySQLConnection()
         self.database.setVerbose(False)
-        # self.database.hazmat_wipe_Table('innerLayer')
+        self.database.hazmat_wipe_Table('innerLayer')
         self.database.hazmat_wipe_Table('innerLayerThreats')
         self.devices = {}
         # self.threat_counts = {} #This may needs to be removed, work in progress
@@ -73,7 +73,7 @@ class InnerLayer():
             likeIncrements = [val[1] for val in liked_post_ID_List if val[0] == post_id]
             print(f"LikeIncrements {likeIncrements} for post_id {post_id}")
             sql_post_likes_sum[post_id] = sum(likeIncrements) 
-            
+
         print(sql_post_likes_sum)
      
 
@@ -255,7 +255,7 @@ class InnerLayer():
                 self.devices[username] = {'threatLevel': 0, 'logs': {}}   
         
     def add_threat(self, logName, threatName, username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload):
-        if ip_address.startswith("::ffff:"):     # ip_address ::ffff:192.168.1.99
+        if ip_address and ip_address.startswith("::ffff:"):     # ip_address ::ffff:192.168.1.99
             ip_address = ip_address.split(":")[-1] # ip_address 192.168.1.99
         
         if username in self.devices:

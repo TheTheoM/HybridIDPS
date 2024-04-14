@@ -201,7 +201,9 @@ class WebSocketServer {
       if (this.bannedUsers.includes(device_Username)) {
         console.log(`Disconnected banned user ${device_Username}`)
         socket.send(JSON.stringify({ message: 'You are permanently banned.', action: 'banned' }));
-        socket.terminate()
+        setTimeout(() => {
+          socket.terminate()
+        }, 1000)
       } 
 
       switch(data.action) {
