@@ -15,7 +15,7 @@ class InnerLayer():
     def __init__(self) -> None:
         self.database = MySQLConnection()
         self.database.setVerbose(False)
-        # self.database.hazmat_wipe_Table('innerLayer')
+        self.database.hazmat_wipe_Table('innerLayer')
         self.database.hazmat_wipe_Table('innerLayerThreats')
         self.devices = {}
         # self.threat_counts = {} #This may needs to be removed, work in progress
@@ -62,13 +62,12 @@ class InnerLayer():
                 
        
         
-     
 
 
     def analyze_spam_credentials(self):
         event_type = 'invalidCredentials'
         threatName = "spamCredentials"
-        threshold = 500
+        threshold = 20
         time_frame = 1 #Minutes
         current_time = datetime.now(timezone.utc)
         time_limit = current_time - timedelta(minutes=time_frame)
