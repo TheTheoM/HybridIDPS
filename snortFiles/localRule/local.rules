@@ -28,12 +28,12 @@ alert tcp any any -> $HOME_NET any (msg:"Possible Port Scanning"; flags:S; detec
 
 
 # FLOOD/DOS ATTACK DETECTION
-alert tcp any any -> $HOME_NET $HTTP_PORTS (msg:"Possible SYN Flood"; flags: S; flow: stateless; detection_filter: track by_dst, count 10000, seconds 5; sid:10000004; rev:1;)
-alert tcp any any -> $HOME_NET any (msg:"Possible ACK Flood"; flags: A; flow: stateless; detection_filter: track by_dst, count 10000, seconds 5; sid:10000005; rev:1;)
-alert tcp any any -> $HOME_NET any (msg:"Possible RST Flood"; flags: R; flow: stateless; detection_filter: track by_dst, count 10000, seconds 5; sid:10000006; rev:1;)
-alert tcp any any -> $HOME_NET any (msg:"Possible FIN Flood"; flags: F; flow: stateless; detection_filter: track by_dst, count 10000, seconds 5; sid:10000007; rev:1;)
+alert tcp any any -> $HOME_NET $HTTP_PORTS (msg:"Possible SYN Flood"; flags: S; flow: stateless; detection_filter: track by_dst, count 20000, seconds 3; sid:10000004; rev:1;)
+alert tcp any any -> $HOME_NET any (msg:"Possible ACK Flood"; flags: A; flow: stateless; detection_filter: track by_dst, count 20000, seconds 3; sid:10000005; rev:1;)
+alert tcp any any -> $HOME_NET any (msg:"Possible RST Flood"; flags: R; flow: stateless; detection_filter: track by_dst, count 20000, seconds 3; sid:10000006; rev:1;)
+alert tcp any any -> $HOME_NET any (msg:"Possible FIN Flood"; flags: F; flow: stateless; detection_filter: track by_dst, count 20000, seconds 3; sid:10000007; rev:1;)
 alert udp any any -> $HOME_NET any (msg:"Possible UDP Flood"; flow: stateless; detection_filter: track by_dst, count 20000, seconds 3; sid:10000008;rev:1;)
-alert icmp any any -> $HOME_NET any (msg:"Possible ICMP Flood"; detection_filter: track by_dst, count 10000, seconds 5; sid:10000009;rev:1;)
+alert icmp any any -> $HOME_NET any (msg:"Possible ICMP Flood"; detection_filter: track by_dst, count 20000, seconds 3; sid:10000009;rev:1;)
 
 
 # SSH BRUTE FORCE DETECTION
