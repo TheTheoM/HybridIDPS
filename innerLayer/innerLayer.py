@@ -6,7 +6,6 @@ import sys, os
 sys.path.append(os.path.abspath("../helperFiles"))
 from sqlConnector import MySQLConnection 
 
-
 try:
     import mysql.connector
 except ImportError:
@@ -23,8 +22,7 @@ class InnerLayer():
         self.threatTable = {
             "spamCredentials":     0.1,
             "massReporting":       0.2,
-            "massAccountCreationIP": 1,
-            "massAccountCreationGeo": 0.7,
+            "massAccountCreation": 1,
             "payloadAttack": 1,
             "sqlInjection": 0.6
         }
@@ -46,14 +44,13 @@ class InnerLayer():
 
                 self.analyze_mass_account_creation_ip()
 
-                self.check_payload()
+                self.check_payload_increment()
                 
                 ###### Analyzer Functions ######
 
                 self.display_Events_and_calc_threat_level()
                 start_time = time.time()
                 self.database.disconnect()
-    
 
     def analyze_spam_credentials(self):
         event_type = 'invalidCredentials'
@@ -99,10 +96,9 @@ class InnerLayer():
                                         threatName, threat_level, event['payload'])
                         count = 0
 
-
     def analyze_mass_account_creation_ip(self):   
         event_type = 'registrationSuccess'
-        threatName = "massAccountCreationIP"
+        threatName = "massAccountCreation"
         threshold = 50
         time_frame = 2 #Minutes
         current_time = datetime.now(timezone.utc)
@@ -131,9 +127,7 @@ class InnerLayer():
                     self.add_threat(logName, threatName,  user, None, ip, None, None,
                                     threatName, threat_level, None)
 
-
-
-    def check_payload(self):
+    def check_payload_increment(self):
         event_type = 'likePost'
         threatName = "payloadAttack"
 
@@ -153,8 +147,6 @@ class InnerLayer():
                     logName = f"{threatName}-{event['timestamp']}"
                     self.add_threat(logName, threatName,  event['username'], event['target_username'], event['ip_address'], event['geolocation'], event['timestamp'],
                                     threatName, threat_level, event['payload'])
-
-
         
     def display_Events_and_calc_threat_level(self):
         for username, deviceData in self.devices.items():
@@ -220,8 +212,7 @@ class InnerLayer():
             # if ip.startswith("::ffff:"):     # ip_address ::ffff:192.168.1.99
             #     ip = ip.split(":")[-1]       # ip_address 192.168.1.99
             if username not in self.devices:
-                self.devices[username] = {'threatLevel': 0, 'logs': {}}
-        
+                self.devices[username] = {'threatLevel': 0, 'logs': {}}   
         
     def add_threat(self, logName, threatName, username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload):
         if ip_address.startswith("::ffff:"):     # ip_address ::ffff:192.168.1.99
