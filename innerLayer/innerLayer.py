@@ -45,15 +45,20 @@ class InnerLayer():
                 self.analyze_mass_account_creation_ip()
 
                 self.check_payload_increment()
-
+                
+                # self.doShit()
   
-                
-                
                 ###### Analyzer Functions ######
 
                 self.display_Events_and_calc_threat_level()
                 start_time = time.time()
                 self.database.disconnect()
+                
+                
+    def doShit(self):
+        results = self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayer WHERE event_type = 'addPost'")
+        print(results)
+
 
     def analyze_spam_credentials(self):
         event_type = 'invalidCredentials'

@@ -9,7 +9,7 @@ function AddPostWindow({ addPost }) {
   const handleAddPost = () => {
     const postId = generatePostId();
     const newPost = {
-      id: postId,
+      postID: postId,
       postTitle: postTitle,
       content: postContent,
       imageUrl: imageUrl, // Include imageUrl in the newPost object

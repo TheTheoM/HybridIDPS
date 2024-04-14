@@ -264,8 +264,11 @@ class WebSocketServer {
 
             break;
         case 'addPost':
-            this.addPost(device_Username, data.postTitle, data.content, data.keyWords, data.imageUrl, data.timestamp, data.likes, data.comments) 
+            this.addPost(device_Username, data.postTitle, data.postID, data.content, data.keyWords, data.imageUrl, data.timestamp, data.likes, data.comments) 
+            this.addEvent(device_Username, null,  device_ip_address, geolocation, 'addPost',
+                          null, JSON.stringify({'postID': data.postID}))
             break;
+
         case "likePost":
           var {isSuccessful, target_username} = this.likePost(data.postID, data.increment)
           if (isSuccessful) {
@@ -398,22 +401,22 @@ class WebSocketServer {
 
   }
 
-  addPost(username, postTitle, content, keyWords, imageUrl, timestamp, likes, comments) {
+  addPost(username, postTitle, postID, content, keyWords, imageUrl, timestamp, likes, comments) {
     if (!this.registeredUsers.has(username)) {
       console.log("User not found.");
       return false;
     }
     const user = this.registeredUsers.get(username);
-    const postId = Math.random().toString(36).substr(2, 9);
+    // const postId = Math.random().toString(36).substr(2, 9);
     const post = {
-      'id': postId,
+      'postID': postID,
       'username': username,
       'postTitle': postTitle,
       'content': content,
       'keyWords': keyWords,
       'imageUrl': imageUrl,
       'timestamp': timestamp,
-      'likes': likes,
+      'likes': 0,
       'comments': comments
     };
     user.posts.push(post);
@@ -423,7 +426,7 @@ class WebSocketServer {
 
   addComment(postID, username, comment) {
     // "increment + / -s"
-    let post = this.getPostList(1000000).filter(user => user.id === postID)[0];
+    let post = this.getPostList(1000000).filter(post => post.postID === postID)[0];
     if (post) {
       post.comments.push({"username": username, "comment": comment})
       this.saveRegisteredUsersToFile()
@@ -442,7 +445,7 @@ class WebSocketServer {
 
   likePost(postID, increment) {
     // "increment + / -s"
-    let post = this.getPostList(1000000).filter(user => user.id === postID)[0];
+    let post = this.getPostList(1000000).filter(post => post.postID === postID)[0];
     if (post) {
         post.likes += parseInt(increment)
         this.saveRegisteredUsersToFile()
