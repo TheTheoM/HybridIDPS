@@ -598,5 +598,5 @@ html {
 }
 
 .contentContainer {
-  height: 87vh;
+  min-height: 100vh;
 }
