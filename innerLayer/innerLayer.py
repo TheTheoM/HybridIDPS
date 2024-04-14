@@ -26,7 +26,8 @@ class InnerLayer():
             "massAccountCreationIP": 1,
             "massAccountCreationGeo": 0.7,
             "payloadAttack": 1,
-            "sqlInjection": 0.6
+            "sqlInjection": 0.6,
+            "jsonComprimised": 0.5,
         }
         self.central_analyzer()
 
@@ -40,6 +41,8 @@ class InnerLayer():
                 self.add_devices()
                 ###### Analyzer Functions ######
                 
+                self.check_like_mismatch()
+
                 self.analyze_spam_credentials()
 
                 self.analyze_mass_reporting()
@@ -47,6 +50,8 @@ class InnerLayer():
                 self.analyze_mass_account_creation_ip()
 
                 self.check_payload()
+
+                
                 
                 ###### Analyzer Functions ######
 
@@ -154,7 +159,65 @@ class InnerLayer():
                     self.add_threat(logName, threatName,  event['username'], event['target_username'], event['ip_address'], event['geolocation'], event['timestamp'],
                                     threatName, threat_level, event['payload'])
 
+    def check_like_mismatch(self):
 
+        event_type = 'likePost'
+        threatName = "jsonComprimised"
+        json_posts_likes = {}
+
+
+        with open('registeredUsers.json', 'r') as f:
+            json_data = json.load(f)
+
+        
+
+        results = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = '{event_type}'")
+        sql_posts_likes = self.parse_and_sum_payload(results)
+        
+
+        for user in json_data:
+            user_dict = user[1]
+            posts = user_dict['posts']
+            for post in posts:
+
+                current_likes = post['likes']
+                current_post_id = post['id']
+                
+                json_posts_likes[current_post_id] = current_likes
+                
+                if current_post_id not in sql_posts_likes:
+                    print(f"mismatch at {current_post_id}")
+                else:
+                    if json_posts_likes[current_post_id] != sql_posts_likes[current_post_id]:
+                        print("entred")
+        print(sql_posts_likes)
+
+               
+
+
+
+        
+
+                
+        
+    def parse_and_sum_payload(self, results):
+        data =  [list(json.loads(result['payload']).values())[1:] for result in results]
+        result_dict = {}
+        for entry in data:
+            id, value = entry  
+            if id in result_dict:
+                result_dict[id] += value
+            else:
+                result_dict[id] = value
+
+        return result_dict
+
+  # Outputs {'br3f2jgjy': 1, 'l4rn8eaw7': 0}      
+
+
+
+
+        
         
     def display_Events_and_calc_threat_level(self):
         for username, deviceData in self.devices.items():
