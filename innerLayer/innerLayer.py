@@ -52,7 +52,7 @@ class InnerLayer():
                 
                 self.check_payload_increment()
                 
-                self.doShit()
+                self.check_like_mismatch()
   
                 ###### Analyzer Functions ######
 
@@ -60,27 +60,8 @@ class InnerLayer():
                 start_time = time.time()
                 self.database.disconnect()
                 
-                
-    def doShit(self):
-        postListEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'addPost'")
-        post_ID_List = [postID[0] for postID in self.parse_payload(postListEntries)]
+       
         
-        print(post_ID_List)
-        
-        likePostEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'likePost'")
-
-        liked_post_ID_List = [postID[1:3] for postID in self.parse_payload(likePostEntries)]
-        
-        print(liked_post_ID_List)
-        
-        sql_post_likes_sum = {}
-        
-        for post_id in post_ID_List:
-            likeIncrements = [val[1] for val in liked_post_ID_List if val[0] == post_id]
-            print(f"LikeIncrements {likeIncrements} for post_id {post_id}")
-            sql_post_likes_sum[post_id] = sum(likeIncrements) 
-            
-        print(sql_post_likes_sum)
      
 
 
@@ -182,20 +163,49 @@ class InnerLayer():
 
     def check_like_mismatch(self):
 
+
+        postListEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'addPost'")
+        post_ID_List = [postID[0] for postID in self.parse_payload(postListEntries)]
+        
+        # print(post_ID_List)
+        
+        likePostEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'likePost'")
+
+        liked_post_ID_List = [postID[1:3] for postID in self.parse_payload(likePostEntries)]
+        
+        # print(liked_post_ID_List)
+        
+        sql_post_likes_sum = {}
+        
+        for post_id in post_ID_List:
+            likeIncrements = [val[1] for val in liked_post_ID_List if val[0] == post_id]
+            print(f"LikeIncrements {likeIncrements} for post_id {post_id}")
+            sql_post_likes_sum[post_id] = sum(likeIncrements) 
+        
+        # print(sql_post_likes_sum)
+
+
+
+
         event_type = 'likePost'
         threatName = "jsonComprimised"
         json_posts_likes = {}
+
+        from datetime import datetime
+
+        current_time = datetime.now()
+        formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S') 
 
 
         with open('registeredUsers.json', 'r') as f:
             json_data = json.load(f)
 
         
-
+        threat_level = self.threatTable[threatName]
         results = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = '{event_type}'")
         sql_posts_likes = self.parse_and_sum_payload(results)
         
-
+        # print(results)
         for user in json_data:
             user_dict = user[1]
             posts = user_dict['posts']
@@ -206,13 +216,19 @@ class InnerLayer():
                 
                 json_posts_likes[current_post_id] = current_likes
                 
-                if current_post_id not in sql_posts_likes:
+                # this if condition may need to be changed
+                if json_posts_likes != sql_post_likes_sum and len(sql_posts_likes) != 0:
                     print(f"mismatch at {current_post_id}")
-                else:
-                    if json_posts_likes[current_post_id] != sql_posts_likes[current_post_id]:
-                        print("entred")
-        print(sql_posts_likes)
+                    # logName = f"{threatName}-{results.event['timestamp']}"
+                    self.add_threat(current_post_id, threatName,  None, None, None, formatted_time, None,
+                                     threatName, threat_level, current_post_id)
 
+                else:
+                    print("match")
+        # print("json_posts_likes")
+        # print(json_posts_likes)
+
+       
                
 
 
@@ -321,7 +337,7 @@ class InnerLayer():
                 self.devices[username] = {'threatLevel': 0, 'logs': {}}   
         
     def add_threat(self, logName, threatName, username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload):
-        if ip_address.startswith("::ffff:"):     # ip_address ::ffff:192.168.1.99
+        if ip_address and ip_address.startswith("::ffff:"):     # ip_address ::ffff:192.168.1.99
             ip_address = ip_address.split(":")[-1] # ip_address 192.168.1.99
         
         if username in self.devices:
