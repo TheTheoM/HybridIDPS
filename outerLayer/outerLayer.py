@@ -24,7 +24,7 @@ class OuterLayer():
         self.threatTable = {
             "Port Scanning": 0.3,
             "Flood Attack": 0.6,
-            "SSH Brute Force Attack": 0.4,
+            "SSH Brute Force Attack": 1,
             "Unusual Incoming Traffic": 0.1,
             "Unusual Outgoing Traffic": 0.1,
             "Suspicious Port Activity": 0.1,
@@ -110,7 +110,7 @@ class OuterLayer():
     def analyze_ssh_brute_force(self):
         event_type = 'Possible SSH Brute Force'
         threat_name = "SSH Brute Force Attack"
-        threshold = 10
+        threshold = 5
         self.analyze_event_type(event_type, threat_name, threshold)
 
 
