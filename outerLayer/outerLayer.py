@@ -23,9 +23,7 @@ class OuterLayer():
         self.ban_threshold = 1
         self.threatTable = {
             "Port Scanning": 0.3,
-            "TCP Flood Attack": 0.6,
-            "UDP Flood Attack": 0.6,
-            "ICMP Flood Attack": 0.6,
+            "Flood Attack": 0.6,
             "SSH Brute Force Attack": 0.4,
             "Unusual Incoming Traffic": 0.1,
             "Unusual Outgoing Traffic": 0.1,
@@ -58,13 +56,9 @@ class OuterLayer():
                 
                 self.analyze_port_scanning()
                 
-                self.analyze_tcp_flood() #TODO
-                
-                self.analyze_udp_flood() #TODO
+                self.analyze_flood()
 
-                self.analyze_icmp_flood() #TODO
-
-                self.analyze_ssh_brute_force() #TODO
+                self.analyze_ssh_brute_force()
                 
                 self.analyze_unusual_incoming_geolocation()
 
@@ -111,7 +105,7 @@ class OuterLayer():
         threshold = 10000
         for event_type in event_types:
             self.analyze_event_type(event_type, threat_name, threshold)
-    
+
 
     def analyze_ssh_brute_force(self):
         event_type = 'Possible SSH Brute Force'
@@ -121,7 +115,7 @@ class OuterLayer():
 
 
     def analyze_unusual_incoming_geolocation(self):
-        event_types = ['Incoming TCP Traffic', 'Incoming UDP Traffic','Suspicious Port Activity']
+        event_types = ['Incoming TCP Traffic', 'Incoming UDP Traffic', 'Suspicious Port Activity', 'Incoming ICMP Ping']
         threatName = "Unusual Incoming Traffic"
         
         # Define your threshold for determining what constitutes unusual traffic
@@ -171,8 +165,32 @@ class OuterLayer():
                         self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE ip_address = '{ip}' AND event_type = '{event_type}'")
     
 
+    # def display_Events_and_calc_threat_level(self):
+    #     for ip, deviceData in self.devices.items():
+    #         print("\n")
+    #         print(f"IP: {ip}")
+    #         logs = deviceData["logs"]
+    #         threatLevel = 0
+    #         for threatName, threadType in logs.items():
+    #             print(f"        {threatName}")
+    #             threatLevel += self.threatTable[threadType]
+                
+    #         if threatLevel > 1: threatLevel = 1
+    #         self.set_threat_level(ip, threatLevel)
+    #         color_code = "\033[92m"  # Green
+            
+    #         if 0 < threatLevel < 0.5:
+    #             color_code = "\033[93m"  # Yellow
+    #         elif threatLevel >= 0.5:
+    #             color_code = "\033[91m"  # Red
+                
+    #         reset_color = "\033[0m"
+    #         print(f"    {color_code}[Threat Level]:   {threatLevel} {reset_color}")
+        
     def display_Events_and_calc_threat_level(self):
-        for ip, deviceData in self.devices.items():
+        sorted_devices = sorted(self.devices.items(), key=lambda x: self.calculate_total_threat_level(x[1]))
+        
+        for ip, deviceData in sorted_devices:
             print("\n")
             print(f"IP: {ip}")
             logs = deviceData["logs"]
@@ -180,8 +198,9 @@ class OuterLayer():
             for threatName, threadType in logs.items():
                 print(f"        {threatName}")
                 threatLevel += self.threatTable[threadType]
-                
-            if threatLevel > 1: threatLevel = 1
+            
+            if threatLevel > 1:
+                threatLevel = 1
             self.set_threat_level(ip, threatLevel)
             color_code = "\033[92m"  # Green
             
@@ -192,8 +211,15 @@ class OuterLayer():
                 
             reset_color = "\033[0m"
             print(f"    {color_code}[Threat Level]:   {threatLevel} {reset_color}")
-        
-            
+
+    def calculate_total_threat_level(self, deviceData):
+        logs = deviceData["logs"]
+        threatLevel = 0
+        for threadType in logs.values():
+            threatLevel += self.threatTable[threadType]
+        return threatLevel
+
+
     def extract_ips(self, results):
         ip_dict = {}
         for entry in results:
