@@ -46,10 +46,7 @@ class InnerLayer():
 
                 self.check_payload_increment()
 
-                # results = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = '{'likePost'}'")
-
-                # print(self.extract_payload_properly(results))
-     
+  
                 
                 
                 ###### Analyzer Functions ######
@@ -210,8 +207,17 @@ class InnerLayer():
             payload_dict[payload].append(entry)
         return payload_dict
     
-    def extract_payload_properly(self, results):
-        return [list(json.loads(result['payload']).values())[1:] for result in results]
+    def parse_and_sum_payload(self, results):
+        data =  [list(json.loads(result['payload']).values())[1:] for result in results]
+        result_dict = {}
+        for entry in data:
+            id, value = entry  
+            if id in result_dict:
+                result_dict[id] += value
+            else:
+                result_dict[id] = value
+
+        return result_dict
 
     def add_devices(self):
         results = self.database.execute_query(f"SELECT DISTINCT username from hybrid_idps.innerLayer")
