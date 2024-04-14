@@ -11,8 +11,6 @@ try:
 except ImportError:
     print("\033[91mmysql.connector is not installed. Run 'pip install mysql-connector-python' \033[0m")
 
-
-
 class HybridLayer():
     def __init__(self) -> None:
         self.database = MySQLConnection()
@@ -52,26 +50,18 @@ class HybridLayer():
                 start_time = time.time()
                 self.database.disconnect()
 
-
     def basic_correlation(self):
         threatType = "Basic-Hybrid-Threat"
-
         ipThreatLevels       = self.database.get_ip_threat_levels()
         usernameThreatLevels = self.database.get_username_threat_levels()
-        
         common_keys = set(ipThreatLevels.keys()).intersection(usernameThreatLevels.keys()) # Find the intersection of the keys
-
         common_items = {key: (ipThreatLevels[key], usernameThreatLevels[key]) for key in common_keys}
 
         for ip, value in common_items.items():
             outerLayerData, innerLayerData = value
-            
             threat_level_outer, timeStamp_outer = outerLayerData.values()
-            
             threat_level_inner, timeStamp_inner, username = innerLayerData.values()
-
             combined_threat_level = threat_level_outer + threat_level_inner
-            
             if combined_threat_level > self.threshold:
                 if timeStamp_outer > timeStamp_inner:
                     most_recent = timeStamp_outer
@@ -79,14 +69,6 @@ class HybridLayer():
                     most_recent = timeStamp_inner
                 self.add_threat(ip, username, f"{threatType} {most_recent}", threatType, threat_level_outer, threat_level_inner)
         
-        # print(ipThreatLevels)
-        # print(usernameThreatLevels)
-
-
-# {'192.168.1.123': ({'threat_level': 0.8, 'timeStamp': datetime.datetime(2024, 4, 12, 23, 15, 39)},
-#                   {'threat_level': 0.8,  'timeStamp': datetime.datetime(2024, 4, 12, 14, 13, 46)}),
-#  '192.168.1.78': ({'threat_level': 1.8,  'timeStamp': datetime.datetime(2024, 4, 12, 23, 15, 30)},
-#                   {'threat_level': 0.8,  'timeStamp': datetime.datetime(2024, 4, 12, 14, 15, 11)})}   
 
 
     def basic_correlation_old(self):

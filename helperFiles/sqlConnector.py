@@ -192,6 +192,9 @@ class MySQLConnection:
         results = self.execute_query("SELECT distinct ip_address FROM hybridLayer")
         return [result['ip_address'] for result in results]
         
+    def get_Hybrid_Ban_Usernames_DB(self, threat_Threshold):
+        results = self.execute_query("SELECT distinct usernames FROM hybridLayer")
+        return [result['usernames'] for result in results]
 
 if __name__ == "__main__":
     mySqlConnection = MySQLConnection()

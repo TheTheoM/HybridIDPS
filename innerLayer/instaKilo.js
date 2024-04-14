@@ -112,6 +112,21 @@ class MySQLConnection {
     });
   }
 
+  get_all_banned_usernames_from_hybrid() {
+    return new Promise((resolve, reject) => {
+        const sqlQuery = "SELECT DISTINCT username FROM hybrid_idps.hybridLayer";
+        this.connection.query(sqlQuery, (error, results, fields) => {
+            if (error) {
+                console.error('Error at get_all_usernames: ' + error.stack);
+                reject(error);
+                return;
+            }
+            const usernames = results.map(result => result.username);
+            resolve(usernames);
+        });
+    });
+}
+
 }
 
 class WebSocketServer {
@@ -140,12 +155,24 @@ class WebSocketServer {
 
   ban_daemon() {
     setInterval(() => {
+
+      let bannedUsers = []
+
       this.mySqlConnection.get_banned_usernames(this.banThreshold).then(bannedUsernames => {
-        console.log('Ban List:', bannedUsernames);
-        this.bannedUsers = bannedUsernames
+        bannedUsers = [...bannedUsers, ...bannedUsernames];
       }).catch(error => {
         console.error('Error fetching banned usernames:', error);
       });
+
+      this.mySqlConnection.get_all_banned_usernames_from_hybrid(this.banThreshold).then(bannedUsernames => {
+        bannedUsers = [...bannedUsers, ...bannedUsernames];
+      }).catch(error => {
+        console.error('Error fetching banned usernames from hybrid:', error);
+      });
+
+      this.bannedUsers = bannedUsers
+      console.log('Ban List:', this.bannedUsers);
+
     }, 1000)
   }
 
