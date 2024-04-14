@@ -23,7 +23,8 @@ class HybridLayer():
             "pinging":      0.9,
         }
         
-        self.threshold = 0.25
+        self.threshold = 0.2
+        self.ban_threshold = 0.7
         
         self.central_analyzer()
 
@@ -43,9 +44,6 @@ class HybridLayer():
                 # self.analyze_log_in()
                 
 
-                print(self.database.get_Hybrid_Ban_IPs_DB(0))
-                
-                
                 ###### Analyzer Functions ######
                 
                 
@@ -79,9 +77,7 @@ class HybridLayer():
                     most_recent = timeStamp_outer
                 else:
                     most_recent = timeStamp_inner
-                    
-                print("adds threat")
-                self.add_threat(ip, username, f"{threatType} {most_recent}", threatType, combined_threat_level)
+                self.add_threat(ip, username, f"{threatType} {most_recent}", threatType, threat_level_outer, threat_level_inner)
         
         # print(ipThreatLevels)
         # print(usernameThreatLevels)
@@ -126,16 +122,17 @@ class HybridLayer():
             
             logs = deviceData["logs"]
             for logName, logData in logs.items():
-                log, threatLevel = logData.values()
-                color_code = "\033[92m"  # Green
+                log, threat_level_outer, threat_level_inner, combinedThreatLevel = logData.values()
+
+                color_code = "\033[92m"      # Green
                 
-                if 0 < threatLevel < 0.5:
+                if 0 < combinedThreatLevel < 0.5:
                     color_code = "\033[93m"  # Yellow
-                elif threatLevel >= 0.5:
+                elif combinedThreatLevel >= 0.5:
                     color_code = "\033[91m"  # Red
                     
                 reset_color = "\033[0m"
-                print(f"    {log}   {color_code}[Threat Level]:   {threatLevel} {reset_color}")
+                print(f"    {log}   {color_code}[Threat Level]: {combinedThreatLevel}  [Inner: {threat_level_inner}  Outer: {threat_level_outer}] {reset_color}")
             
     def extract_ips(self, results):
         ip_dict = {}
@@ -147,13 +144,15 @@ class HybridLayer():
         return ip_dict
 
     def add_devices(self):
-        results = self.database.execute_query(f"SELECT DISTINCT ip_address from hybrid_idps.HybridLayer")
+        results = self.database.execute_query(f"SELECT DISTINCT ip_address from hybrid_idps.hybridLayer")
         ip_addresses = [ip['ip_address'] for ip in results]
         for ip_and_username in ip_addresses:
             self.devices[ip_and_username] = {'threatLevel': 0, 'logs': {}}
                 
-    def add_threat(self, IP, username, logName,  log, threat_Level):
+
+    def add_threat(self, IP, username, logName, log, threat_level_outer, threat_level_inner):
         ip_and_username = f"{IP} - {username}"
+        combinedThreatLevel = threat_level_outer + threat_level_inner
 
         if ip_and_username not in self.devices:
             self.devices[ip_and_username] = {'logs': {}}
@@ -161,13 +160,18 @@ class HybridLayer():
         device = self.devices[ip_and_username]
         
         if logName not in device['logs']:
-            device['logs'][logName] = {'log': log, "threat_Level": threat_Level}
-            if threat_Level > self.threshold:
-                print("[Ban Commandment]: ")
+            device['logs'][logName] = {'log': log, "threat_level_outer":  threat_level_outer,
+                                                   "threat_level_inner":  threat_level_inner,
+                                                   "combinedThreatLevel": combinedThreatLevel}
+            if combinedThreatLevel > self.ban_threshold:
+                self.print_box(f"[Banned on Outer & Inner Layer]: {IP} | {username}")
                 self.database.add_event_to_Hybrid_DB(username, IP, None)
-        else:
-            device['logs'][logName]["threat_Level"] = threat_Level
-            
+  
+    def print_box(self, text):
+        width = len(text) + 2 
+        print(" " + "_" * width)
+        print(f"| {text} |")
+        print(" " + "‾" * width)
 
 if __name__ == "__main__":
     x = HybridLayer()
