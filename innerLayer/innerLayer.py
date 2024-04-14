@@ -15,7 +15,7 @@ class InnerLayer():
     def __init__(self) -> None:
         self.database = MySQLConnection()
         self.database.setVerbose(False)
-        self.database.hazmat_wipe_Table('innerLayer')
+        # self.database.hazmat_wipe_Table('innerLayer')
         self.database.hazmat_wipe_Table('innerLayerThreats')
         self.devices = {}
         # self.threat_counts = {} #This may needs to be removed, work in progress
@@ -46,7 +46,7 @@ class InnerLayer():
 
                 self.check_payload_increment()
                 
-                # self.doShit()
+                self.doShit()
   
                 ###### Analyzer Functions ######
 
@@ -56,8 +56,26 @@ class InnerLayer():
                 
                 
     def doShit(self):
-        results = self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayer WHERE event_type = 'addPost'")
-        print(results)
+        postListEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'addPost'")
+        post_ID_List = [postID[0] for postID in self.parse_payload(postListEntries)]
+        
+        print(post_ID_List)
+        
+        likePostEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'likePost'")
+
+        liked_post_ID_List = [postID[1:3] for postID in self.parse_payload(likePostEntries)]
+        
+        print(liked_post_ID_List)
+        
+        sql_post_likes_sum = {}
+        
+        for post_id in post_ID_List:
+            likeIncrements = [val[1] for val in liked_post_ID_List if val[0] == post_id]
+            print(f"LikeIncrements {likeIncrements} for post_id {post_id}")
+            sql_post_likes_sum[post_id] = sum(likeIncrements) 
+            # sql_post_likes_sum[post_id]
+        
+     
 
 
     def analyze_spam_credentials(self):
@@ -212,8 +230,10 @@ class InnerLayer():
             payload_dict[payload].append(entry)
         return payload_dict
     
-    def parse_and_sum_payload(self, results):
-        data =  [list(json.loads(result['payload']).values())[1:] for result in results]
+    def parse_payload(self, results):
+        return [list(json.loads(result['payload']).values()) for result in results]
+ 
+    def otherstuff(data):
         result_dict = {}
         for entry in data:
             id, value = entry  
