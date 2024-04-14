@@ -55,13 +55,13 @@ function LoginPage({webSocket, isConnected, isRegistered, username, setUsername,
         </div> 
       ) : isRegistered ? (
         <div className='container'>
-          <div className='register_and_logIn' style={{border: invalidPassword ? '2px solid rgb(243, 105, 90)' : '2px solid gray'}}>
+          <div className= {!invalidPassword ? 'register_and_logIn': 'register_and_logIn wrongCreds' } style={{border: invalidPassword ? '2px solid rgb(243, 105, 90)' : '2px solid gray'}}>
             <input type="text" placeholder="Username" value={username} onChange={handleUsernameChange} />
             <input type="password" placeholder="Password" value={password} onChange={handlePasswordChange}
                   onKeyDown={(e) => { if (e.key === "Enter") {handleLogIn()}}}/>
             <button onClick={handleLogIn}>Log In</button>
         
-            {invalidPassword ? <h3 style={{color: 'red'}}>Invalid Username or Password</h3> : ""}
+            {/* {invalidPassword ? <h3 style={{color: 'red'}}>Invalid Username or Password</h3> : ""} */}
           </div>
         </div>
       ) : (

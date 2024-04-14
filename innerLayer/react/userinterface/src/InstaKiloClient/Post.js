@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Down from "./Down"
 import Up from "./Up"
-const Post = ({ username, imageUrl, likes, comments, content, likePost, postID, addCommentToPost}) => {
+const Post = ({ username, postTitle, imageUrl, likes, comments, content, likePost, postID, addCommentToPost}) => {
     const [isUpVoted, setIsUpVoted] = useState(0);
     const [isDownVoted, setIsDownVoted] = useState(0);
     const [newComment, setNewComment] = useState('');
@@ -51,7 +51,12 @@ const Post = ({ username, imageUrl, likes, comments, content, likePost, postID, 
             src={`https://www.gravatar.com/avatar/${username}?d=identicon`}
             alt={`${username}'s avatar`}
         />
-        <h3 className="post-username">{username}</h3>
+        
+        <div className='post-username'>
+            <h3>{username}</h3>
+            <h3>{postTitle}</h3>
+        </div>
+
         </div>
         <div className="post-image">
         <img src={imageUrl} alt="Post" />
