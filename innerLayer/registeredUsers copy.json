@@ -15,7 +15,7 @@
           ],
           "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1280px-Image_created_with_a_mobile_phone.png",
           "timestamp": "2024-03-19T05:52:19.664Z",
-          "likes": 19999998,
+          "likes": 20000000,
           "comments": [
             {
               "username": "JohnSmith123",
@@ -60,10 +60,6 @@
             {
               "username": "123",
               "comment": "Hi Josh"
-            },
-            {
-              "username": "Testing Account",
-              "comment": "Hello"
             }
           ]
         },

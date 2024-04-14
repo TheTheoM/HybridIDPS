@@ -65,6 +65,7 @@ In progress HybridIDPS. Do NOT run on production systems. This is a proof of con
 - Run the "innerLayer.py".
 - The "wipes_and_Creates_Database_and_Tables" is used to clear the tables.
 - With these steps completed, you're now set up to test the project, including the web application and threat levels functionality.
+- If npm start continues to crash then some possible fixes include; running npm update, then if persists, run npm audit fix --force to resolve the issue.
 
 # OuterLayer
 
