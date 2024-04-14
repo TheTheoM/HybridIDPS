@@ -6,7 +6,6 @@ import sys, os
 sys.path.append(os.path.abspath("../helperFiles"))
 from sqlConnector import MySQLConnection 
 
-
 try:
     import mysql.connector
 except ImportError:
@@ -23,8 +22,7 @@ class InnerLayer():
         self.threatTable = {
             "spamCredentials":     0.1,
             "massReporting":       0.2,
-            "massAccountCreationIP": 1,
-            "massAccountCreationGeo": 0.7,
+            "massAccountCreation": 1,
             "payloadAttack": 1,
             "sqlInjection": 0.6,
             "jsonComprimised": 0.5,
@@ -52,13 +50,21 @@ class InnerLayer():
                 self.check_payload()
 
                 
+                self.check_payload_increment()
                 
+                # self.doShit()
+  
                 ###### Analyzer Functions ######
 
                 self.display_Events_and_calc_threat_level()
                 start_time = time.time()
                 self.database.disconnect()
-    
+                
+                
+    def doShit(self):
+        results = self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayer WHERE event_type = 'addPost'")
+        print(results)
+
 
     def analyze_spam_credentials(self):
         event_type = 'invalidCredentials'
@@ -104,10 +110,9 @@ class InnerLayer():
                                         threatName, threat_level, event['payload'])
                         count = 0
 
-
     def analyze_mass_account_creation_ip(self):   
         event_type = 'registrationSuccess'
-        threatName = "massAccountCreationIP"
+        threatName = "massAccountCreation"
         threshold = 50
         time_frame = 2 #Minutes
         current_time = datetime.now(timezone.utc)
@@ -136,9 +141,7 @@ class InnerLayer():
                     self.add_threat(logName, threatName,  user, None, ip, None, None,
                                     threatName, threat_level, None)
 
-
-
-    def check_payload(self):
+    def check_payload_increment(self):
         event_type = 'likePost'
         threatName = "payloadAttack"
 
@@ -274,6 +277,18 @@ class InnerLayer():
                 payload_dict[payload] = []
             payload_dict[payload].append(entry)
         return payload_dict
+    
+    def parse_and_sum_payload(self, results):
+        data =  [list(json.loads(result['payload']).values())[1:] for result in results]
+        result_dict = {}
+        for entry in data:
+            id, value = entry  
+            if id in result_dict:
+                result_dict[id] += value
+            else:
+                result_dict[id] = value
+
+        return result_dict
 
     def add_devices(self):
         results = self.database.execute_query(f"SELECT DISTINCT username from hybrid_idps.innerLayer")
@@ -283,8 +298,7 @@ class InnerLayer():
             # if ip.startswith("::ffff:"):     # ip_address ::ffff:192.168.1.99
             #     ip = ip.split(":")[-1]       # ip_address 192.168.1.99
             if username not in self.devices:
-                self.devices[username] = {'threatLevel': 0, 'logs': {}}
-        
+                self.devices[username] = {'threatLevel': 0, 'logs': {}}   
         
     def add_threat(self, logName, threatName, username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload):
         if ip_address.startswith("::ffff:"):     # ip_address ::ffff:192.168.1.99
