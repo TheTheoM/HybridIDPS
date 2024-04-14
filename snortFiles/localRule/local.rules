@@ -50,7 +50,7 @@ alert tcp any any -> $HOME_NET 22 (msg:"Possible SSH Brute Force"; flags: S; det
  #alert udp $HOME_NET any -> any any (msg:"Outgoing UDP Traffic"; sid:10000014; rev:1;)
 
  #anyone trying to access website that isnt a specified port number, only if the user is continously going through a weird port
- alert tcp any any -> $HOME_NET [!3000,!8100] (msg:"Suspicious Port Activity"; threshold:type threshold, track by_src, count 10, seconds 30; sid:10000015; rev:2;)
+ #alert tcp any any -> $HOME_NET [!3000,!8100] (msg:"Suspicious Port Activity"; threshold:type threshold, track by_src, count 10, seconds 30; sid:10000015; rev:2;)
 
 
 #alert tcp any any -> $HOME_NET 22 (msg:"SSH Connection Started"; sid:10000016; rev:1)

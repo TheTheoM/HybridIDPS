@@ -155,25 +155,24 @@ class WebSocketServer {
 
   ban_daemon() {
     setInterval(() => {
-
-      let bannedUsers = []
-
-      this.mySqlConnection.get_banned_usernames(this.banThreshold).then(bannedUsernames => {
-        bannedUsers = [...bannedUsers, ...bannedUsernames];
-      }).catch(error => {
-        console.error('Error fetching banned usernames:', error);
-      });
-
-      this.mySqlConnection.get_all_banned_usernames_from_hybrid(this.banThreshold).then(bannedUsernames => {
-        bannedUsers = [...bannedUsers, ...bannedUsernames];
-      }).catch(error => {
-        console.error('Error fetching banned usernames from hybrid:', error);
-      });
-
-      this.bannedUsers = bannedUsers
-      console.log('Ban List:', this.bannedUsers);
-
-    }, 1000)
+      const promises = [
+        this.mySqlConnection.get_banned_usernames(this.banThreshold),
+        this.mySqlConnection.get_all_banned_usernames_from_hybrid(this.banThreshold)
+      ];
+  
+      Promise.all(promises)
+        .then(results => {
+          let bannedUsers = [];
+          bannedUsers = bannedUsers.concat(results[0]); // Results from outer layer
+          bannedUsers = bannedUsers.concat(results[1]); // Results from inner layer
+  
+          this.bannedUsers = bannedUsers;
+          console.log('Ban List:', this.bannedUsers);
+        })
+        .catch(error => {
+          console.error('Error fetching banned usernames:', error);
+        });
+    }, 1000);
   }
 
   saveRegisteredUsersToFile() {

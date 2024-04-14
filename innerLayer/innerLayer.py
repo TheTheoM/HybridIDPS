@@ -45,6 +45,12 @@ class InnerLayer():
                 self.analyze_mass_account_creation_ip()
 
                 self.check_payload_increment()
+
+                # results = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = '{'likePost'}'")
+
+                # print(self.extract_payload_properly(results))
+     
+                
                 
                 ###### Analyzer Functions ######
 
@@ -203,6 +209,9 @@ class InnerLayer():
                 payload_dict[payload] = []
             payload_dict[payload].append(entry)
         return payload_dict
+    
+    def extract_payload_properly(self, results):
+        return [list(json.loads(result['payload']).values())[1:] for result in results]
 
     def add_devices(self):
         results = self.database.execute_query(f"SELECT DISTINCT username from hybrid_idps.innerLayer")
