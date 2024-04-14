@@ -20,8 +20,8 @@
 #-------------
 
 # PINGS DETECTION
-alert icmp any any -> $HOME_NET any (msg:"Incoming ICMP Ping"; sid:10000001;)
-alert icmp $HOME_NET any -> any any (msg:"Outgoing ICMP Ping"; sid:10000002;)
+ alert icmp any any -> $HOME_NET any (msg:"Incoming ICMP Ping"; sid:10000001;)
+# alert icmp $HOME_NET any -> any any (msg:"Outgoing ICMP Ping"; sid:10000002;)
 
 # PORT SCAN DETECTION
 alert tcp any any -> $HOME_NET any (msg:"Possible Port Scanning"; flags:S; detection_filter: track by_src, count 30, seconds 5; sid:10000003;)
@@ -32,7 +32,7 @@ alert tcp any any -> $HOME_NET $HTTP_PORTS (msg:"Possible SYN Flood"; flags: S; 
 alert tcp any any -> $HOME_NET any (msg:"Possible ACK Flood"; flags: A; flow: stateless; detection_filter: track by_dst, count 10000, seconds 5; sid:10000005; rev:1;)
 alert tcp any any -> $HOME_NET any (msg:"Possible RST Flood"; flags: R; flow: stateless; detection_filter: track by_dst, count 10000, seconds 5; sid:10000006; rev:1;)
 alert tcp any any -> $HOME_NET any (msg:"Possible FIN Flood"; flags: F; flow: stateless; detection_filter: track by_dst, count 10000, seconds 5; sid:10000007; rev:1;)
-alert udp any any -> $HOME_NET any (msg:"Possible UDP Flood"; flow: stateless; detection_filter: track by_dst, count 10000, seconds 5; sid:10000008;rev:1;)
+alert udp any any -> $HOME_NET any (msg:"Possible UDP Flood"; flow: stateless; detection_filter: track by_dst, count 20000, seconds 3; sid:10000008;rev:1;)
 alert icmp any any -> $HOME_NET any (msg:"Possible ICMP Flood"; detection_filter: track by_dst, count 10000, seconds 5; sid:10000009;rev:1;)
 
 
@@ -49,6 +49,9 @@ alert tcp any any -> $HOME_NET 22 (msg:"Possible SSH Brute Force"; flags: S; det
  #alert tcp $HOME_NET any -> any any (msg:"Outgoing TCP Traffic"; sid:10000013; rev:1;)
  #alert udp $HOME_NET any -> any any (msg:"Outgoing UDP Traffic"; sid:10000014; rev:1;)
 
- #anyone trying to access website that isnt a specified port numbe
- alert tcp any any -> $HOME_NET [!3000,!8100] (msg:"Suspicious Port Activity"; sid:10000015; rev:1)
+ #anyone trying to access website that isnt a specified port number, only if the user is continously going through a weird port
+ alert tcp any any -> $HOME_NET [!3000,!8100] (msg:"Suspicious Port Activity"; threshold:type threshold, track by_src, count 10, seconds 30; sid:10000015; rev:2;)
 
+
+#alert tcp any any -> $HOME_NET 22 (msg:"SSH Connection Started"; sid:10000016; rev:1)
+alert tcp any any -> any 22 (msg:"SSH Login Attempt"; content:"SSH-"; depth:5; sid:10000017;)
