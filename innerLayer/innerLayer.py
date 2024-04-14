@@ -47,7 +47,7 @@ class InnerLayer():
 
                 self.analyze_mass_account_creation_ip()
 
-                self.check_payload()
+                
 
                 
                 self.check_payload_increment()
@@ -184,7 +184,7 @@ class InnerLayer():
             for post in posts:
 
                 current_likes = post['likes']
-                current_post_id = post['id']
+                current_post_id = post['postID']
                 
                 json_posts_likes[current_post_id] = current_likes
                 
