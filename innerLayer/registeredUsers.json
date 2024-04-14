@@ -4,7 +4,21 @@
     {
       "password": "1",
       "email": "1",
-      "posts": []
+      "posts": [
+        {
+          "postID": "pjs5y18uc",
+          "username": "1",
+          "postTitle": "123",
+          "content": "123",
+          "keyWords": [
+            "123"
+          ],
+          "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1280px-Image_created_with_a_mobile_phone.png",
+          "timestamp": "2024-04-14T07:41:43.488Z",
+          "likes": 1,
+          "comments": []
+        }
+      ]
     }
   ]
 ]
