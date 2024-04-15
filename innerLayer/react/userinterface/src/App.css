@@ -121,6 +121,12 @@ html {
 
 .post-username {
   font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-right: 10px;
+  /* background-color: rebeccapurple; */
 }
 
 .post-image img {
@@ -602,29 +608,98 @@ html {
 .contentContainer {
   min-height: 100vh;
 }
+.register_and_logIn input {
+    border-radius: 18px;
+    background: #232627;
+    border: none;
+    height: 10%;
+    width: 80%;
+    border-radius: 18px;
+    background: linear-gradient(145deg, #202223, #25292a);
+    box-shadow:  5px 5px 11px #191b1c,
+                -5px -5px 11px #2d3132;
+    color: rgb(81, 43, 204) !important;
+    padding-left: 10px;
+    font-size: 1.5em;
+  }
 
+  .wrongCreds > input {
+    box-shadow: 0px 0px 10px 1px red;
+  }
+
+  .register_and_logIn button {
+    border-radius: 18px;
+    background: #232627;
+    border: none;
+    height: 10%;
+    width: 82%;
+    border-radius: 18px;
+    background: linear-gradient(145deg, #202223, #25292a);
+    box-shadow:  5px 5px 11px #191b1c,
+                -5px -5px 11px #2d3132;
+    color: rgb(165, 204, 255) !important;
+    font-size: 1.5em;
+    transition: 0.4s all cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+    font-weight: bold;
+    background: linear-gradient(to right, #1e1e39, #044a5e);
+    }
+
+    .register_and_logIn button:hover {
+      box-shadow:  7px  7px 18px  #0e0f10,
+                  -7px -7px 18px #383d3e;
+    }
+
+    .addPostWindow input  {
+        border-radius: 18px;
+        background: rgba(128, 128, 128, 0.429);
+        color: whitesmoke !important;
+        padding-left: 10px;
+        font-size: 1.3em !important;
+        border: none;
+        height: 30px !important;
+    }
+
+    .addPostWindow button  {
+      height: 40px !important;
+      background: linear-gradient(to left, #1e1e39, #044a5e) !important;
+      box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.359);
+      font-size: 1.5em;
+    }
 
 @media screen and (max-width: 1000px) {
   .register_and_logIn {
-    width:   700px;
-    height:  700px;
+    width:   90%;
+    height:  400px;
   }
+
+  .register_and_logIn > *{
+    border-radius: 18px;
+    background: #232627;
+    border: none;
+    }
+
   .register_and_logIn input{
     width:   80%;
     height:  8%;
-    font-size: 3em;
+    font-size: 2em;
+    text-align: center;
+    border-radius: 10px;
+    color: turquoise;
   }
   .register_and_logIn button{
     width: 80%;
-    height:  8%;
-    font-size: 3em;
+    height:  10%;
+    font-size: 2em;
+    border-radius: 10px;
+
   }
   .contentContainer {
     width: 100%;
   }
   .Content {
     width:  100% !important;
-    max-width: 80% !important;
+    max-width: 100% !important;
     font-size: 1.5em;
   }
 
@@ -637,25 +712,29 @@ html {
   }
 
   .TopBar {
-    height: 100px !important;
-    font-size: 2em;
+    height: 70px !important;
+    font-size: 1.2em;
   }
   
   .searchContainer {
-    height: 50px  !important;
+    height: 35px  !important;
   }
   .searchContainer input {
-    height: 50px  !important;
+    height: 35px  !important;
+    width: 95px  !important;
+    /* margin-right: 20px; */
     font-size: 1em;
   }
   .addPostWindow {
     width:  100% !important;
     max-width: 80% !important;
     height: 60% !important;
-    font-size: 3em;
+    /* font-size: 3em; */
   }
   .addPostWindow input {
     height: 80px;
+    width: 50%;
+    
     font-size: 0.5em;
 
   }
@@ -666,13 +745,23 @@ html {
 
   .searchWindowContainer {
     width: 100% !important;
-    height: 100% !important;
     margin-bottom: 50px;
   }
-  
+
   .searchWindow {
     width: 100% !important;
     height: 100% !important;
     margin-bottom: 50px;
+  }
+
+  .post-footer p {
+    margin: 10px;
+  }
+  .post-footer .votingContainer, .post-likes{
+    height:  70px;
+  }
+
+  .addPostWindowContainer {
+    height: 80%;
   }
 }

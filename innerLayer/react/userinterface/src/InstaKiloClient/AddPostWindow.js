@@ -45,11 +45,12 @@ function AddPostWindow({ addPost }) {
         </div>
         <div>
           <label htmlFor="post-content">Content:</label>
-          <textarea
+          <input
+            type="text"
             id="post-content"
             value={postContent}
             onChange={(e) => setPostContent(e.target.value)}
-          ></textarea>
+          />
         </div>
         <div>
           <label htmlFor="post-image-url">Image URL:</label> {/* New input for image URL */}
