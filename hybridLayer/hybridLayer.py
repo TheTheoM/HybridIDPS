@@ -19,6 +19,7 @@ class HybridLayer():
         self.threatTable = {
             "Basic-Hybrid-Threat": 0.2,
             "pinging":      0.9,
+            "SSH comprimised": 0.8
         }
         
         self.threshold = 0.2
@@ -36,6 +37,8 @@ class HybridLayer():
                 ###### Analyzer Functions ######
                 
                 # self.database.get_banned_ips()
+
+                self.extract_json_threat()
 
                 self.basic_correlation()
                 
@@ -122,6 +125,22 @@ class HybridLayer():
                 ip_dict[ip] = []
             ip_dict[ip].append(entry)
         return ip_dict
+    
+    def extract_json_threat(self):
+        
+        innerLayer_Threats = self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayerThreats WHERE event_type = 'jsonComprimised'")
+        if(len(innerLayer_Threats) >0):
+
+            outerLayer_Threats = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayerThreats WHERE threatName = 'SSH Login'")
+
+            if(len(outerLayer_Threats) > 0):
+                print("ssh and json comprimised")
+                # print(innerLayer_Threats['username'])
+                self.add_threat(outerLayer_Threats[0]['ip_address'],innerLayer_Threats[0]['username'], f"{innerLayer_Threats[0]['payload']} {outerLayer_Threats[0]['timestamp']}", 
+                                "ssh", outerLayer_Threats[0]['threat_level'], innerLayer_Threats[0]['threat_level'])
+            # return innerLayer_Threats, outerLayer_Threats
+
+    
 
     def add_devices(self):
         results = self.database.execute_query(f"SELECT DISTINCT ip_address from hybrid_idps.hybridLayer")
@@ -159,7 +178,12 @@ class HybridLayer():
                 self.print_box(f"[Banned on Outer & Inner Layer]: {IP} | {username}")
                 self.database.add_event_to_Hybrid_DB(username, IP, None)
 
-                
+    
+
+        
+
+
+
   
     def print_box(self, text):
         width = len(text) + 2 
