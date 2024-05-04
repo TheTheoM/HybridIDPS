@@ -254,7 +254,12 @@ class InnerLayer():
             if username not in self.devices:
                 self.devices[username] = {'threatLevel': 0, 'logs': {}}   
         
-    def add_threat(self, logName, threatName, username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload):
+    def add_threat(self, logName, threatName, username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload, hazmat_add_directly_to_database = False):
+        
+        if hazmat_add_directly_to_database:
+            self.database.add_threat_to_inner_Layer_Threats_DB(username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload)
+            return
+        
         if ip_address and ip_address.startswith("::ffff:"):     # ip_address ::ffff:192.168.1.99
             ip_address = ip_address.split(":")[-1] # ip_address 192.168.1.99
         
