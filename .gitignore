@@ -1,3 +1,5 @@
 **/node_modules/
 *.env
 __pycache__/
+innerLayer/registeredUsers copy.json
+innerLayer/registeredUsers.json

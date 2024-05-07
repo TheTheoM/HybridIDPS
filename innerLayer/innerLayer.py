@@ -206,7 +206,7 @@ class InnerLayer():
                     print(f"mismatch at {current_post_id}")
                     # logName = f"{threatName}-{results.event['timestamp']}"
                     self.add_threat(current_post_id, threatName, user[0], None, None, formatted_time, None,
-                                     threatName, threat_level, current_post_id)
+                                     threatName, threat_level, current_post_id, True)
                     
                 else:
                     print("likes match")
@@ -311,23 +311,27 @@ class InnerLayer():
             if username not in self.devices:
                 self.devices[username] = {'threatLevel': 0, 'logs': {}}   
         
-    def add_threat(self, logName, threatName, username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload):
+    def add_threat(self, logName, threatName, username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload, hazmat_add_directly_to_database = False):
+        
+        if hazmat_add_directly_to_database:
+            self.database.add_threat_to_inner_Layer_Threats_DB(username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload)
+            return
         
         if ip_address and ip_address.startswith("::ffff:"):     # ip_address ::ffff:192.168.1.99
             ip_address = ip_address.split(":")[-1] # ip_address 192.168.1.99
         
         if username in self.devices:
-            print("entered second if")
             device = self.devices[username]
             threatLevel = self.threatTable[threatName]
-            
+
             if logName not in device['logs']:
-                
                 device = self.devices[username]
                 device['logs'][logName] = threatName
-        self.database.add_threat_to_inner_Layer_Threats_DB(username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload)
-        # else:
-            # print(f"Failed to add_threat. Device with IP address {ip_address} does not exist.")
+                self.database.add_threat_to_inner_Layer_Threats_DB(username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload)
+        else:
+            print(f"Failed to add_threat. Device with IP address {ip_address} does not exist.")
+
+
             
     def set_threat_level(self, username, newThreatLevel):
         if username in self.devices:
