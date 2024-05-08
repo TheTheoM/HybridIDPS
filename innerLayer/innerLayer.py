@@ -201,7 +201,7 @@ class InnerLayer():
             likeIncrements = [val[1] for val in liked_post_ID_List if val[0] == post_id]
             #print(f"LikeIncrements {likeIncrements} for post_id {post_id}")
             sql_post_likes_sum[post_id] = sum(likeIncrements) 
-            print(f"the likes are {sql_post_likes_sum}")
+           # print(f"the likes are {sql_post_likes_sum}")
 
         for user in json_data:
             user_dict = user[1]
@@ -213,17 +213,25 @@ class InnerLayer():
                 
                 json_posts_likes[current_post_id] = current_likes
                 
-                #print(f"the likes are {sql_post_likes_sum}")
-                #print(f"json post likes are  {json_posts_likes}")
+                print(f"the likes are {sql_post_likes_sum}")
+                print(f"json post likes are  {json_posts_likes}")
                 # this if condition may need to be changed
                 if json_posts_likes != sql_post_likes_sum:
                     #print(f"mismatch at {current_post_id}")
                     # logName = f"{threatName}-{results.event['timestamp']}"
                     self.add_threat(current_post_id, threatName, user[0], None, None, formatted_time, None,
-                                     threatName, threat_level, current_post_id, True)
+                                     threatName, threat_level, current_post_id, True)  
                     
-               # else:
-                    #print("likes match")
+                    if not current_post_id in sql_post_likes_sum:
+                        post['likes'] = 0
+                    else:
+                        post['likes'] = sql_post_likes_sum[current_post_id]
+                    
+                    
+                    
+            with open('registeredUsers.json', 'w+') as f:
+                    json.dump(json_data, f, indent=4)
+        
     
     def check_hash_changes(self):
 
@@ -235,18 +243,17 @@ class InnerLayer():
         if self.current_json_hash != self.update_json_hash():
             
             seconds_window = datetime.now() - timedelta(seconds=6)
-            recentEntries = self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayer WHERE SECOND(timestamp) >= {seconds_window.second}")
 
-            if not recentEntries:
+            if not self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayer WHERE SECOND(timestamp) >= {seconds_window.second}"):
                 print("tampered")
                 logName = f"{threatName}-{current_time}"
                 self.add_threat(logName, threatName, None, None, None, None, formatted_time,
                                      threatName, threat_level, None, True)
                 self.current_json_hash = self.update_json_hash()
-            else:
-                print("not tamp")
-                recentEntries = []
-                self.current_json_hash = self.update_json_hash()
+           # else:
+              #  print("not tamp")
+                #recentEntries = []
+              #  self.current_json_hash = self.update_json_hash()
         else: 
             print("activity")
             #can be adjusted to decrease false positives
