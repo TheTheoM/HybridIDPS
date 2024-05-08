@@ -21,7 +21,9 @@ class InnerLayer():
         self.database.setVerbose(False)
         self.database.hazmat_wipe_Table('innerLayer')
         self.database.hazmat_wipe_Table('innerLayerThreats')
-        self.devices = {}
+        self.devices = {
+            "insiderThreat": {'threatLevel': 0, 'logs': {}},
+        }
         # self.threat_counts = {} #This may needs to be removed, work in progress
         self.threatTable = {
             "spamCredentials":     0.1,
@@ -29,8 +31,8 @@ class InnerLayer():
             "massAccountCreation": 1,
             "payloadAttack": 1,
             "sqlInjection": 0.6,
-            "jsonComprimised": 0.5,
-            "likesInjJsonComprimised" : 0.5,
+            "jsonCompromised": 0.5,
+            "likesInJsonCompromised" : 0.5,
         }
 
         #is this in the correct spot?
@@ -55,13 +57,11 @@ class InnerLayer():
                 self.analyze_mass_reporting()
 
                 self.analyze_mass_account_creation_ip()
-
-                
-
                 
                 self.check_payload_increment()
                 
                 self.check_like_mismatch()
+                
                 self.check_hash_changes()
                 #self.update_json_hash()
   
@@ -175,7 +175,7 @@ class InnerLayer():
     def check_like_mismatch(self):
 
         event_type = 'likePost'
-        threatName = "likesInjJsonComprimised"
+        threatName = "likesInJsonCompromised"
         threat_level = self.threatTable[threatName]
 
         from datetime import datetime
@@ -237,11 +237,10 @@ class InnerLayer():
 
         current_time = datetime.now()
         formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S') 
-        threatName = "jsonComprimised"
+        threatName = "jsonCompromised"
         threat_level = self.threatTable[threatName]
   
         if self.current_json_hash != self.update_json_hash():
-            
             seconds_window = datetime.now() - timedelta(seconds=6)
 
             if not self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayer WHERE SECOND(timestamp) >= {seconds_window.second}"):
@@ -249,14 +248,8 @@ class InnerLayer():
                 logName = f"{threatName}-{current_time}"
                 self.add_threat(logName, threatName, None, None, None, None, formatted_time,
                                      threatName, threat_level, None, True)
-                self.current_json_hash = self.update_json_hash()
-           # else:
-              #  print("not tamp")
-                #recentEntries = []
-              #  self.current_json_hash = self.update_json_hash()
-        else: 
-            print("activity")
-            #can be adjusted to decrease false positives
+
+            self.current_json_hash = self.update_json_hash()
         
     def update_json_hash(self):
         
@@ -266,7 +259,6 @@ class InnerLayer():
         except FileNotFoundError:
             print(f"File not found: {'registeredUsers.json'}")
         
-        print(f"The current hash is: {current_hash}") 
         return current_hash
 
     def parse_and_sum_payload(self, results):
@@ -371,11 +363,15 @@ class InnerLayer():
     def add_threat(self, logName, threatName, username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload, hazmat_add_directly_to_database = False):
         
         if hazmat_add_directly_to_database:
-            self.database.add_threat_to_inner_Layer_Threats_DB(username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload)
+            device = self.devices["insiderThreat"]
+            if logName not in device['logs']:
+                device['logs'][logName] = threatName
+                self.database.add_threat_to_inner_Layer_Threats_DB(username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload)
             return
         
         if ip_address and ip_address.startswith("::ffff:"):     # ip_address ::ffff:192.168.1.99
             ip_address = ip_address.split(":")[-1] # ip_address 192.168.1.99
+        
         
         if username in self.devices:
             device = self.devices[username]
@@ -385,6 +381,7 @@ class InnerLayer():
                 device = self.devices[username]
                 device['logs'][logName] = threatName
                 self.database.add_threat_to_inner_Layer_Threats_DB(username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload)
+                
         else:
             print(f"Failed to add_threat. Device with IP address {ip_address} does not exist.")
 
