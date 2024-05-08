@@ -1,32 +1,24 @@
 [
-  [
-    "Testing Account",
-    {
-      "password": "testingAccount",
-      "email": "testing@account.com",
-      "posts": [
+    [
+        "a",
         {
-          "postID": "vm1ce9q5i",
-          "username": "Testing Account",
-          "postTitle": "",
-          "content": "",
-          "keyWords": [
-            ""
-          ],
-          "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1280px-Image_created_with_a_mobile_phone.png",
-          "timestamp": "2024-05-07T03:43:52.962Z",
-          "likes": 10002,
-          "comments": []
+            "password": "a",
+            "email": "a",
+            "posts": [
+                {
+                    "postID": "d3pnuzfrk",
+                    "username": "a",
+                    "postTitle": "",
+                    "content": "",
+                    "keyWords": [
+                        ""
+                    ],
+                    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1280px-Image_created_with_a_mobile_phone.png",
+                    "timestamp": "2024-05-08T13:58:00.184Z",
+                    "likes": 0,
+                    "comments": []
+                }
+            ]
         }
-      ]
-    }
-  ],
-  [
-    "123",
-    {
-      "password": "123", 
-      "email": "123", 
-      "posts": [] 
-    }
-  ]
-]   
+    ]
+]
