@@ -3,6 +3,10 @@ from datetime import datetime, timedelta, timezone
 import json
 import importlib
 import sys, os
+
+import hashlib
+from typing import Any
+
 sys.path.append(os.path.abspath("../helperFiles"))
 from sqlConnector import MySQLConnection 
 
@@ -24,8 +28,14 @@ class InnerLayer():
             "massReporting":       0.2,
             "massAccountCreation": 1,
             "payloadAttack": 1,
-            "sqlInjection": 0.6
+            "sqlInjection": 0.6,
+            "jsonComprimised": 0.5,
+            "likesInjJsonComprimised" : 0.5,
         }
+
+        #is this in the correct spot?
+        self.current_json_hash = self.update_json_hash()
+
         self.central_analyzer()
 
     def central_analyzer(self):
@@ -38,44 +48,32 @@ class InnerLayer():
                 self.add_devices()
                 ###### Analyzer Functions ######
                 
+                self.check_like_mismatch()
+
                 self.analyze_spam_credentials()
 
                 self.analyze_mass_reporting()
 
                 self.analyze_mass_account_creation_ip()
 
+                
+
+                
                 self.check_payload_increment()
                 
-                self.doShit()
+                self.check_like_mismatch()
+                self.check_hash_changes()
+                #self.update_json_hash()
   
                 ###### Analyzer Functions ######
+                
 
                 self.display_Events_and_calc_threat_level()
                 start_time = time.time()
                 self.database.disconnect()
                 
-                
-    def doShit(self):
-        postListEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'addPost'")
-        post_ID_List = [postID[0] for postID in self.parse_payload(postListEntries)]
+       
         
-        print(post_ID_List)
-        
-        likePostEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'likePost'")
-
-        liked_post_ID_List = [postID[1:3] for postID in self.parse_payload(likePostEntries)]
-        
-        print(liked_post_ID_List)
-        
-        sql_post_likes_sum = {}
-        
-        for post_id in post_ID_List:
-            likeIncrements = [val[1] for val in liked_post_ID_List if val[0] == post_id]
-            print(f"LikeIncrements {likeIncrements} for post_id {post_id}")
-            sql_post_likes_sum[post_id] = sum(likeIncrements) 
-
-        print(sql_post_likes_sum)
-     
 
 
     def analyze_spam_credentials(self):
@@ -173,6 +171,115 @@ class InnerLayer():
                     logName = f"{threatName}-{event['timestamp']}"
                     self.add_threat(logName, threatName,  event['username'], event['target_username'], event['ip_address'], event['geolocation'], event['timestamp'],
                                     threatName, threat_level, event['payload'])
+
+    def check_like_mismatch(self):
+
+        event_type = 'likePost'
+        threatName = "likesInjJsonComprimised"
+        threat_level = self.threatTable[threatName]
+
+        from datetime import datetime
+
+        current_time = datetime.now()
+        formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S') 
+
+        postListEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'addPost'")
+        post_ID_List = [postID[0] for postID in self.parse_payload(postListEntries)]
+        
+        likePostEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'likePost'")
+        liked_post_ID_List = [postID[1:3] for postID in self.parse_payload(likePostEntries)]
+
+        # results = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = '{event_type}'")
+        # sql_posts_likes = self.parse_and_sum_payload(results)
+        with open('registeredUsers.json', 'r') as f:
+            json_data = json.load(f)
+
+        sql_post_likes_sum = {}
+        json_posts_likes = {}
+        
+        for post_id in post_ID_List:
+            likeIncrements = [val[1] for val in liked_post_ID_List if val[0] == post_id]
+            #print(f"LikeIncrements {likeIncrements} for post_id {post_id}")
+            sql_post_likes_sum[post_id] = sum(likeIncrements) 
+            print(f"the likes are {sql_post_likes_sum}")
+
+        for user in json_data:
+            user_dict = user[1]
+            posts = user_dict['posts']
+            for post in posts:
+
+                current_likes = post['likes']
+                current_post_id = post['postID']
+                
+                json_posts_likes[current_post_id] = current_likes
+                
+                #print(f"the likes are {sql_post_likes_sum}")
+                #print(f"json post likes are  {json_posts_likes}")
+                # this if condition may need to be changed
+                if json_posts_likes != sql_post_likes_sum:
+                    #print(f"mismatch at {current_post_id}")
+                    # logName = f"{threatName}-{results.event['timestamp']}"
+                    self.add_threat(current_post_id, threatName, user[0], None, None, formatted_time, None,
+                                     threatName, threat_level, current_post_id, True)
+                    
+               # else:
+                    #print("likes match")
+    
+    def check_hash_changes(self):
+
+        current_time = datetime.now()
+        formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S') 
+        threatName = "jsonComprimised"
+        threat_level = self.threatTable[threatName]
+  
+        if self.current_json_hash != self.update_json_hash():
+            
+            seconds_window = datetime.now() - timedelta(seconds=6)
+            recentEntries = self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayer WHERE SECOND(timestamp) >= {seconds_window.second}")
+
+            if not recentEntries:
+                print("tampered")
+                logName = f"{threatName}-{current_time}"
+                self.add_threat(logName, threatName, None, None, None, None, formatted_time,
+                                     threatName, threat_level, None, True)
+                self.current_json_hash = self.update_json_hash()
+            else:
+                print("not tamp")
+                recentEntries = []
+                self.current_json_hash = self.update_json_hash()
+        else: 
+            print("activity")
+            #can be adjusted to decrease false positives
+        
+    def update_json_hash(self):
+        
+        try:
+            with open('registeredUsers.json', 'rb') as file:
+                current_hash = hashlib.sha256(file.read()).hexdigest()
+        except FileNotFoundError:
+            print(f"File not found: {'registeredUsers.json'}")
+        
+        print(f"The current hash is: {current_hash}") 
+        return current_hash
+
+    def parse_and_sum_payload(self, results):
+        data =  [list(json.loads(result['payload']).values())[1:] for result in results]
+        result_dict = {}
+        for entry in data:
+            id, value = entry  
+            if id in result_dict:
+                result_dict[id] += value
+            else:
+                result_dict[id] = value
+
+        return result_dict
+
+  # Outputs {'br3f2jgjy': 1, 'l4rn8eaw7': 0}      
+
+
+
+
+        
         
     def display_Events_and_calc_threat_level(self):
         for username, deviceData in self.devices.items():
@@ -273,6 +380,8 @@ class InnerLayer():
                 self.database.add_threat_to_inner_Layer_Threats_DB(username, target_username, ip_address, geolocation, timestamp, event_type, threat_level, payload)
         else:
             print(f"Failed to add_threat. Device with IP address {ip_address} does not exist.")
+
+
             
     def set_threat_level(self, username, newThreatLevel):
         if username in self.devices:

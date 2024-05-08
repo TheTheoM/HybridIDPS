@@ -28,6 +28,7 @@ class OuterLayer():
             "Unusual Incoming Traffic": 0.1,
             "Unusual Outgoing Traffic": 0.1,
             "Suspicious Port Activity": 0.1,
+            "SSH login":                0.3,
             
         }
 
@@ -63,6 +64,8 @@ class OuterLayer():
                 self.analyze_unusual_incoming_geolocation()
 
                 self.analyze_unusual_outgoing_geolocation()
+
+                self.analyze_ssh_logins()
 
                 ###### Analyzer Functions ######
                 
@@ -164,6 +167,32 @@ class OuterLayer():
                         
                         self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE ip_address = '{ip}' AND event_type = '{event_type}'")
     
+    def analyze_ssh_logins(self):
+        event_types = ['SSH Login Initiated']
+        threatName = 'SSH login'
+        threshold = 1
+
+        # results = self.database.execute_query("SELECT * FROM hybrid_idps.outerLayer WHERE event_type ='SSH Login Initiated' ORDER BY timestamp DESC" )
+        # results = self.extract_ips(results)
+        for event_type in event_types:
+            
+            results = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayer WHERE event_type = '{event_type}' AND processed = False ORDER BY timestamp DESC")
+            results = self.extract_ips(results)
+            for ip, all_events in results.items():
+                
+                count = 0
+                for event in all_events:
+                    count += 1
+                    
+                    # Check if the geolocation is in the list of unusual geolocations
+                    if event['geolocation'] in self.locationBanList:
+                            # print("entered if")
+                            logName = f"{threatName}-{event['timestamp']}"
+                            self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
+                            count = 0
+                            # print('added threat')
+                        
+                    self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE ip_address = '{ip}' AND event_type = '{event_type}'")
 
     # def display_Events_and_calc_threat_level(self):
     #     for ip, deviceData in self.devices.items():
