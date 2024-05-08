@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 
-for (let i = 0; i < 9; i++) {
+for (let i = 0; i < 25; i++) {
     class WebSocketClient {
         constructor(url) {
             this.url = url;
