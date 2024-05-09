@@ -128,7 +128,7 @@ class HybridLayer():
     
     def extract_json_threat(self):
         
-        innerLayer_Threats = self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayerThreats WHERE event_type = 'jsonComprimised'")
+        innerLayer_Threats = self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayerThreats WHERE event_type = 'jsonCompromised' OR event_type = 'likesInJsonCompromised'")
         if(len(innerLayer_Threats) >0):
 
             outerLayer_Threats = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayerThreats WHERE threatName = 'SSH Login'")
