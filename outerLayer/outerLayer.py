@@ -23,8 +23,8 @@ class OuterLayer():
         self.ban_threshold = 1
         self.threatTable = {
             "Port Scanning": 0.3,
-            "Flood Attack": 0.6,
-            "SSH Brute Force Attack": 0.4,
+            "Flood Attack": 1,
+            "SSH Brute Force Attack": 1,
             "Unusual Incoming Traffic": 0.1,
             "Unusual Outgoing Traffic": 0.1,
             "Suspicious Port Activity": 0.1,
@@ -92,13 +92,13 @@ class OuterLayer():
                     log_name = f"{threat_name}-{event['timestamp']}"
                     self.add_threat(ip, log_name, event['geolocation'], event['timestamp'], threat_name)
                     count = 0
-                self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE ip_address = %s AND event_type = %s", (ip, event_type))
+                self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE id = %s", (event['id'],))
 
 
     def analyze_port_scanning(self):
         event_type = 'Possible Port Scanning'
         threat_name = "Port Scanning"
-        threshold = 200
+        threshold = 100
         self.analyze_event_type(event_type, threat_name, threshold)
 
 
@@ -113,7 +113,7 @@ class OuterLayer():
     def analyze_ssh_brute_force(self):
         event_type = 'Possible SSH Brute Force'
         threat_name = "SSH Brute Force Attack"
-        threshold = 10
+        threshold = 5
         self.analyze_event_type(event_type, threat_name, threshold)
 
 
@@ -125,9 +125,8 @@ class OuterLayer():
         threshold = 10  # Placeholder threshold, adjust as needed
         
         for event_type in event_types:
-            results = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayer WHERE event_type = '{event_type}' AND processed = False ORDER BY timestamp DESC")
+            results = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayer WHERE event_type = %s AND processed = False ORDER BY timestamp DESC", (event_type,))
             results = self.extract_ips(results)
-           
 
             for ip, all_events in results.items():
                 count = 0
@@ -140,8 +139,7 @@ class OuterLayer():
                             logName = f"{threatName}-{event['timestamp']}"
                             self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
                             count = 0
-                        
-                        self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE ip_address = '{ip}' AND event_type = '{event_type}'")
+                        self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE id = %s", (event['id'],))
 
     def analyze_unusual_outgoing_geolocation(self): 
         event_types = ['Suspicious Port Activity']
@@ -151,8 +149,9 @@ class OuterLayer():
         threshold = 10  # Placeholder threshold, adjust as needed
         
         for event_type in event_types:
-            results = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayer WHERE event_type = '{event_type}' AND processed = False ORDER BY timestamp DESC")
+            results = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayer WHERE event_type = %s AND processed = False ORDER BY timestamp DESC", (event_type,))
             results = self.extract_ips(results)
+           
             for ip, all_events in results.items():
                 count = 0
                 for event in all_events:
@@ -164,8 +163,7 @@ class OuterLayer():
                             logName = f"{threatName}-{event['timestamp']}"
                             self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
                             count = 0
-                        
-                        self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE ip_address = '{ip}' AND event_type = '{event_type}'")
+                        self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE id = %s", (event['id'],))
     
     def analyze_ssh_logins(self):
         event_types = ['SSH Login Initiated']
