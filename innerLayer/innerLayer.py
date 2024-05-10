@@ -74,9 +74,6 @@ class InnerLayer():
                 self.display_Events_and_calc_threat_level()
                 start_time = time.time()
                 self.database.disconnect()
-                
-       
-        
 
 
     def analyze_spam_credentials(self):
@@ -316,7 +313,9 @@ class InnerLayer():
         return result_dict
 
   # Outputs {'br3f2jgjy': 1, 'l4rn8eaw7': 0}      
+    def check_if
 
+    def check_geo_changes(self):
 
 
 
@@ -340,7 +339,7 @@ class InnerLayer():
             elif 0 < threatLevel < 0.5:
                 color_code = "\033[93m"  # Yellow
             reset_color = "\033[0m"
-            print(f"    {color_code}[Threat Level]:   {threatLevel} {reset_color}")
+            print(f"{color_code}[Threat Level]:   {threatLevel} {reset_color}")
             
     def extract_ips(self, results):
         ip_dict = {}
