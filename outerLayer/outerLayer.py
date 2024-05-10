@@ -41,6 +41,8 @@ class OuterLayer():
             "Romania"
         ]
 
+        self.incomingIpList = []
+        self.count = 0
 
         self.central_analyzer()
         
@@ -54,6 +56,8 @@ class OuterLayer():
                 self.database.connect()
                 self.add_devices()
                 ###### Analyzer Functions ######
+
+                self.track_incoming_traffic_ip()
                 
                 self.analyze_port_scanning()
                 
@@ -80,7 +84,22 @@ class OuterLayer():
                 start_time = time.time()
                 self.database.disconnect()
                 
-                
+
+    def track_incoming_traffic_ip(self):
+        self.count += 1
+        if self.count == 100:
+            self.incomingIpList = []
+            self.count = 0
+        event_types = ['Incoming TCP Traffic', 'Incoming UDP Traffic', 'Incoming ICMP Ping']
+        self.incomingIpList = []
+        for event_type in event_types:
+            results = self.database.execute_query("SELECT DISTINCT ip_address FROM hybrid_idps.outerLayer WHERE event_type = %s AND processed = False", (event_type,))
+            ips = [result['ip_address'] for result in results]
+            self.incomingIpList.extend(ips)
+        self.incomingIpList = list(set(self.incomingIpList))
+        print(f"Incoming IP List: {self.incomingIpList}")
+
+
     def analyze_event_type(self, event_type, threat_name, threshold):
         results = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayer WHERE event_type = %s AND processed = False ORDER BY timestamp DESC", (event_type,))
         results = self.extract_ips(results)
@@ -122,7 +141,7 @@ class OuterLayer():
         threatName = "Unusual Incoming Traffic"
         
         # Define your threshold for determining what constitutes unusual traffic
-        threshold = 10  # Placeholder threshold, adjust as needed
+        threshold = 5  # Placeholder threshold, adjust as needed
         
         for event_type in event_types:
             results = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayer WHERE event_type = %s AND processed = False ORDER BY timestamp DESC", (event_type,))
@@ -142,11 +161,11 @@ class OuterLayer():
                         self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE id = %s", (event['id'],))
 
     def analyze_unusual_outgoing_geolocation(self): 
-        event_types = ['Suspicious Port Activity']
+        event_types = ['Outgoing TCP Traffic', 'Outgoing UDP Traffic', 'Outgoing ICMP Ping']
         threatName = "Unusual Outgoing Traffic"
         
         # Define your threshold for determining what constitutes unusual traffic
-        threshold = 10  # Placeholder threshold, adjust as needed
+        threshold = 5  # Placeholder threshold, adjust as needed
         
         for event_type in event_types:
             results = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayer WHERE event_type = %s AND processed = False ORDER BY timestamp DESC", (event_type,))
@@ -158,7 +177,7 @@ class OuterLayer():
                     count += 1
 
                     # Check if the geolocation is in the list of unusual geolocations
-                    if event['geolocation'] in self.locationBanList:
+                    if event['geolocation'] in self.locationBanList or event['ip_address'] not in self.incomingIpList:
                         if count > threshold:
                             logName = f"{threatName}-{event['timestamp']}"
                             self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
