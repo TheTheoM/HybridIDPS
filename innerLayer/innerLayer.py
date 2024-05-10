@@ -34,6 +34,7 @@ class InnerLayer():
             "massCorrelation": 1,
             "jsonCompromised": 0.5,
             "likesInJsonCompromised" : 0.5,
+            "locationChange":  0.4,
         }
 
         #is this in the correct spot?
@@ -66,6 +67,8 @@ class InnerLayer():
                 self.check_like_mismatch()
                 
                 self.check_hash_changes()
+
+                self.check_for_new_login()
                 #self.update_json_hash()
   
                 ###### Analyzer Functions ######
@@ -252,8 +255,8 @@ class InnerLayer():
                 
                 json_posts_likes[current_post_id] = current_likes
                 
-                print(f"the likes are {sql_post_likes_sum}")
-                print(f"json post likes are  {json_posts_likes}")
+                #print(f"the likes are {sql_post_likes_sum}")
+                #print(f"json post likes are  {json_posts_likes}")
                 # this if condition may need to be changed
                 if json_posts_likes != sql_post_likes_sum:
                     #print(f"mismatch at {current_post_id}")
@@ -313,9 +316,44 @@ class InnerLayer():
         return result_dict
 
   # Outputs {'br3f2jgjy': 1, 'l4rn8eaw7': 0}      
-    def check_if
+    def check_for_new_login(self):
+        
+        seconds_window = datetime.now() - timedelta(seconds=10)
+        newLogins = self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayer WHERE event_type = 'successfulLogin' AND SECOND(timestamp) >= {seconds_window.second}")
 
-    def check_geo_changes(self):
+        for user in newLogins:
+            self.check_geo_changes(user)
+            #print(f"The lastLogin was {user}")
+
+    def check_geo_changes(self, results):
+        
+        threatName = "locationChange"
+        threat_level = self.threatTable[threatName]
+        logName = f"{threatName}-{results['timestamp']}"
+
+        geolocation = results['geolocation']
+        currentUser = results['username']
+
+        #seconds_window = datetime.now() - timedelta(seconds=10)
+        pastLogin = self.database.execute_query(f"""SELECT * FROM hybrid_idps.innerLayer 
+                                                WHERE event_type = 'successfulLogin' 
+                                                AND timestamp < ( SELECT MAX(timestamp) 
+                                                FROM hybrid_idps.innerLayer 
+                                                WHERE event_type = 'successfulLogin') 
+                                                ORDER BY timestamp DESC LIMIT 1""")
+        
+        if pastLogin:
+            pastLoginLocation = pastLogin[0]['geolocation']
+        
+            if geolocation != pastLoginLocation:
+
+                self.add_threat(logName, threatName, results['username'], None, results['ip_address'], geolocation,
+                            results['timestamp'], threatName, threat_level, None)
+            
+
+
+        #print(f"the past login was {pastLogin}")
+       # print(f"the geo is {geolocation}")
 
 
 
