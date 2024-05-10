@@ -55,3 +55,7 @@ alert tcp any any -> $HOME_NET 22 (msg:"Possible SSH Brute Force"; flags: S; det
 
 #alert tcp any any -> $HOME_NET 22 (msg:"SSH Connection Started"; sid:10000016; rev:1)
 alert tcp any any -> any 22 (msg:"SSH Login Initiated"; content:"SSH-"; depth:5; sid:10000017;)
+alert tcp any any -> any any (msg:"WebSocket Detection"; content:"{\"message\":\"Are you registered?\",\"action\":\"checkRegistration\"}"; threshold:type threshold, track by_src, count 10, seconds 30; sid:10000019;)
+
+
+
