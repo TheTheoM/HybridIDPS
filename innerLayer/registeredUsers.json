@@ -18,23 +18,5 @@
           "likes": 0,
           "comments": []
         }
-      ]
-    }
-  ],
-  [
-    "123",
-    {
-      "password": "123",
-      "email": "123",
-      "posts": []
-    }
-  ],
-  [
-    "aaa",
-    {
-      "password": "aaa",
-      "email": "aaa",
-      "posts": []
-    }
-  ]
+
 ]
