@@ -19,7 +19,8 @@ class HybridLayer():
         self.threatTable = {
             "Basic-Hybrid-Threat": 0.2,
             "pinging":      0.9,
-            "SSH comprimised": 0.8
+            "SSH comprimised": 0.8,
+            "Phishing Campaign": 0.8
         }
         
         self.threshold = 0.2
@@ -41,6 +42,8 @@ class HybridLayer():
                 self.extract_json_threat()
 
                 self.basic_correlation()
+
+                self.extract_phishing_threat()
                 
                 # self.analyze_log_in()
                 
@@ -137,10 +140,22 @@ class HybridLayer():
                 print("ssh and json comprimised")
                 # print(innerLayer_Threats['username'])
                 self.add_threat(outerLayer_Threats[0]['ip_address'],innerLayer_Threats[0]['username'], f"{innerLayer_Threats[0]['payload']} {outerLayer_Threats[0]['timestamp']}", 
-                                "ssh", outerLayer_Threats[0]['threat_level'], innerLayer_Threats[0]['threat_level'])
+                                "ssh", outerLayer_Threats[0]['threat_level'], innerLayer_Threats[0]['threat_level'] )
             # return innerLayer_Threats, outerLayer_Threats
 
-    
+    def extract_phishing_threat(self):
+
+        innerLayer_Threats = self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayerThreats WHERE event_type = 'locationChange'")
+
+        if(len(innerLayer_Threats) > 0):
+            
+            outerLayer_Threats = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayerThreats WHERE threatname = 'WebSocket Detection'")
+            
+            if(len(outerLayer_Threats) > 0):
+                print("Phishing Campaign underway")
+                self.add_threat(outerLayer_Threats[0]['ip_address'], innerLayer_Threats[0]['username'], f"{innerLayer_Threats[0]['payload']} {outerLayer_Threats[0]['timestamp']}", "Phishing",
+                                outerLayer_Threats[0]['threat_level'], innerLayer_Threats[0]['threat_level'])
+
 
     def add_devices(self):
         results = self.database.execute_query(f"SELECT DISTINCT ip_address from hybrid_idps.hybridLayer")

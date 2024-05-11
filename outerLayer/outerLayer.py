@@ -29,7 +29,7 @@ class OuterLayer():
             "Unusual Outgoing Traffic": 0.1,
             "Suspicious Port Activity": 0.1,
             "SSH login":                0.3,
-            "WebSocket Detection":      0.3,
+            "WebSocket Detection":      0.4,
             
         }
 
