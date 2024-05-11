@@ -221,6 +221,7 @@ class OuterLayer():
         # Define your threshold for determining what constitutes unusual traffic
         
         results = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayer WHERE event_type = '{event_type}' AND processed = False ORDER BY timestamp DESC")
+        #dest_ip = self.database.execute_query(f"SELECT dest_ip_address FROM hybrid_idps.outerLayer WHere event_type '{event_type}' AND processed = False ORDER BY timestamp DESC")
         results = self.extract_ips(results)
         
         for ip, all_events in results.items():

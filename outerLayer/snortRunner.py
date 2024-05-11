@@ -146,7 +146,7 @@ def check_file_changes(file_path, file_Check_Interval, displayAlerts, mySqlConne
                     #Sending Data to server
                     if displayAlerts:
                         for alert in newSnortAlerts:
-                            (src_ip, dest_ip, geolocation, dateTime, alertName, threat_level, src_port, dest_port, protocol) = alert
+                            (src_ip, geolocation, dateTime, alertName, threat_level, src_port, dest_port, protocol, ) = alert
                             print(f"Source IP: {src_ip}, Geolocation: {geolocation}, Date/Time: {dateTime}, Alert Name: {alertName}, Threat Level: {threat_level}, Source Port: {src_port}, Destination Port: {dest_port}, Protocol: {protocol}")
 
                             
@@ -219,10 +219,11 @@ def handle_Snort_Alerts(displayAlerts, fileData, read_Up_To):
                 
                 dateTime, src_ip, dest_ip = get_ip_and_time_line(ip_and_time_Line)
                 
-                if alertName == "Outgoing TCP Traffic" or alertName == "Outgoing UDP Traffic" or alertName == "Outgoing ICMP Ping":
+                if alertName == "Outgoing TCP Traffic" or alertName == "Outgoing UDP Traffic" or alertName == "Outgoing ICMP Ping" or alertName == "WebSocket Detection":
                     # Swap src_ip and dest_ip
                     src_ip, dest_ip = dest_ip, src_ip
-
+                
+              
                 isoDateTime = dateTime_to_ISO(dateTime)
 
                 protocol = get_protocol(protocol_Line)
