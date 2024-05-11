@@ -141,16 +141,19 @@ class InnerLayer():
 
         for ip, all_event in results.items():
             if all_event[0]['registration_count'] > 1:
-                usernames_result = self.database.execute_query(f""" SELECT *
+                usernames_result = self.database.execute_query(f""" SELECT ip_address, timestamp, username
                                                                     FROM hybrid_idps.innerLayer
                                                                     WHERE ip_address = '{ip}'
                                                                     AND event_type = '{event_type}'
                                                                     AND timestamp >= '{time_limit.strftime('%Y-%m-%d %H:%M:%S')}'""")
-                usernames = self.extract_user(usernames_result)
-
-                for user in usernames:
+                #usernames = self.extract_user(usernames_result)
+                
+                for x in usernames_result:
+                    x = list(x.values())
+                    ip, timestamp, username = x[0], x[1], x[2]
                     logName = f"{threatName}"
-                    self.add_threat(logName, threatName,  user, None, ip, None, None,
+                    print(f"The ip Address is {ip}")
+                    self.add_threat(logName, threatName, username, None, ip, None, timestamp,
                                     threatName, threat_level, None)
 
     def check_payload_increment(self):
