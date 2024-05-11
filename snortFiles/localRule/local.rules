@@ -20,8 +20,8 @@
 #-------------
 
 # PINGS DETECTION
- alert icmp any any -> $HOME_NET any (msg:"Incoming ICMP Ping"; sid:10000001;)
-# alert icmp $HOME_NET any -> any any (msg:"Outgoing ICMP Ping"; sid:10000002;)
+alert icmp any any -> $HOME_NET any (msg:"Incoming ICMP Ping"; sid:10000001;)
+alert icmp $HOME_NET any -> any any (msg:"Outgoing ICMP Ping"; sid:10000002;)
 
 # PORT SCAN DETECTION
 alert tcp any any -> $HOME_NET any (msg:"Possible Port Scanning"; flags:S; detection_filter: track by_src, count 30, seconds 5; sid:10000003;)
@@ -41,13 +41,13 @@ alert tcp any any -> $HOME_NET 22 (msg:"Possible SSH Brute Force"; flags: S; det
 
 
 # INCOMING TRAFFIC DETECTION
- #alert tcp any any -> $HOME_NET any (msg:"Incoming TCP Traffic"; sid:10000011; rev:1;)
- #alert udp any any -> $HOME_NET any (msg:"Incoming UDP Traffic"; sid:10000012; rev:1;)
+#alert tcp any any -> $HOME_NET any (msg:"Incoming TCP Traffic"; sid:10000011; rev:1;)
+#alert udp any any -> $HOME_NET any (msg:"Incoming UDP Traffic"; sid:10000012; rev:1;)
 
 
 # OUTGOING TRAFFIC DETECTION
- #alert tcp $HOME_NET any -> any any (msg:"Outgoing TCP Traffic"; sid:10000013; rev:1;)
- #alert udp $HOME_NET any -> any any (msg:"Outgoing UDP Traffic"; sid:10000014; rev:1;)
+#alert tcp $HOME_NET any -> any any (msg:"Outgoing TCP Traffic"; sid:10000013; rev:1;)
+#alert udp $HOME_NET any -> any any (msg:"Outgoing UDP Traffic"; sid:10000014; rev:1;)
 
  #anyone trying to access website that isnt a specified port number, only if the user is continously going through a weird port
  #alert tcp any any -> $HOME_NET [!3000,!8100] (msg:"Suspicious Port Activity"; threshold:type threshold, track by_src, count 10, seconds 30; sid:10000015; rev:2;)

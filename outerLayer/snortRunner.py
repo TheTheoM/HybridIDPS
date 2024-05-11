@@ -318,7 +318,9 @@ if __name__ == '__main__':
     checkDirectories(snort_Dirs)
     overwrite_snort_local_rules()
     file_Check_Interval = 2 
-    interface_Number = list_interfaces(find_Interface_subString = "VMnet8") # You may need to change this. When running the code, it will print ur interfaces. Add a substring from it to this.
+
+    interface_Number = list_interfaces(find_Interface_subString = "Controller") # You may need to change this. When running the code, it will print ur interfaces. Add a substring from it to this.
+
     displayRules(snort_Dirs['Local Rules File'])
     runSnort(snort_Dirs, interface_Number=interface_Number)
 
