@@ -35,6 +35,7 @@ class InnerLayer():
             "jsonCompromised": 0.5,
             "likesInJsonCompromised" : 0.5,
             "locationChange":  0.4,
+            "botActivity": 0.4
         }
 
         #is this in the correct spot?
@@ -52,23 +53,21 @@ class InnerLayer():
                 self.add_devices()
                 ###### Analyzer Functions ######
                 
-                self.check_like_mismatch()
-
                 self.analyze_spam_credentials()
 
                 self.analyze_mass_reporting()
 
                 self.analyze_mass_account_creation_ip()
 
-                self.analyze_mass_correlation()
+                #self.analyze_mass_correlation()
                 
                 self.check_payload_increment()
-                
-                self.check_like_mismatch()
-                
+                               
                 self.check_hash_changes()
 
                 self.check_for_new_login()
+
+                self.mass_bot_detection()
                 #self.update_json_hash()
   
                 ###### Analyzer Functions ######
@@ -175,104 +174,45 @@ class InnerLayer():
                     self.add_threat(logName, threatName,  event['username'], event['target_username'], event['ip_address'], event['geolocation'], event['timestamp'],
                                     threatName, threat_level, event['payload'])
     
-    def analyze_mass_correlation(self):   
-            # event_type = ['reportUserByUsername', 'friendUserByUsername', 'likePost', 'messageUserByUsername']
-            threatName = "massCorrelation"
-            user_threshold = 10
-            activity_threshold = 10
-            time_frame = 2 #Minutes
-            current_time = datetime.now(timezone.utc)
-            time_limit = current_time - timedelta(minutes=time_frame)
+    # def analyze_mass_correlation(self):   
+    #         # event_type = ['reportUserByUsername', 'friendUserByUsername', 'likePost', 'messageUserByUsername']
+    #         threatName = "massCorrelation"
+    #         user_threshold = 10
+    #         activity_threshold = 10
+    #         time_frame = 2 #Minutes
+    #         current_time = datetime.now(timezone.utc)
+    #         time_limit = current_time - timedelta(minutes=time_frame)
 
-            threat_level = self.threatTable[threatName]
+    #         threat_level = self.threatTable[threatName]
 
-            for event_type in ['reportUserByUsername', 'friendUserByUsername', 'likePost', 'messageUserByUsername']:
+    #         for event_type in ['reportUserByUsername', 'friendUserByUsername', 'likePost', 'messageUserByUsername']:
 
-                results = self.database.execute_query(f"""SELECT t.username, t.target_username, t.ip_address, aggregated_data.activity_count
-                                                            FROM (
-                                                                SELECT target_username, COUNT(username) AS activity_count
-                                                                FROM hybrid_idps.innerLayer 
-                                                                WHERE event_type = '{event_type}' 
-                                                                AND timestamp >= '{time_limit.strftime('%Y-%m-%d %H:%M:%S')}'
-                                                                GROUP BY target_username
-                                                                HAVING COUNT(username) >= {user_threshold}
-                                                            ) AS aggregated_data
-                                                            JOIN hybrid_idps.innerLayer AS t 
-                                                                ON aggregated_data.target_username = t.target_username""")
-                results = self.extract_user(results)
+    #             results = self.database.execute_query(f"""SELECT t.username, t.target_username, t.ip_address, aggregated_data.activity_count
+    #                                                         FROM (
+    #                                                             SELECT target_username, COUNT(username) AS activity_count
+    #                                                             FROM hybrid_idps.innerLayer 
+    #                                                             WHERE event_type = '{event_type}' 
+    #                                                             AND timestamp >= '{time_limit.strftime('%Y-%m-%d %H:%M:%S')}'
+    #                                                             GROUP BY target_username
+    #                                                             HAVING COUNT(username) >= {user_threshold}
+    #                                                         ) AS aggregated_data
+    #                                                         JOIN hybrid_idps.innerLayer AS t 
+    #                                                             ON aggregated_data.target_username = t.target_username""")
+    #             results = self.extract_user(results)
     
-                for username, rows in results.items():
-                        for row in rows:
-                            username = row['username']
-                            activity_count = row['activity_count']
-                            target_username = row['target_username']
-                            ip_address = row['ip_address']
+    #             for username, rows in results.items():
+    #                     for row in rows:
+    #                         username = row['username']
+    #                         activity_count = row['activity_count']
+    #                         target_username = row['target_username']
+    #                         ip_address = row['ip_address']
 
-                            if activity_count > activity_threshold:
-                                logName = f"{threatName}"
-                                self.add_threat(logName, threatName, username, target_username, ip_address, None, None,
-                                                event_type, threat_level, None)            
+    #                         if activity_count > activity_threshold:
+    #                             logName = f"{threatName}"
+    #                             self.add_threat(logName, threatName, username, target_username, ip_address, None, None,
+    #                                             event_type, threat_level, None)            
 
 
-    def check_like_mismatch(self):
-
-        event_type = 'likePost'
-        threatName = "likesInJsonCompromised"
-        threat_level = self.threatTable[threatName]
-
-        from datetime import datetime
-
-        current_time = datetime.now()
-        formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S') 
-
-        postListEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'addPost'")
-        post_ID_List = [postID[0] for postID in self.parse_payload(postListEntries)]
-        
-        likePostEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'likePost'")
-        liked_post_ID_List = [postID[1:3] for postID in self.parse_payload(likePostEntries)]
-
-        # results = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = '{event_type}'")
-        # sql_posts_likes = self.parse_and_sum_payload(results)
-        with open('registeredUsers.json', 'r') as f:
-            json_data = json.load(f)
-
-        sql_post_likes_sum = {}
-        json_posts_likes = {}
-        
-        for post_id in post_ID_List:
-            likeIncrements = [val[1] for val in liked_post_ID_List if val[0] == post_id]
-            #print(f"LikeIncrements {likeIncrements} for post_id {post_id}")
-            sql_post_likes_sum[post_id] = sum(likeIncrements) 
-           # print(f"the likes are {sql_post_likes_sum}")
-
-        for user in json_data:
-            user_dict = user[1]
-            posts = user_dict['posts']
-            for post in posts:
-
-                current_likes = post['likes']
-                current_post_id = post['postID']
-                
-                json_posts_likes[current_post_id] = current_likes
-                
-                #print(f"the likes are {sql_post_likes_sum}")
-                #print(f"json post likes are  {json_posts_likes}")
-                # this if condition may need to be changed
-                if json_posts_likes != sql_post_likes_sum:
-                    #print(f"mismatch at {current_post_id}")
-                    # logName = f"{threatName}-{results.event['timestamp']}"
-                    self.add_threat(current_post_id, threatName, user[0], None, None, formatted_time, None,
-                                     threatName, threat_level, current_post_id, True)  
-                    
-                    if not current_post_id in sql_post_likes_sum:
-                        post['likes'] = 0
-                    else:
-                        post['likes'] = sql_post_likes_sum[current_post_id]
-                    
-                    
-                    
-            with open('registeredUsers.json', 'w+') as f:
-                    json.dump(json_data, f, indent=4)
         
     
     def check_hash_changes(self):
@@ -355,7 +295,27 @@ class InnerLayer():
         #print(f"the past login was {pastLogin}")
        # print(f"the geo is {geolocation}")
 
+    def mass_bot_detection(self):
+        #event_types = ['reportUserByUsername','likePost', 'addComment']
+        threatName = "botActivity"
+        threshold = 2
+        time_frame = 2 #Minutes
+        current_time = datetime.now(timezone.utc)
+        time_limit = current_time - timedelta(minutes=time_frame)
 
+        threat_level = self.threatTable[threatName]
+        results = self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayer WHERE event_type IN ('reportUserByUsername','likePost', 'addComment') AND timestamp >= '{time_limit.strftime('%Y-%m-%d %H:%M:%S')}' ORDER BY timestamp DESC")
+        results = self.extract_user(results)
+
+        for user, user_events in results.items():
+            count = 0
+            for event in user_events:
+                    count += 1
+                    if count > threshold:
+                        logName = f"{threatName}-{event['timestamp']}"
+                        self.add_threat(logName, threatName,  event['username'], event['target_username'], event['ip_address'], event['geolocation'], event['timestamp'],
+                                        threatName, threat_level, event['payload'])
+                        count = 0
 
         
         
