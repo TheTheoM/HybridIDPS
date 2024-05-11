@@ -29,6 +29,7 @@ class OuterLayer():
             "Unusual Outgoing Traffic": 0.1,
             "Suspicious Port Activity": 0.1,
             "SSH login":                0.3,
+            "WebSocket Detection":      0.3,
             
         }
 
@@ -46,7 +47,6 @@ class OuterLayer():
 
         self.central_analyzer()
         
- 
 
     def central_analyzer(self):
         interval = 1
@@ -70,6 +70,8 @@ class OuterLayer():
                 self.analyze_unusual_outgoing_geolocation()
 
                 self.analyze_ssh_logins()
+                
+                self.analyze_Websocket_Detection()
 
                 ###### Analyzer Functions ######
                 
@@ -210,6 +212,23 @@ class OuterLayer():
                             # print('added threat')
                         
                     self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE ip_address = '{ip}' AND event_type = '{event_type}'")
+
+
+    def analyze_Websocket_Detection(self):
+        event_type = 'WebSocket Detection'
+        threatName = "WebSocket Detection"
+        
+        # Define your threshold for determining what constitutes unusual traffic
+        
+        results = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayer WHERE event_type = '{event_type}' AND processed = False ORDER BY timestamp DESC")
+        results = self.extract_ips(results)
+        
+        for ip, all_events in results.items():
+            for event in all_events:
+                logName = f"{threatName}-{event['timestamp']}"
+                self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
+            
+            self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE ip_address = '{ip}' AND event_type = '{event_type}'")
 
     # def display_Events_and_calc_threat_level(self):
     #     for ip, deviceData in self.devices.items():
