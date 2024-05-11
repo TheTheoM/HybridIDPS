@@ -146,14 +146,13 @@ def check_file_changes(file_path, file_Check_Interval, displayAlerts, mySqlConne
                     #Sending Data to server
                     if displayAlerts:
                         for alert in newSnortAlerts:
-                            (src_ip, geolocation, dateTime, alertName, threat_level, src_port, dest_port, protocol) = alert
+                            (src_ip, dest_ip, geolocation, dateTime, alertName, threat_level, src_port, dest_port, protocol) = alert
                             print(f"Source IP: {src_ip}, Geolocation: {geolocation}, Date/Time: {dateTime}, Alert Name: {alertName}, Threat Level: {threat_level}, Source Port: {src_port}, Destination Port: {dest_port}, Protocol: {protocol}")
 
                             
                     mySqlConnection.add_data_to_outer_layer_bulk(newSnortAlerts)
                     # mySqlConnection.add_data_to_outer_layer(ip_address, geolocation, event_type, threat_level, source_port, destination_port, protocol, payload)
-
-                                
+              
                     current_hash = new_hash
         except FileNotFoundError:
             print(f"File not found: {file_path}")
@@ -319,7 +318,7 @@ if __name__ == '__main__':
     overwrite_snort_local_rules()
     file_Check_Interval = 2 
 
-    interface_Number = list_interfaces(find_Interface_subString = "Controller") # You may need to change this. When running the code, it will print ur interfaces. Add a substring from it to this.
+    interface_Number = list_interfaces(find_Interface_subString = "VMnet8") # You may need to change this. When running the code, it will print ur interfaces. Add a substring from it to this.
 
     displayRules(snort_Dirs['Local Rules File'])
     runSnort(snort_Dirs, interface_Number=interface_Number)
