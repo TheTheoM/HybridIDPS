@@ -60,4 +60,4 @@ alert tcp any any -> any 22 (msg:"SSH Login Initiated"; content:"SSH-"; depth:5;
 
 alert tcp any any -> any any (msg:"Possible Phishing"; content:"{\"message\":\"Are you registered?\",\"action\":\"checkRegistration\"}"; threshold:type threshold, track by_src, count 10, seconds 30; sid:10000019;)
 
-alert tcp any any -> any any (msg:"WebSocket Detection"; content:"{\"message\":\"Are you registered?\",\"action\":\"checkRegistration\"}"; sid:10000020;)
+alert tcp any any -> any any (msg:"WebSocket Connection"; content:"{\"message\":\"Are you registered?\",\"action\":\"checkRegistration\"}"; sid:10000020;)
