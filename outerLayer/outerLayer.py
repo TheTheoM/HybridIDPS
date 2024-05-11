@@ -29,8 +29,7 @@ class OuterLayer():
             "Unusual Outgoing Traffic": 0.1,
             "Suspicious Port Activity": 0.1,
             "SSH login":                0.3,
-            "WebSocket Detection":      0.4,
-            
+            "Possible Phishing":     0.4,
         }
 
         self.ipBanList = []
@@ -215,8 +214,8 @@ class OuterLayer():
 
 
     def analyze_Websocket_Detection(self):
-        event_type = 'WebSocket Detection'
-        threatName = "WebSocket Detection"
+        event_type = 'Possible Phishing'
+        threatName = "Possible Phishing"
         
         # Define your threshold for determining what constitutes unusual traffic
         
