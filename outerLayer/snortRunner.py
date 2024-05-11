@@ -219,7 +219,7 @@ def handle_Snort_Alerts(displayAlerts, fileData, read_Up_To):
                 
                 dateTime, src_ip, dest_ip = get_ip_and_time_line(ip_and_time_Line)
                 
-                if alertName == "Outgoing TCP Traffic" or alertName == "Outgoing UDP Traffic" or alertName == "Outgoing ICMP Ping" or alertName == "WebSocket Detection":
+                if alertName == "Outgoing TCP Traffic" or alertName == "Outgoing UDP Traffic" or alertName == "Outgoing ICMP Ping" or alertName == "WebSocket Detection" :
                     # Swap src_ip and dest_ip
                     src_ip, dest_ip = dest_ip, src_ip
                 
