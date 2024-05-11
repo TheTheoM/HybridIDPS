@@ -30,8 +30,9 @@ class OuterLayer():
             "Unusual Outgoing Traffic": 0.1,
             "Suspicious Port Activity": 0.1,
             "SSH login":                0.3,
-            "Possible Phishing":     0.4,
-            "Possibly Bot Army": 0.4,
+            "Possibly Bot Army":        0.4,
+            "Possible Phishing":        0.4,
+
         }
 
         self.ipBanList = []
@@ -216,7 +217,6 @@ class OuterLayer():
                         
                     self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE ip_address = '{ip}' AND event_type = '{event_type}'")
 
-
     def analyze_Websocket_Detection(self):
         event_type = 'Possible Phishing'
         threatName = "Possible Phishing"
@@ -260,6 +260,22 @@ class OuterLayer():
                     self.add_threat(thresholded_locations[key][0], f"Bots-{datetime.now(timezone.utc)}", key, datetime.now(timezone.utc), threatName)
                     #self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE ip_address = '{thresholded_locations[key][0]}' AND event_type = '{event_type}'")
             
+
+    # def analyze_Websocket_Detection(self):
+    #     event_type = 'WebSocket Connection'
+    #     threatName = "Bot Net"
+        
+    #     # Define your threshold for determining what constitutes unusual traffic
+        
+    #     results = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayer WHERE event_type = '{event_type}' AND processed = False ORDER BY timestamp DESC")
+    #     results = self.extract_ips(results)
+        
+    #     for ip, all_events in results.items():
+    #         for event in all_events:
+    #             logName = f"{threatName}-{event['timestamp']}"
+    #             self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
+            
+    #         self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE ip_address = '{ip}' AND event_type = '{event_type}'")
 
     # def display_Events_and_calc_threat_level(self):
     #     for ip, deviceData in self.devices.items():

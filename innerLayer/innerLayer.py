@@ -177,43 +177,43 @@ class InnerLayer():
                     self.add_threat(logName, threatName,  event['username'], event['target_username'], event['ip_address'], event['geolocation'], event['timestamp'],
                                     threatName, threat_level, event['payload'])
     
-    # def analyze_mass_correlation(self):   
-    #         # event_type = ['reportUserByUsername', 'friendUserByUsername', 'likePost', 'messageUserByUsername']
-    #         threatName = "massCorrelation"
-    #         user_threshold = 10
-    #         activity_threshold = 10
-    #         time_frame = 2 #Minutes
-    #         current_time = datetime.now(timezone.utc)
-    #         time_limit = current_time - timedelta(minutes=time_frame)
+    def analyze_mass_correlation(self):   
+            # event_type = ['reportUserByUsername', 'friendUserByUsername', 'likePost', 'messageUserByUsername']
+            threatName = "massCorrelation"
+            user_threshold = 10
+            activity_threshold = 10
+            time_frame = 2 #Minutes
+            current_time = datetime.now(timezone.utc)
+            time_limit = current_time - timedelta(minutes=time_frame)
 
-    #         threat_level = self.threatTable[threatName]
+            threat_level = self.threatTable[threatName]
 
-    #         for event_type in ['reportUserByUsername', 'friendUserByUsername', 'likePost', 'messageUserByUsername']:
+            for event_type in ['reportUserByUsername', 'friendUserByUsername', 'likePost', 'messageUserByUsername']:
 
-    #             results = self.database.execute_query(f"""SELECT t.username, t.target_username, t.ip_address, aggregated_data.activity_count
-    #                                                         FROM (
-    #                                                             SELECT target_username, COUNT(username) AS activity_count
-    #                                                             FROM hybrid_idps.innerLayer 
-    #                                                             WHERE event_type = '{event_type}' 
-    #                                                             AND timestamp >= '{time_limit.strftime('%Y-%m-%d %H:%M:%S')}'
-    #                                                             GROUP BY target_username
-    #                                                             HAVING COUNT(username) >= {user_threshold}
-    #                                                         ) AS aggregated_data
-    #                                                         JOIN hybrid_idps.innerLayer AS t 
-    #                                                             ON aggregated_data.target_username = t.target_username""")
-    #             results = self.extract_user(results)
+                results = self.database.execute_query(f"""SELECT t.username, t.target_username, t.ip_address, aggregated_data.activity_count
+                                                            FROM (
+                                                                SELECT target_username, COUNT(username) AS activity_count
+                                                                FROM hybrid_idps.innerLayer 
+                                                                WHERE event_type = '{event_type}' 
+                                                                AND timestamp >= '{time_limit.strftime('%Y-%m-%d %H:%M:%S')}'
+                                                                GROUP BY target_username
+                                                                HAVING COUNT(username) >= {user_threshold}
+                                                            ) AS aggregated_data
+                                                            JOIN hybrid_idps.innerLayer AS t 
+                                                                ON aggregated_data.target_username = t.target_username""")
+                results = self.extract_user(results)
     
-    #             for username, rows in results.items():
-    #                     for row in rows:
-    #                         username = row['username']
-    #                         activity_count = row['activity_count']
-    #                         target_username = row['target_username']
-    #                         ip_address = row['ip_address']
+                for username, rows in results.items():
+                        for row in rows:
+                            username = row['username']
+                            activity_count = row['activity_count']
+                            target_username = row['target_username']
+                            ip_address = row['ip_address']
 
-    #                         if activity_count > activity_threshold:
-    #                             logName = f"{threatName}"
-    #                             self.add_threat(logName, threatName, username, target_username, ip_address, None, None,
-    #                                             event_type, threat_level, None)            
+                            if activity_count > activity_threshold:
+                                logName = f"{threatName}"
+                                self.add_threat(logName, threatName, username, target_username, ip_address, None, None,
+                                                event_type, threat_level, None)            
 
 
         
