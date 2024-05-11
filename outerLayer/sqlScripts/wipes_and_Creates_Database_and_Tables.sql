@@ -14,7 +14,8 @@ CREATE TABLE outerLayer (
     destination_port INT UNSIGNED NULL,
     protocol VARCHAR(20) NULL,
     payload TEXT NULL,
-    processed BOOLEAN DEFAULT FALSE
+    processed BOOLEAN DEFAULT FALSE,
+    dest_ip_address VARCHAR(45) NULL
 );
 
 CREATE TABLE outerLayerThreats (
