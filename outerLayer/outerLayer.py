@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 import importlib
 import json
 import sys, os
+from datetime import datetime, timedelta, timezone
 sys.path.append(os.path.abspath("../helperFiles"))
 from sqlConnector import MySQLConnection 
 
@@ -32,7 +33,6 @@ class OuterLayer():
             "SSH login":                0.3,
             "Possibly Bot Army":        0.4,
             "Possible Phishing":        0.4,
-
         }
 
         self.ipBanList = []
@@ -103,7 +103,7 @@ class OuterLayer():
             ips = [result['ip_address'] for result in results]
             self.incomingIpList.extend(ips)
         self.incomingIpList = list(set(self.incomingIpList))
-        print(f"Incoming IP List: {self.incomingIpList}")
+        # print(f"Incoming IP List: {self.incomingIpList}")
 
 
     def analyze_event_type(self, event_type, threat_name, threshold):
@@ -261,21 +261,32 @@ class OuterLayer():
                     #self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE ip_address = '{thresholded_locations[key][0]}' AND event_type = '{event_type}'")
             
 
-    # def analyze_Websocket_Detection(self):
-    #     event_type = 'WebSocket Connection'
-    #     threatName = "Bot Net"
-        
-    #     # Define your threshold for determining what constitutes unusual traffic
-        
-    #     results = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayer WHERE event_type = '{event_type}' AND processed = False ORDER BY timestamp DESC")
-    #     results = self.extract_ips(results)
-        
-    #     for ip, all_events in results.items():
-    #         for event in all_events:
-    #             logName = f"{threatName}-{event['timestamp']}"
-    #             self.add_threat(ip, logName, event['geolocation'], event['timestamp'], threatName)
+    def analyze_BotNet(self):
+        event_type = 'WebSocket Connection'
+        threatName = "Possibly Bot Army"
+        threshold = 2
+
+        results = self.database.execute_query(f"SELECT ip_address, geolocation FROM hybrid_idps.outerLayer WHERE event_type = '{event_type}' AND timestamp >= NOW() - INTERVAL 5 SECOND AND processed = False ORDER BY timestamp DESC")
+
+        result_dict = {}
+
+        for result in results:
+            geolocation = result['geolocation']
+            if geolocation in result_dict:
+                result_dict[geolocation].append(result)
+            else:
+                result_dict[geolocation] = [result]
+
+        thresholded_locations = {key: [x['ip_address'] for x in value] for key, value in result_dict.items() if len(value) >= threshold} #The keys of 
+
+        if len(thresholded_locations) > 0:
             
-    #         self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE ip_address = '{ip}' AND event_type = '{event_type}'")
+            for key in thresholded_locations:
+                print(thresholded_locations[key][0])
+                self.add_threat(thresholded_locations[key][0], f"Bots-{datetime.now(timezone.utc)}", key, datetime.now(timezone.utc), threatName)
+                self.database.execute_query(f"UPDATE hybrid_idps.outerLayer SET processed = True WHERE ip_address = '{thresholded_locations[key][0]}' AND event_type = '{event_type}'")
+
+# thresholded_values: [[{'ip_address': '192.168.1.78', 'geolocation': 'New Zealand', 'timestamp': datetime.datetime(2024, 5, 12, 2, 0, 37)}, {'ip_address': '192.168.1.78', 'geolocation': 'New Zealand', 'timestamp': datetime.datetime(2024, 5, 12, 2, 0, 37)}, {'ip_address': '192.168.1.78', 'geolocation': 'New Zealand', 'timestamp': datetime.datetime(2024, 5, 12, 2, 0, 36)}]]
 
     # def display_Events_and_calc_threat_level(self):
     #     for ip, deviceData in self.devices.items():
