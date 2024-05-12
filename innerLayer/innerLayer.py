@@ -59,7 +59,7 @@ class InnerLayer():
 
                 self.analyze_mass_account_creation_ip()
 
-                #self.analyze_mass_correlation()
+                self.analyze_mass_correlation()
                 
                 self.check_payload_increment()
               
@@ -133,7 +133,6 @@ class InnerLayer():
         time_frame = 2 #Minutes
         current_time = datetime.now(timezone.utc)
         time_limit = current_time - timedelta(minutes=time_frame)
-        formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
         
 
         threat_level = self.threatTable[threatName]
@@ -156,7 +155,7 @@ class InnerLayer():
                 for x in usernames_result:
                     x = list(x.values())
                     ip, timestamp, username = x[0], x[1], x[2]
-                    logName = f"{threatName}"
+                    logName = f"{threatName}-{timestamp}"
                     print(f"The ip Address is {ip}")
                     self.add_threat(logName, threatName, username, None, ip, None, timestamp,
                                     threatName, threat_level, None)
@@ -209,22 +208,20 @@ class InnerLayer():
     
                 for username, rows in results.items():
                         for row in rows:
-                            username = row['username']
-                            activity_count = row['user_count']
-                            target_username = row['target_username']
-                            ip_address = row['ip_address']
-                            timestamp = row['timestamp'].strftime("%Y-%m-%d %H:%M:%S")
+                            x = list(row.values())
+                            username, target_username, ip, timestamp, user_count = x[0], x[1], x[2], x[3], x[4]
 
-                            if activity_count > activity_threshold:
+                            if user_count > activity_threshold:
                                 logName = f"{threatName}-{timestamp}"
-                                self.add_threat(logName, threatName, username, target_username, ip_address, None, timestamp,
+                                self.add_threat(logName, threatName, username, target_username, ip, None, timestamp,
                                                 event_type, threat_level, None)
 
     def analyze_sql_inject(self):
         threatName = "sqlInjection"
         threshold = 3
         threat_level = self.threatTable[threatName]
-        current_time = datetime.now(timezone.utc)
+        sqlKeywordCountPayload = 0
+        sqlKeywordCountUsername = 0
 
         sqlKeywords = ["SELECT", "INSERT", "UPDATE", "DELETE", "FROM", "WHERE", "DROP", "TRUNCATE",
                         "UNION", "JOIN", "OR", "AND", "EXEC", "ALTER", "CREATE", "RENAME", "HAVING",
@@ -235,19 +232,14 @@ class InnerLayer():
         sqlKeywordsLower = [keyword.lower() for keyword in sqlKeywords]
         
         results = self.database.execute_query(f"""SELECT username, payload, ip_address, timestamp
-                                                FROM hybrid_idps.innerLayer""")
+                                                FROM hybrid_idps.innerLayer""")   
 
         for result in results:
-            sqlPayload = result.get('payload')
-            sqlUsername = result.get('username')
-            sqltimestamp = results[0]['timestamp'].strftime("%Y-%m-%d %H:%M:%S")
-
+            result = list(result.values())
+            username, payload, ip, timestamp = result[0], result[1], result[2], result[3]
             
-            sqlPayloadLower = sqlPayload.lower() if sqlPayload else None
-            sqlUsernameLower = sqlUsername.lower() if sqlUsername else None
-            
-            sqlKeywordCountPayload = 0
-            sqlKeywordCountUsername = 0
+            sqlPayloadLower = payload.lower() if payload else None
+            sqlUsernameLower = username.lower() if username else None
 
             if sqlPayloadLower:
                 sqlKeywordCountPayload = sum(1 for keyword in sqlKeywordsLower if keyword in sqlPayloadLower)
@@ -255,10 +247,8 @@ class InnerLayer():
                 sqlKeywordCountUsername = sum(1 for keyword in sqlKeywordsLower if keyword in sqlUsernameLower)
             
             if sqlKeywordCountPayload > threshold or sqlKeywordCountUsername > threshold:
-                logName = f"{threatName}-{sqltimestamp}"
-                self.add_threat(logName, threatName, sqlUsername, None, result.get('ip_address'), None, sqltimestamp, None, threat_level, None)
-                sqlKeywordCountPayload = 0
-                sqlKeywordCountUsername = 0
+                logName = f"{threatName}-{timestamp}"
+                self.add_threat(logName, threatName, username, None, ip, None, timestamp, None, threat_level, None)
 
 
     # def check_like_mismatch(self):
