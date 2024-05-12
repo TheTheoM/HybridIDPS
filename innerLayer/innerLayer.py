@@ -64,15 +64,12 @@ class InnerLayer():
                 self.check_payload_increment()
               
                 self.analyze_sql_inject()
-                
-                # self.check_like_mismatch()
 
                 self.check_hash_changes()
 
                 self.check_for_new_login()
 
                 self.mass_bot_detection()
-                #self.update_json_hash()
   
                 ###### Analyzer Functions ######
                 
@@ -249,67 +246,6 @@ class InnerLayer():
             if sqlKeywordCountPayload > threshold or sqlKeywordCountUsername > threshold:
                 logName = f"{threatName}-{timestamp}"
                 self.add_threat(logName, threatName, username, None, ip, None, timestamp, None, threat_level, None)
-
-
-    # def check_like_mismatch(self):
-
-    #     event_type = 'likePost'
-    #     threatName = "likesInJsonCompromised"
-    #     threat_level = self.threatTable[threatName]
-
-    #     from datetime import datetime
-
-    #     current_time = datetime.now()
-    #     formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S') 
-
-    #     postListEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'addPost'")
-    #     post_ID_List = [postID[0] for postID in self.parse_payload(postListEntries)]
-        
-    #     likePostEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'likePost'")
-    #     liked_post_ID_List = [postID[1:3] for postID in self.parse_payload(likePostEntries)]
-
-    #     # results = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = '{event_type}'")
-    #     # sql_posts_likes = self.parse_and_sum_payload(results)
-    #     with open('registeredUsers.json', 'r') as f:
-    #         json_data = json.load(f)
-
-    #     sql_post_likes_sum = {}
-    #     json_posts_likes = {}
-        
-    #     for post_id in post_ID_List:
-    #         likeIncrements = [val[1] for val in liked_post_ID_List if val[0] == post_id]
-    #         #print(f"LikeIncrements {likeIncrements} for post_id {post_id}")
-    #         sql_post_likes_sum[post_id] = sum(likeIncrements) 
-    #        # print(f"the likes are {sql_post_likes_sum}")
-
-    #     for user in json_data:
-    #         user_dict = user[1]
-    #         posts = user_dict['posts']
-    #         for post in posts:
-
-    #             current_likes = post['likes']
-    #             current_post_id = post['postID']
-                
-    #             json_posts_likes[current_post_id] = current_likes
-                
-    #             #print(f"the likes are {sql_post_likes_sum}")
-    #             #print(f"json post likes are  {json_posts_likes}")
-    #             # this if condition may need to be changed
-    #             if json_posts_likes != sql_post_likes_sum:
-    #                 #print(f"mismatch at {current_post_id}")
-    #                 # logName = f"{threatName}-{results.event['timestamp']}"
-    #                 self.add_threat(current_post_id, threatName, user[0], None, None, formatted_time, None,
-    #                                  threatName, threat_level, current_post_id, True)  
-                    
-    #                 if not current_post_id in sql_post_likes_sum:
-    #                     post['likes'] = 0
-    #                 else:
-    #                     post['likes'] = sql_post_likes_sum[current_post_id]
-                    
-                    
-                    
-    #         with open('registeredUsers.json', 'w+') as f:
-    #                 json.dump(json_data, f, indent=4)
     
     def check_hash_changes(self):
 
@@ -350,8 +286,7 @@ class InnerLayer():
                 result_dict[id] = value
 
         return result_dict
-
-  # Outputs {'br3f2jgjy': 1, 'l4rn8eaw7': 0}      
+   
     def check_for_new_login(self):
         
         seconds_window = datetime.now() - timedelta(seconds=10)
@@ -359,7 +294,6 @@ class InnerLayer():
 
         for user in newLogins:
             self.check_geo_changes(user)
-            #print(f"The lastLogin was {user}")
 
     def check_geo_changes(self, results):
         
@@ -370,7 +304,6 @@ class InnerLayer():
         geolocation = results['geolocation']
         currentUser = results['username']
 
-        #seconds_window = datetime.now() - timedelta(seconds=10)
         pastLogin = self.database.execute_query(f"""SELECT * FROM hybrid_idps.innerLayer 
                                                 WHERE event_type = 'successfulLogin' 
                                                 AND timestamp < ( SELECT MAX(timestamp) 
@@ -386,13 +319,7 @@ class InnerLayer():
                 self.add_threat(logName, threatName, results['username'], None, results['ip_address'], geolocation,
                             results['timestamp'], threatName, threat_level, None)
             
-
-
-        #print(f"the past login was {pastLogin}")
-       # print(f"the geo is {geolocation}")
-
     def mass_bot_detection(self):
-        #event_types = ['reportUserByUsername','likePost', 'addComment']
         threatName = "botActivity"
         threshold = 2
         time_frame = 2 #Minutes
