@@ -141,6 +141,7 @@ def check_file_changes(file_path, file_Check_Interval, displayAlerts, mySqlConne
                     print(f"File contents changed in {file_path}. New contents:")
                 with open(file_path, 'r') as file:
                     fileData = file.read()
+                    print(fileData[:-7])
                     newSnortAlerts, read_Up_To = handle_Snort_Alerts(displayAlerts, fileData, read_Up_To) #Reads only the updating part of the file. 
 
                     #Sending Data to server
@@ -256,7 +257,7 @@ def handle_Snort_Alerts(displayAlerts, fileData, read_Up_To):
                 traceback.print_exc()
                 time.sleep(10)
 
-    read_Up_To += len(entries)
+    read_Up_To += len(entries) - 1
 
     return newSnortAlerts, read_Up_To
 
