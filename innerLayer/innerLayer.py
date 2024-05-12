@@ -30,7 +30,7 @@ class InnerLayer():
             "massReporting":       0.2,
             "massAccountCreation": 1,
             "payloadAttack": 1,
-            "sqlInjection": 0.6,
+            "sqlInjection": 0.4,
             "massCorrelation": 1,
             "jsonCompromised": 0.5,
             "likesInJsonCompromised" : 0.5,
@@ -59,16 +59,17 @@ class InnerLayer():
 
                 self.analyze_mass_account_creation_ip()
 
-                #self.analyze_mass_correlation()
+                self.analyze_mass_correlation()
                 
                 self.check_payload_increment()
-                               
+              
+                self.analyze_sql_inject()
+
                 self.check_hash_changes()
 
                 self.check_for_new_login()
 
                 self.mass_bot_detection()
-                #self.update_json_hash()
   
                 ###### Analyzer Functions ######
                 
@@ -125,10 +126,11 @@ class InnerLayer():
     def analyze_mass_account_creation_ip(self):   
         event_type = 'registrationSuccess'
         threatName = "massAccountCreation"
-        threshold = 50
+        threshold = 30
         time_frame = 2 #Minutes
         current_time = datetime.now(timezone.utc)
         time_limit = current_time - timedelta(minutes=time_frame)
+        
 
         threat_level = self.threatTable[threatName]
         results = self.database.execute_query(f"""SELECT ip_address, COUNT(username) AS registration_count
@@ -146,12 +148,12 @@ class InnerLayer():
                                                                     WHERE ip_address = '{ip}'
                                                                     AND event_type = '{event_type}'
                                                                     AND timestamp >= '{time_limit.strftime('%Y-%m-%d %H:%M:%S')}'""")
-                #usernames = self.extract_user(usernames_result)
-                
+
                 for x in usernames_result:
                     x = list(x.values())
                     ip, timestamp, username = x[0], x[1], x[2]
-                    logName = f"{threatName}"
+                    logName = f"{threatName}-{timestamp}"
+                    print(f"The ip Address is {ip}")
                     self.add_threat(logName, threatName, username, None, ip, None, timestamp,
                                     threatName, threat_level, None)
 
@@ -177,7 +179,6 @@ class InnerLayer():
                                     threatName, threat_level, event['payload'])
     
     def analyze_mass_correlation(self):   
-            # event_type = ['reportUserByUsername', 'friendUserByUsername', 'likePost', 'messageUserByUsername']
             threatName = "massCorrelation"
             user_threshold = 10
             activity_threshold = 10
@@ -187,16 +188,16 @@ class InnerLayer():
 
             threat_level = self.threatTable[threatName]
 
-            for event_type in ['reportUserByUsername', 'friendUserByUsername', 'likePost', 'messageUserByUsername']:
+            for event_type in ['reportUserByUsername','friendUserByUsername', 'likePost', 'messageUserByUsername']:
 
-                results = self.database.execute_query(f"""SELECT t.username, t.target_username, t.ip_address, aggregated_data.activity_count
+                results = self.database.execute_query(f"""SELECT t.username, t.target_username, t.ip_address, t.timestamp, aggregated_data.user_count
                                                             FROM (
-                                                                SELECT target_username, COUNT(username) AS activity_count
+                                                                SELECT target_username, COUNT(DISTINCT username) AS user_count
                                                                 FROM hybrid_idps.innerLayer 
                                                                 WHERE event_type = '{event_type}' 
                                                                 AND timestamp >= '{time_limit.strftime('%Y-%m-%d %H:%M:%S')}'
                                                                 GROUP BY target_username
-                                                                HAVING COUNT(username) >= {user_threshold}
+                                                                HAVING COUNT(DISTINCT username) >= {user_threshold}
                                                             ) AS aggregated_data
                                                             JOIN hybrid_idps.innerLayer AS t 
                                                                 ON aggregated_data.target_username = t.target_username""")
@@ -204,18 +205,47 @@ class InnerLayer():
     
                 for username, rows in results.items():
                         for row in rows:
-                            username = row['username']
-                            activity_count = row['activity_count']
-                            target_username = row['target_username']
-                            ip_address = row['ip_address']
+                            x = list(row.values())
+                            username, target_username, ip, timestamp, user_count = x[0], x[1], x[2], x[3], x[4]
 
-                            if activity_count > activity_threshold:
-                                logName = f"{threatName}"
-                                self.add_threat(logName, threatName, username, target_username, ip_address, None, None,
-                                                event_type, threat_level, None)            
+                            if user_count > activity_threshold:
+                                logName = f"{threatName}-{timestamp}"
+                                self.add_threat(logName, threatName, username, target_username, ip, None, timestamp,
+                                                event_type, threat_level, None)
 
+    def analyze_sql_inject(self):
+        threatName = "sqlInjection"
+        threshold = 3
+        threat_level = self.threatTable[threatName]
+        sqlKeywordCountPayload = 0
+        sqlKeywordCountUsername = 0
 
+        sqlKeywords = ["SELECT", "INSERT", "UPDATE", "DELETE", "FROM", "WHERE", "DROP", "TRUNCATE",
+                        "UNION", "JOIN", "OR", "AND", "EXEC", "ALTER", "CREATE", "RENAME", "HAVING",
+                        "DECLARE", "FETCH", "OPEN", "CLOSE", "CAST", "CONVERT", "EXECUTE", "GRANT", 
+                        "REVOKE", "TRIGGER", "MERGE", "WHILE", "BREAK", "COMMIT", "ROLLBACK", "SAVEPOINT",
+                        "BEGIN", "END", "'", "\""]
         
+        sqlKeywordsLower = [keyword.lower() for keyword in sqlKeywords]
+        
+        results = self.database.execute_query(f"""SELECT username, payload, ip_address, timestamp
+                                                FROM hybrid_idps.innerLayer""")   
+
+        for result in results:
+            result = list(result.values())
+            username, payload, ip, timestamp = result[0], result[1], result[2], result[3]
+            
+            sqlPayloadLower = payload.lower() if payload else None
+            sqlUsernameLower = username.lower() if username else None
+
+            if sqlPayloadLower:
+                sqlKeywordCountPayload = sum(1 for keyword in sqlKeywordsLower if keyword in sqlPayloadLower)
+            if sqlUsernameLower:
+                sqlKeywordCountUsername = sum(1 for keyword in sqlKeywordsLower if keyword in sqlUsernameLower)
+            
+            if sqlKeywordCountPayload > threshold or sqlKeywordCountUsername > threshold:
+                logName = f"{threatName}-{timestamp}"
+                self.add_threat(logName, threatName, username, None, ip, None, timestamp, None, threat_level, None)
     
     def check_hash_changes(self):
 
@@ -256,8 +286,7 @@ class InnerLayer():
                 result_dict[id] = value
 
         return result_dict
-
-  # Outputs {'br3f2jgjy': 1, 'l4rn8eaw7': 0}      
+   
     def check_for_new_login(self):
         
         seconds_window = datetime.now() - timedelta(seconds=10)
@@ -265,7 +294,6 @@ class InnerLayer():
 
         for user in newLogins:
             self.check_geo_changes(user)
-            #print(f"The lastLogin was {user}")
 
     def check_geo_changes(self, results):
         
@@ -276,7 +304,6 @@ class InnerLayer():
         geolocation = results['geolocation']
         currentUser = results['username']
 
-        #seconds_window = datetime.now() - timedelta(seconds=10)
         pastLogin = self.database.execute_query(f"""SELECT * FROM hybrid_idps.innerLayer 
                                                 WHERE event_type = 'successfulLogin' 
                                                 AND timestamp < ( SELECT MAX(timestamp) 
@@ -292,13 +319,7 @@ class InnerLayer():
                 self.add_threat(logName, threatName, results['username'], None, results['ip_address'], geolocation,
                             results['timestamp'], threatName, threat_level, None)
             
-
-
-        #print(f"the past login was {pastLogin}")
-       # print(f"the geo is {geolocation}")
-
     def mass_bot_detection(self):
-        #event_types = ['reportUserByUsername','likePost', 'addComment']
         threatName = "botActivity"
         threshold = 2
         time_frame = 2 #Minutes
