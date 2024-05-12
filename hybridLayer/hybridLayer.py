@@ -45,8 +45,9 @@ class HybridLayer():
 
                 self.extract_phishing_threat()
                 
-                # self.analyze_log_in()
+                self.extract_bot_army_threat()
                 
+                # self.analyze_log_in()
 
                 ###### Analyzer Functions ######
                 
@@ -64,6 +65,7 @@ class HybridLayer():
 
         for ip, value in common_items.items():
             
+            print(f"The valyue is {value}")
             outerLayerData, innerLayerData = value
             threat_level_outer, timeStamp_outer = outerLayerData.values()
             threat_level_inner, timeStamp_inner, username = innerLayerData.values()
@@ -94,6 +96,8 @@ class HybridLayer():
 
             # self.add_threat(IP, susUsername, ips_by_username + " " + datetime_string,  threatType)
 
+    
+    
     def find_matching_usernames(self, ip_address, user_ip_dict):
         matching_usernames = []
         for username, ip_list in user_ip_dict.items():
@@ -155,8 +159,29 @@ class HybridLayer():
                 print("Phishing Campaign underway")
                 self.add_threat(outerLayer_Threats[0]['ip_address'], innerLayer_Threats[0]['username'], f"{innerLayer_Threats[0]['payload']} {outerLayer_Threats[0]['timestamp']}", "Phishing",
                                 outerLayer_Threats[0]['threat_level'], innerLayer_Threats[0]['threat_level'])
+                
+    def extract_bot_army_threat(self):
 
+        innerLayer_Threats = self.database.excute_query(f"SELECT * FROM hybrid_idps.innerLayerThreats WHERE event_type ='botActivity'")
 
+        if(len(innerLayer_Threats) > 0):
+
+            outerLayer_Threats = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayerThreats WHERE threatname = 'Possibly Bot Army'")
+
+            if(len(outerLayer_Threats) > 0):
+                print("Bot Army Attack")
+                self.add_threat(outerLayer_Threats[0]['ip_address'], innerLayer_Threats[0]['username'], f"{innerLayer_Threats[0]['payload']} {innerLayer_Threats[0]['timestamp']}", "Phishing",
+                                outerLayer_Threats[0]['threat_level'], innerLayer_Threats[0]['threat_level'])
+
+    def extract_bot_army_threat(self):
+        innerLayer_Threats = self.database.excute_query(f"SELECT * FROM hybrid_idps.innerLayerThreats WHERE event_type ='botActivity'")
+        if(len(innerLayer_Threats) > 0):
+            outerLayer_Threats = self.database.execute_query(f"SELECT * FROM hybrid_idps.outerLayerThreats WHERE threatname = 'Possibly Bot Army'")
+            if(len(outerLayer_Threats) > 0):
+                print("Bot Army Attack")
+                self.add_threat(outerLayer_Threats[0]['ip_address'], innerLayer_Threats[0]['username'], f"{innerLayer_Threats[0]['payload']} {outerLayer_Threats[0]['timestamp']}", "Phishing",
+                                outerLayer_Threats[0]['threat_level'], innerLayer_Threats[0]['threat_level'])
+    
     def add_devices(self):
         results = self.database.execute_query(f"SELECT DISTINCT ip_address from hybrid_idps.hybridLayer")
         ip_addresses = [ip['ip_address'] for ip in results]
@@ -193,13 +218,6 @@ class HybridLayer():
                 self.print_box(f"[Banned on Outer & Inner Layer]: {IP} | {username}")
                 self.database.add_event_to_Hybrid_DB(username, IP, None)
 
-    
-
-        
-
-
-
-  
     def print_box(self, text):
         width = len(text) + 2 
         print(" " + "_" * width)

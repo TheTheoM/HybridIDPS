@@ -35,6 +35,7 @@ class InnerLayer():
             "jsonCompromised": 0.5,
             "likesInJsonCompromised" : 0.5,
             "locationChange":  0.4,
+            "botActivity": 0.4
         }
 
         #is this in the correct spot?
@@ -52,25 +53,25 @@ class InnerLayer():
                 self.add_devices()
                 ###### Analyzer Functions ######
                 
-                # self.check_like_mismatch()
-
                 self.analyze_spam_credentials()
 
                 self.analyze_mass_reporting()
 
                 self.analyze_mass_account_creation_ip()
 
-                self.analyze_mass_correlation()
+                #self.analyze_mass_correlation()
                 
                 self.check_payload_increment()
-
+              
                 self.analyze_sql_inject()
                 
                 # self.check_like_mismatch()
-                
+
                 self.check_hash_changes()
 
                 self.check_for_new_login()
+
+                self.mass_bot_detection()
                 #self.update_json_hash()
   
                 ###### Analyzer Functions ######
@@ -146,18 +147,18 @@ class InnerLayer():
 
         for ip, all_event in results.items():
             if all_event[0]['registration_count'] > 1:
-                usernames_result = self.database.execute_query(f""" SELECT *
+                usernames_result = self.database.execute_query(f""" SELECT ip_address, timestamp, username
                                                                     FROM hybrid_idps.innerLayer
                                                                     WHERE ip_address = '{ip}'
                                                                     AND event_type = '{event_type}'
                                                                     AND timestamp >= '{time_limit.strftime('%Y-%m-%d %H:%M:%S')}'""")
 
-                for user_data in usernames_result:
-                    user_timestamp = user_data['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
-                    username = user_data['username']
-
-                    logName = f"{threatName}-{user_timestamp}"
-                    self.add_threat(logName, threatName, username, None, ip, None, user_timestamp,
+                for x in usernames_result:
+                    x = list(x.values())
+                    ip, timestamp, username = x[0], x[1], x[2]
+                    logName = f"{threatName}"
+                    print(f"The ip Address is {ip}")
+                    self.add_threat(logName, threatName, username, None, ip, None, timestamp,
                                     threatName, threat_level, None)
 
     def check_payload_increment(self):
@@ -319,7 +320,6 @@ class InnerLayer():
                     
     #         with open('registeredUsers.json', 'w+') as f:
     #                 json.dump(json_data, f, indent=4)
-        
     
     def check_hash_changes(self):
 
@@ -401,7 +401,27 @@ class InnerLayer():
         #print(f"the past login was {pastLogin}")
        # print(f"the geo is {geolocation}")
 
+    def mass_bot_detection(self):
+        #event_types = ['reportUserByUsername','likePost', 'addComment']
+        threatName = "botActivity"
+        threshold = 2
+        time_frame = 2 #Minutes
+        current_time = datetime.now(timezone.utc)
+        time_limit = current_time - timedelta(minutes=time_frame)
 
+        threat_level = self.threatTable[threatName]
+        results = self.database.execute_query(f"SELECT * FROM hybrid_idps.innerLayer WHERE event_type IN ('reportUserByUsername','likePost', 'addComment') AND timestamp >= '{time_limit.strftime('%Y-%m-%d %H:%M:%S')}' ORDER BY timestamp DESC")
+        results = self.extract_user(results)
+
+        for user, user_events in results.items():
+            count = 0
+            for event in user_events:
+                    count += 1
+                    if count > threshold:
+                        logName = f"{threatName}-{event['timestamp']}"
+                        self.add_threat(logName, threatName,  event['username'], event['target_username'], event['ip_address'], event['geolocation'], event['timestamp'],
+                                        threatName, threat_level, event['payload'])
+                        count = 0
 
         
         
