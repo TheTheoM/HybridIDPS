@@ -26,9 +26,9 @@ const WebSocket = require('ws');
     
                 if (message.action === 'postList') {
                     let postList = message.posts;
-                    postList = postList.filter((post) => (post.username === "JohnSmith123" && post.postTitle === '123'))
-                    let PostID = postList[0].id;
-                    let increment = 5;
+                    postList = postList.filter((post) => (post.username === "Anthony Albonese" && post.postTitle === 'Fixing Infastructure'))
+                    let PostID = postList[0].PostID;
+                    let increment = 50;
                     this.send({ action: 'likePost', postID: PostID, increment: increment});
                 }
     

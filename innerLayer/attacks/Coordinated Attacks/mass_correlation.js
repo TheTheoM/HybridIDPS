@@ -24,7 +24,8 @@ for (let i = 0; i < 25; i++) {
 
                 if (message.action === 'viewFeedAndUser') {
                     // Assuming loginSuccess event carries the username
-                    this.send({ action: 'reportUserByUsername', username: 'JohnSmith123'});
+                    this.send({ action: 'friendUserByUsername', username: 'Anythony Albonese'});
+                    this.send({ action: 'reportUserByUsername', username: 'Anythony Albonese'});
                 }
     
 
