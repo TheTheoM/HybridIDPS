@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+
     class WebSocketClient {
         constructor(url) {
             this.url = url;
@@ -15,15 +16,31 @@ const WebSocket = require('ws');
                 if (message.action === 'checkRegistration') {
                     this.send({ action: 'register', username: 'example_user', password: 'example_password', email: 'example@example.com' });
                 }
-    
+                
                 if (message.action === 'registrationSuccess') {
                     this.send({ action: 'login', username: 'example_user', password: 'example_password'});
                 }
-    
 
-                for (let i = 0; i < 100; i++) {
-                    this.send({action: 'reportUserByUsername', username: 'JohnSmith123'})
+                
+
+                if (message.action === 'viewFeedAndUser') {
+                    this.send({ action: 'getPostList'});
                 }
+
+                // this.send({action: 'searchPosts', search: 'SELECT FROM WHERE JOIN'})
+
+                let PostID;
+    
+                if (message.action === 'postList') {
+                    let postList = message.posts;
+                    postList = postList.filter((post) => (post.username === "Anthony Albonese" && post.postTitle === 'Fixing Infastructure'))
+                    PostID = postList[0].postID;
+                    this.send({ action: 'addComment', postID: PostID, comment: 'SELECT FROM WHERE JOIN'});
+                }
+
+
+
+                // this.send({action: 'reportUserByUsername', username: 'JohnSmith123'})
     
     
     

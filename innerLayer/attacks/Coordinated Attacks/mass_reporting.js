@@ -22,7 +22,7 @@ const WebSocket = require('ws');
     
 
                 for (let i = 0; i < 100; i++) {
-                    this.send({action: 'reportUserByUsername', username: 'JohnSmith123'})
+                    this.send({action: 'reportUserByUsername', username: 'Anothony Albonese'})
                 }
     
     

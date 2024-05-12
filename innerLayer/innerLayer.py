@@ -30,7 +30,7 @@ class InnerLayer():
             "massReporting":       0.2,
             "massAccountCreation": 1,
             "payloadAttack": 1,
-            "sqlInjection": 0.6,
+            "sqlInjection": 0.4,
             "massCorrelation": 1,
             "jsonCompromised": 0.5,
             "likesInJsonCompromised" : 0.5,
@@ -62,7 +62,11 @@ class InnerLayer():
                 #self.analyze_mass_correlation()
                 
                 self.check_payload_increment()
-                               
+              
+                self.analyze_sql_inject()
+                
+                # self.check_like_mismatch()
+
                 self.check_hash_changes()
 
                 self.check_for_new_login()
@@ -125,10 +129,12 @@ class InnerLayer():
     def analyze_mass_account_creation_ip(self):   
         event_type = 'registrationSuccess'
         threatName = "massAccountCreation"
-        threshold = 50
+        threshold = 30
         time_frame = 2 #Minutes
         current_time = datetime.now(timezone.utc)
         time_limit = current_time - timedelta(minutes=time_frame)
+        formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
+        
 
         threat_level = self.threatTable[threatName]
         results = self.database.execute_query(f"""SELECT ip_address, COUNT(username) AS registration_count
@@ -146,8 +152,7 @@ class InnerLayer():
                                                                     WHERE ip_address = '{ip}'
                                                                     AND event_type = '{event_type}'
                                                                     AND timestamp >= '{time_limit.strftime('%Y-%m-%d %H:%M:%S')}'""")
-                #usernames = self.extract_user(usernames_result)
-                
+
                 for x in usernames_result:
                     x = list(x.values())
                     ip, timestamp, username = x[0], x[1], x[2]
@@ -178,7 +183,6 @@ class InnerLayer():
                                     threatName, threat_level, event['payload'])
     
     def analyze_mass_correlation(self):   
-            # event_type = ['reportUserByUsername', 'friendUserByUsername', 'likePost', 'messageUserByUsername']
             threatName = "massCorrelation"
             user_threshold = 10
             activity_threshold = 10
@@ -188,16 +192,16 @@ class InnerLayer():
 
             threat_level = self.threatTable[threatName]
 
-            for event_type in ['reportUserByUsername', 'friendUserByUsername', 'likePost', 'messageUserByUsername']:
+            for event_type in ['reportUserByUsername','friendUserByUsername', 'likePost', 'messageUserByUsername']:
 
-                results = self.database.execute_query(f"""SELECT t.username, t.target_username, t.ip_address, aggregated_data.activity_count
+                results = self.database.execute_query(f"""SELECT t.username, t.target_username, t.ip_address, t.timestamp, aggregated_data.user_count
                                                             FROM (
-                                                                SELECT target_username, COUNT(username) AS activity_count
+                                                                SELECT target_username, COUNT(DISTINCT username) AS user_count
                                                                 FROM hybrid_idps.innerLayer 
                                                                 WHERE event_type = '{event_type}' 
                                                                 AND timestamp >= '{time_limit.strftime('%Y-%m-%d %H:%M:%S')}'
                                                                 GROUP BY target_username
-                                                                HAVING COUNT(username) >= {user_threshold}
+                                                                HAVING COUNT(DISTINCT username) >= {user_threshold}
                                                             ) AS aggregated_data
                                                             JOIN hybrid_idps.innerLayer AS t 
                                                                 ON aggregated_data.target_username = t.target_username""")
@@ -206,17 +210,116 @@ class InnerLayer():
                 for username, rows in results.items():
                         for row in rows:
                             username = row['username']
-                            activity_count = row['activity_count']
+                            activity_count = row['user_count']
                             target_username = row['target_username']
                             ip_address = row['ip_address']
+                            timestamp = row['timestamp'].strftime("%Y-%m-%d %H:%M:%S")
 
                             if activity_count > activity_threshold:
-                                logName = f"{threatName}"
-                                self.add_threat(logName, threatName, username, target_username, ip_address, None, None,
-                                                event_type, threat_level, None)            
+                                logName = f"{threatName}-{timestamp}"
+                                self.add_threat(logName, threatName, username, target_username, ip_address, None, timestamp,
+                                                event_type, threat_level, None)
 
+    def analyze_sql_inject(self):
+        threatName = "sqlInjection"
+        threshold = 3
+        threat_level = self.threatTable[threatName]
+        current_time = datetime.now(timezone.utc)
 
+        sqlKeywords = ["SELECT", "INSERT", "UPDATE", "DELETE", "FROM", "WHERE", "DROP", "TRUNCATE",
+                        "UNION", "JOIN", "OR", "AND", "EXEC", "ALTER", "CREATE", "RENAME", "HAVING",
+                        "DECLARE", "FETCH", "OPEN", "CLOSE", "CAST", "CONVERT", "EXECUTE", "GRANT", 
+                        "REVOKE", "TRIGGER", "MERGE", "WHILE", "BREAK", "COMMIT", "ROLLBACK", "SAVEPOINT",
+                        "BEGIN", "END", "'", "\""]
         
+        sqlKeywordsLower = [keyword.lower() for keyword in sqlKeywords]
+        
+        results = self.database.execute_query(f"""SELECT username, payload, ip_address, timestamp
+                                                FROM hybrid_idps.innerLayer""")
+
+        for result in results:
+            sqlPayload = result.get('payload')
+            sqlUsername = result.get('username')
+            sqltimestamp = results[0]['timestamp'].strftime("%Y-%m-%d %H:%M:%S")
+
+            
+            sqlPayloadLower = sqlPayload.lower() if sqlPayload else None
+            sqlUsernameLower = sqlUsername.lower() if sqlUsername else None
+            
+            sqlKeywordCountPayload = 0
+            sqlKeywordCountUsername = 0
+
+            if sqlPayloadLower:
+                sqlKeywordCountPayload = sum(1 for keyword in sqlKeywordsLower if keyword in sqlPayloadLower)
+            if sqlUsernameLower:
+                sqlKeywordCountUsername = sum(1 for keyword in sqlKeywordsLower if keyword in sqlUsernameLower)
+            
+            if sqlKeywordCountPayload > threshold or sqlKeywordCountUsername > threshold:
+                logName = f"{threatName}-{sqltimestamp}"
+                self.add_threat(logName, threatName, sqlUsername, None, result.get('ip_address'), None, sqltimestamp, None, threat_level, None)
+                sqlKeywordCountPayload = 0
+                sqlKeywordCountUsername = 0
+
+
+    # def check_like_mismatch(self):
+
+    #     event_type = 'likePost'
+    #     threatName = "likesInJsonCompromised"
+    #     threat_level = self.threatTable[threatName]
+
+    #     from datetime import datetime
+
+    #     current_time = datetime.now()
+    #     formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S') 
+
+    #     postListEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'addPost'")
+    #     post_ID_List = [postID[0] for postID in self.parse_payload(postListEntries)]
+        
+    #     likePostEntries = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = 'likePost'")
+    #     liked_post_ID_List = [postID[1:3] for postID in self.parse_payload(likePostEntries)]
+
+    #     # results = self.database.execute_query(f"SELECT payload FROM hybrid_idps.innerLayer WHERE event_type = '{event_type}'")
+    #     # sql_posts_likes = self.parse_and_sum_payload(results)
+    #     with open('registeredUsers.json', 'r') as f:
+    #         json_data = json.load(f)
+
+    #     sql_post_likes_sum = {}
+    #     json_posts_likes = {}
+        
+    #     for post_id in post_ID_List:
+    #         likeIncrements = [val[1] for val in liked_post_ID_List if val[0] == post_id]
+    #         #print(f"LikeIncrements {likeIncrements} for post_id {post_id}")
+    #         sql_post_likes_sum[post_id] = sum(likeIncrements) 
+    #        # print(f"the likes are {sql_post_likes_sum}")
+
+    #     for user in json_data:
+    #         user_dict = user[1]
+    #         posts = user_dict['posts']
+    #         for post in posts:
+
+    #             current_likes = post['likes']
+    #             current_post_id = post['postID']
+                
+    #             json_posts_likes[current_post_id] = current_likes
+                
+    #             #print(f"the likes are {sql_post_likes_sum}")
+    #             #print(f"json post likes are  {json_posts_likes}")
+    #             # this if condition may need to be changed
+    #             if json_posts_likes != sql_post_likes_sum:
+    #                 #print(f"mismatch at {current_post_id}")
+    #                 # logName = f"{threatName}-{results.event['timestamp']}"
+    #                 self.add_threat(current_post_id, threatName, user[0], None, None, formatted_time, None,
+    #                                  threatName, threat_level, current_post_id, True)  
+                    
+    #                 if not current_post_id in sql_post_likes_sum:
+    #                     post['likes'] = 0
+    #                 else:
+    #                     post['likes'] = sql_post_likes_sum[current_post_id]
+                    
+                    
+                    
+    #         with open('registeredUsers.json', 'w+') as f:
+    #                 json.dump(json_data, f, indent=4)
     
     def check_hash_changes(self):
 
