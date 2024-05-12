@@ -36,8 +36,6 @@ class HybridLayer():
                 self.database.connect()
                 self.add_devices()
                 ###### Analyzer Functions ######
-                
-                # self.database.get_banned_ips()
 
                 self.extract_json_threat()
 
@@ -47,7 +45,6 @@ class HybridLayer():
                 
                 self.extract_bot_army_threat()
                 
-                # self.analyze_log_in()
 
                 ###### Analyzer Functions ######
                 
@@ -55,24 +52,23 @@ class HybridLayer():
                     
                 start_time = time.time()
                 self.database.disconnect()
+                
+                
 
     def basic_correlation(self):
         threatType = "Basic-Hybrid-Threat"
         ipThreatLevels       = self.database.get_ip_threat_levels()
         usernameThreatLevels = self.database.get_username_threat_levels()
-        common_keys = set(ipThreatLevels.keys()).intersection(usernameThreatLevels.keys()) # Find the intersection of the keys
-        common_items = {key: (ipThreatLevels[key], usernameThreatLevels[key]) for key in common_keys}
+        common_keys = set(ipThreatLevels.keys()).intersection(usernameThreatLevels.keys())              # Finds common IP's address on both Layers
+        common_items = {key: (ipThreatLevels[key], usernameThreatLevels[key]) for key in common_keys}   # Gets data for said IP's for both layers, getting networking and user data.
 
         for ip, value in common_items.items():
-            
-            print(f"The valyue is {value}")
             outerLayerData, innerLayerData = value
             threat_level_outer, timeStamp_outer = outerLayerData.values()
             threat_level_inner, timeStamp_inner, username = innerLayerData.values()
-            combined_threat_level = threat_level_outer + threat_level_inner
+            combined_threat_level = threat_level_outer + threat_level_inner         #Sum the threat level of both layers individually
 
-            if combined_threat_level > self.threshold:
-
+            if combined_threat_level > self.threshold: #if above a threshold ban them.
                 if timeStamp_outer > timeStamp_inner:
                     most_recent = timeStamp_outer
                 else:

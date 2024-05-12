@@ -22,10 +22,10 @@ def port_scan(target_ip, start_port, end_port):
     print(f"Scanning ports on {target_ip}...\n")
     for port in range(start_port, end_port + 1):
         threading.Thread(target=scan_port, args=(target_ip, port)).start()
-        time.sleep(0.1)
+        time.sleep(0.01)
 
 if __name__ == "__main__":
-    target_ip = "192.168.1.133"
-    start_port = 3000
+    target_ip = "192.168.1.123"
+    start_port = 2900
     end_port   = 8900
     port_scan(target_ip, start_port, end_port)

@@ -152,7 +152,6 @@ class InnerLayer():
                     x = list(x.values())
                     ip, timestamp, username = x[0], x[1], x[2]
                     logName = f"{threatName}"
-                    print(f"The ip Address is {ip}")
                     self.add_threat(logName, threatName, username, None, ip, None, timestamp,
                                     threatName, threat_level, None)
 
