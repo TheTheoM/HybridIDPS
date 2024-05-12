@@ -128,7 +128,7 @@ class InnerLayer():
     def analyze_mass_account_creation_ip(self):   
         event_type = 'registrationSuccess'
         threatName = "massAccountCreation"
-        threshold = 15
+        threshold = 30
         time_frame = 2 #Minutes
         current_time = datetime.now(timezone.utc)
         time_limit = current_time - timedelta(minutes=time_frame)
